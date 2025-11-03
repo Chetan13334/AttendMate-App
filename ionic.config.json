@@ -1,0 +1,7 @@
+{
+  "name": "AttendMate",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
