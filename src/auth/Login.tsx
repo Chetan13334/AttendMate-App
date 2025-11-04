@@ -16,6 +16,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { personCircle, lockClosed } from "ionicons/icons";
+import AppHeader from "../components/AppHeader";
 // @ts-ignore
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -47,6 +48,9 @@ export const Login: React.FC = () => {
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
+        // Store the user's email in localStorage when they log in
+        localStorage.setItem('userEmail', email);
+        
         setToastMessage("Login successful!");
         setShowToast(true);
         setTimeout(() => {
@@ -73,6 +77,8 @@ export const Login: React.FC = () => {
 
   return (
     <IonPage>
+      <AppHeader title="AttendMate"   />
+      
       <IonContent
         fullscreen
         className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-blue-600"
