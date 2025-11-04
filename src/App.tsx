@@ -4,6 +4,8 @@ import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
 // Import icons for the bottom navigation bar
 import { home, calendar, list, person } from 'ionicons/icons'; 
+import LocationChecker from './components/OnLocation'; // From friend's branch (testing)
+import { Login } from './auth/Login'; // From friend's branch (auth)
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -26,14 +28,35 @@ setupIonicReact();
 const App: React.FC = () => (
     <IonApp>
         <IonReactRouter>
+            {/* ROUTES WITHOUT FOOTER (Authentication pages)
+                These are placed outside the IonTabs definition.
+            */}
+            <IonRouterOutlet id="main-router">
+                <Route exact path="/login">
+                    <Login />
+                </Route>
+                <Route exact path="/onlocation">
+                    <LocationChecker />
+                </Route>
+                
+                {/* DEFAULT REDIRECT: Redirects to login page */}
+                <Route exact path="/">
+                    {/* TODO: In the final version, this logic should check the user's logged-in state */}
+                    <Redirect to="/login" />
+                </Route>
+            </IonRouterOutlet>
+            
+            {/* ION TABS WRAPPER (FOR ROUTES WITH FOOTER)
+                The footer only appears for pages rendered inside this IonTabs wrapper.
+            */}
             <IonTabs>
                 <IonRouterOutlet>
-                    {/* Primary Route for the Home Dashboard */}
+                    {/* Primary Dashboard Route */}
                     <Route exact path="/home">
                         <Home />
                     </Route>
                     
-                    {/* Placeholder routes for the other tabs (redirecting to home for now) */}
+                    {/* Placeholder Tab Routes */}
                     <Route exact path="/schedule">
                         <Redirect to="/home" /> 
                     </Route>
@@ -43,16 +66,9 @@ const App: React.FC = () => (
                     <Route exact path="/profile">
                         <Redirect to="/home" /> 
                     </Route>
-
-                    {/* Default redirect to home */}
-                    <Route exact path="/">
-                        {/* NOTE: When your friend's login is merged, this redirect will be replaced 
-                        with a check for the logged-in status (Home vs. Login Page) */}
-                        <Redirect to="/home" />
-                    </Route>
                 </IonRouterOutlet>
 
-                {/* Bottom Tab Bar (The Footer from your Image 3) */}
+                {/* Bottom Tab Bar (The Footer) */}
                 <IonTabBar slot="bottom">
                     <IonTabButton tab="home" href="/home">
                         <IonIcon icon={home} />
