@@ -1,53 +1,82 @@
 import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
+// Import icons for the bottom navigation bar
+import { home, calendar, list, person } from 'ionicons/icons'; 
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
-
 /* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
-import '@ionic/react/css/palettes/dark.system.css';
-
 /* Theme variables */
 import './theme/variables.css';
 
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
-  </IonApp>
+    <IonApp>
+        <IonReactRouter>
+            <IonTabs>
+                <IonRouterOutlet>
+                    {/* Primary Route for the Home Dashboard */}
+                    <Route exact path="/home">
+                        <Home />
+                    </Route>
+                    
+                    {/* Placeholder routes for the other tabs (redirecting to home for now) */}
+                    <Route exact path="/schedule">
+                        <Redirect to="/home" /> 
+                    </Route>
+                    <Route exact path="/history">
+                        <Redirect to="/home" /> 
+                    </Route>
+                    <Route exact path="/profile">
+                        <Redirect to="/home" /> 
+                    </Route>
+
+                    {/* Default redirect to home */}
+                    <Route exact path="/">
+                        {/* NOTE: When your friend's login is merged, this redirect will be replaced 
+                        with a check for the logged-in status (Home vs. Login Page) */}
+                        <Redirect to="/home" />
+                    </Route>
+                </IonRouterOutlet>
+
+                {/* Bottom Tab Bar (The Footer from your Image 3) */}
+                <IonTabBar slot="bottom">
+                    <IonTabButton tab="home" href="/home">
+                        <IonIcon icon={home} />
+                        <IonLabel>Home</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="schedule" href="/schedule">
+                        <IonIcon icon={calendar} />
+                        <IonLabel>Schedule</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="history" href="/history">
+                        <IonIcon icon={list} />
+                        <IonLabel>History</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="profile" href="/profile">
+                        <IonIcon icon={person} />
+                        <IonLabel>Profile</IonLabel>
+                    </IonTabButton>
+                </IonTabBar>
+            </IonTabs>
+        </IonReactRouter>
+    </IonApp>
 );
 
 export default App;
