@@ -1,97 +1,128 @@
+// src/components/EventsSection.tsx
 import React from 'react';
-import { IonCard, IonCardContent, IonList, IonItem, IonLabel, IonIcon, IonText, IonGrid, IonRow, IonCol } from '@ionic/react';
-// 🛑 FIX: Changed 'mapPin' to 'locationOutline' or 'location'
-import { star, calendar, happy, locationOutline } from 'ionicons/icons'; 
-
-// Mock data structure 
-const mockEvents = {
-    birthday: {
-        name: "Sarah J.J.",
-        team: "Product Team",
-    },
-    otherEvents: [
-        // ... mock events data
-        {
-            title: "Team Sync Meeting",
-            time: "10:30 AM",
-            location: "Conference Room A",
-            icon: calendar
-        },
-        {
-            title: "New Hire Onboarding",
-            time: "All Day",
-            location: "Training Room",
-            icon: happy
-        }
-    ]
-};
-
+import {
+  IonCard,
+  IonCardContent,
+  IonText,
+  IonIcon,
+  IonGrid,
+  IonRow,
+  IonCol,
+} from '@ionic/react';
+import { giftOutline, calendarOutline, peopleOutline, alarmOutline } from 'ionicons/icons';
 
 const EventsSection: React.FC = () => {
-    const { birthday, otherEvents } = mockEvents;
-    
-    return (
-        <div className="ion-padding-horizontal ion-margin-top">
-            <h2 className="ion-padding-start ion-no-margin">Today's Events</h2>
-            
-            {/* Birthday Card (Prominent Card as requested) */}
-            {birthday && (
-                <IonCard 
-                    color="tertiary" 
-                    className="ion-margin-vertical"
-                    style={{
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                        borderRadius: '12px',
-                    }}
-                >
-                    <IonCardContent className="ion-no-padding">
-                        <IonGrid>
-                            <IonRow className="ion-align-items-center ion-padding">
-                                <IonCol size="2" className="ion-text-center">
-                                    <IonIcon icon={star} style={{ fontSize: '32px', color: 'white' }} />
-                                </IonCol>
-                                <IonCol size="10">
-                                    <IonText color="light">
-                                        <h3 className="ion-no-margin" style={{ fontWeight: 700 }}>Birthday Celebration!</h3>
-                                        <p className="ion-no-margin">Happy Birthday, **{birthday.name}** ({birthday.team})</p>
-                                    </IonText>
-                                </IonCol>
-                            </IonRow>
-                        </IonGrid>
-                    </IonCardContent>
-                </IonCard>
-            )}
+  const birthday = {
+    name: 'Sarah-In',
+    subtitle: 'Happy Birthday, J. (Product Room A)',
+  };
 
-            {/* Other Events List (Compact List as requested) */}
-            <IonList 
-                lines="full" 
-                className="ion-margin-bottom"
-                style={{
+  const events = [
+    { icon: giftOutline, title: 'Happy Birthday', color: '#FFCA28', bg: '#FFF8E1' },
+    { icon: calendarOutline, title: 'Team Sync Meeting', color: '#4CAF50', bg: '#E8F5E9' },
+    { icon: peopleOutline, title: 'Training Room', color: '#2196F3', bg: '#E3F2FD' },
+    { icon: alarmOutline, title: 'Alert Meeting', color: '#9C27B0', bg: '#F3E5F5' },
+  ];
+
+  return (
+    <div style={{ backgroundColor: '#ffffff', padding: '0 16px', marginTop: '16px', marginBottom: '100px' }}>
+      <IonCard
+        style={{
+          borderRadius: '20px',
+          backgroundColor: '#FFF8E1',
+          margin: '0 0 20px 0',
+          width: '96%',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        }}
+      >
+        <IonCardContent style={{ padding: '18px' }}>
+          <IonGrid>
+            <IonRow className="ion-align-items-center">
+              <IonCol size="2">
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    backgroundColor: '#FFCA28',
                     borderRadius: '12px',
-                    overflow: 'hidden',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                }}
-            >
-                {otherEvents.map((event, index) => (
-                    <IonItem key={index} detail={false}>
-                        <IonIcon icon={event.icon} slot="start" color="primary" />
-                        <IonLabel>
-                            <h3 style={{ fontWeight: 600 }}>{event.title}</h3>
-                            <p className="ion-text-wrap">
-                                {/* 🛑 FIX: Using the imported 'locationOutline' icon */}
-                                <IonIcon icon={locationOutline} color="medium" style={{ fontSize: '12px', verticalAlign: 'middle', marginRight: '4px' }}/>
-                                {event.location}
-                                <span className="ion-padding-start">|</span>
-                                <IonText color="dark" className="ion-padding-start">
-                                    **{event.time}**
-                                </IonText>
-                            </p>
-                        </IonLabel>
-                    </IonItem>
-                ))}
-            </IonList>
-        </div>
-    );
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: '12px',
+                  }}
+                >
+                  <IonIcon icon={giftOutline} style={{ fontSize: '26px', color: '#fff' }} />
+                </div>
+              </IonCol>
+              <IonCol size="10">
+                <IonText>
+                  <h3 style={{ margin: 0, fontWeight: 700, fontSize: '16px', color: '#333' }}>
+                    Happy Birthday, {birthday.name}
+                  </h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#555' }}>
+                    {birthday.subtitle}
+                  </p>
+                </IonText>
+              </IonCol>
+            </IonRow>
+          </IonGrid>
+        </IonCardContent>
+      </IonCard>
+
+      <IonText>
+        <h2 style={{ fontWeight: 700, fontSize: '18px', margin: '0 0 16px 0', color: '#000' }}>
+          TODAY'S EVENTS
+        </h2>
+      </IonText>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {events.map((ev, i) => (
+          <IonCard
+            key={i}
+            style={{
+              backgroundColor: ev.bg,
+              borderRadius: '20px',
+              minHeight: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 16px',
+              boxShadow: '0 3px 8px rgba(0,0,0,0.08)',
+            }}
+          >
+            <IonGrid style={{ padding: '14px 0' }}>
+              <IonRow className="ion-align-items-center">
+                <IonCol size="2">
+                  <div
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      backgroundColor: ev.color,
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '12px',
+                    }}
+                  >
+                    <IonIcon icon={ev.icon} style={{ fontSize: '24px', color: '#fff' }} />
+                  </div>
+                </IonCol>
+                <IonCol size="10">
+                  <IonText>
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: '15px', color: '#333' }}>
+                      {ev.title}
+                    </p>
+                  </IonText>
+                </IonCol>
+              </IonRow>
+            </IonGrid>
+          </IonCard>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default EventsSection;

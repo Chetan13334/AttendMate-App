@@ -1,22 +1,22 @@
-/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import legacy from '@vitejs/plugin-legacy'
-
-// https://vitejs.dev/config/
+// ⚙️ Optimized Vite config for low-memory Windows builds
 export default defineConfig({
-  plugins: [
-    react(),
-    legacy(),
-    // tailwindcss(), // ✅ Removed Tailwind Vite plugin
-  ],
-  css: {
-    // postcss: './postcss.config.js', // keep your PostCSS config - removed as postcss.config.js is deleted
+  plugins: [react()],
+  build: {
+    outDir: "dist",
+    target: "esnext",
+    minify: false,             // ❌ turn off heavy minification
+    cssMinify: false,          // ❌ skip CSS minifier
+    sourcemap: false,
+    chunkSizeWarningLimit: 2000,
   },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext",
+      // Disable parallel optimization for memory safety
+      legalComments: "none",
+    },
   },
-})
+});
