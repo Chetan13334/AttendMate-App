@@ -9,12 +9,6 @@ import {
   IonToast,
   IonSpinner,
 } from "@ionic/react";
-<<<<<<< HEAD
-import { personCircle, lockClosed } from "ionicons/icons";
-import AppHeader from "../components/AppHeader";
-// @ts-ignore
-=======
->>>>>>> aacc16dc946bc83e6a3591f5ab47e624b821bc90
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -44,20 +38,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         where("Email", "==", email),
         where("Password", "==", password)
       );
-<<<<<<< HEAD
-      
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        // Store the user's email in localStorage when they log in
-        localStorage.setItem('userEmail', email);
-        
-=======
 
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
->>>>>>> aacc16dc946bc83e6a3591f5ab47e624b821bc90
         setToastMessage("Login successful!");
         setShowToast(true);
 
@@ -81,23 +65,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   return (
     <IonPage>
-<<<<<<< HEAD
-      <AppHeader title="AttendMate"   />
-      
-      <IonContent
-        fullscreen
-        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-blue-600"
-      >
-        <IonCard className="w-[70%] max-w-sm rounded-3xl shadow-2xl bg-white/95 backdrop-blur-md">
-          <IonCardHeader className="text-center p-6">
-            <IonCardTitle className="text-xl font-bold text-gray-900">
-              Welcome To Scaler Tech Hub
-            </IonCardTitle>
-            <IonCardSubtitle className="text-gray-600 mt-1 text-sm">
-              Sign in to continue
-            </IonCardSubtitle>
-          </IonCardHeader>
-=======
       <IonContent fullscreen style={{ "--background": "#fafafa" }}>
         <div
           style={{
@@ -120,7 +87,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           >
             AttendMate
           </h1>
->>>>>>> aacc16dc946bc83e6a3591f5ab47e624b821bc90
 
           <IonCard
             style={{
