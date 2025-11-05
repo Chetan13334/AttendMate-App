@@ -1,5 +1,5 @@
-// src/components/AttendanceCard.tsx
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/CheckIn_CheckOut.tsx
+import React, { useState, useEffect } from 'react';
 import {
   IonCard,
   IonCardContent,
@@ -9,12 +9,15 @@ import {
   IonModal,
   IonButton,
   IonRippleEffect,
+  IonSpinner,
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
+import { doc, setDoc, collection, query, getDocs, where, Timestamp, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 type Status = 'not-checked' | 'checked-in' | 'checked-out';
 
-const AttendanceCard: React.FC = () => {
+const CheckIn_CheckOut: React.FC = () => {
   const [status, setStatus] = useState<Status>('not-checked');
   const [time, setTime] = useState('');
   const [currentTime, setCurrentTime] = useState('');
@@ -23,19 +26,21 @@ const AttendanceCard: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [pendingAction, setPendingAction] = useState<() => void>(() => {});
+  const [employeeId, setEmployeeId] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const formatTime = () => {
-    const d = new Date();
-    return d.toLocaleString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+  const loggedInUserEmail = localStorage.getItem('userEmail');
+  const today = new Date().toISOString().split('T')[0];
+
+  const formatTime = () => new Date().toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   useEffect(() => {
     const update = () => setCurrentTime(formatTime());
@@ -43,6 +48,49 @@ const AttendanceCard: React.FC = () => {
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const employeeCollection = collection(db, "Employee_Details");
+        const q = query(employeeCollection, where("Email", "==", loggedInUserEmail));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          console.error("Employee not found for email:", loggedInUserEmail);
+          setMsg("Employee not found. Please contact administrator.");
+          setShowAlert(true);
+          return;
+        }
+
+        const empData = snapshot.docs[0].data();
+        const empId = empData.EmployeeID;
+        setEmployeeId(empId);
+
+        const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId);
+        const record = await getDoc(docRef);
+
+        if (record.exists()) {
+          const data = record.data();
+          if (data.CheckIn && !data.CheckOut) {
+            setStatus('checked-in');
+            setTime(data.CheckIn.toDate().toLocaleTimeString());
+          } else if (data.CheckOut) {
+            setStatus('checked-out');
+            setTime(data.CheckOut.toDate().toLocaleTimeString());
+          }
+        } else {
+          setStatus('not-checked');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [today, loggedInUserEmail]);
 
   const confirmAction = (action: () => void, title: string) => {
     setPendingAction(() => action);
@@ -55,36 +103,47 @@ const AttendanceCard: React.FC = () => {
     setShowModal(false);
   };
 
-  const handleTap = () => {
-    const now = formatTime();
+  const handleCheckIn = async () => {
+    if (!employeeId) return;
+    const now = new Date();
+    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+    await setDoc(docRef, { CheckIn: Timestamp.fromDate(now) }, { merge: true });
+    setStatus('checked-in');
+    setTime(now.toLocaleTimeString());
+    setMsg('Check In Successful');
+    setShowAlert(true);
+  };
 
+  const handleCheckOut = async () => {
+    if (!employeeId) return;
+    const now = new Date();
+    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+    await setDoc(docRef, { CheckOut: Timestamp.fromDate(now) }, { merge: true });
+    setStatus('checked-out');
+    setTime(now.toLocaleTimeString());
+    setMsg('Checked Out Successfully');
+    setShowAlert(true);
+  };
+
+  const handleTap = () => {
     if (status === 'not-checked') {
-      confirmAction(() => {
-        setStatus('checked-in');
-        setTime(now);
-        setMsg('Check In Successful');
-        setShowAlert(true);
-      }, 'Check In');
+      confirmAction(handleCheckIn, 'Check In');
     } else if (status === 'checked-in') {
-      confirmAction(() => {
-        setStatus('checked-out');
-        setTime(now);
-        setMsg('Checked Out Successfully');
-        setShowAlert(true);
-      }, 'Check Out');
-    } else {
-      confirmAction(() => {
-        setStatus('not-checked');
-        setTime('');
-        setMsg('Ready to Check In');
-        setShowAlert(true);
-      }, 'Reset');
+      confirmAction(handleCheckOut, 'Check Out');
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full p-6">
+        <IonSpinner name="crescent" />
+        <p className="mt-2">Loading attendance...</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* NOT CHECKED IN */}
       {status === 'not-checked' && (
         <IonCard
           button
@@ -146,7 +205,6 @@ const AttendanceCard: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED IN */}
       {status === 'checked-in' && (
         <IonCard
           button
@@ -205,7 +263,6 @@ const AttendanceCard: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED OUT - DAY COMPLETE */}
       {status === 'checked-out' && (
         <IonCard
           style={{
@@ -260,7 +317,7 @@ const AttendanceCard: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CONFIRMATION MODAL - FULLY IONIC */}
+      {/* CONFIRMATION MODAL */}
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -272,7 +329,6 @@ const AttendanceCard: React.FC = () => {
           '--max-width': '380px',
           '--border-radius': '24px',
         }}
-        className="ion-align-items-center ion-justify-content-center"
       >
         <div style={{ padding: '32px 24px', textAlign: 'center' }}>
           <div
@@ -290,45 +346,18 @@ const AttendanceCard: React.FC = () => {
           >
             <IonIcon icon={timeOutline} style={{ fontSize: '48px', color: 'var(--ion-color-primary)' }} />
           </div>
-
-          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ion-color-dark)', margin: '0 0 8px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 8px' }}>
             Confirm {modalTitle}
           </h2>
-          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>
             Are you sure you want to proceed?
           </p>
-
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <IonButton
-              fill="solid"
-              color="success"
-              expand="block"
-              style={{
-                '--border-radius': '16px',
-                height: '50px',
-                fontWeight: 600,
-                textTransform: 'none',
-                flex: 1,
-              }}
-              onClick={executeAction}
-            >
+            <IonButton color="success" onClick={executeAction}>
               <IonIcon icon={checkmark} slot="start" />
               Confirm
             </IonButton>
-
-            <IonButton
-              fill="outline"
-              color="medium"
-              expand="block"
-              style={{
-                '--border-radius': '16px',
-                height: '50px',
-                fontWeight: 600,
-                textTransform: 'none',
-                flex: 1,
-              }}
-              onClick={() => setShowModal(false)}
-            >
+            <IonButton fill="outline" color="medium" onClick={() => setShowModal(false)}>
               <IonIcon icon={close} slot="start" />
               Cancel
             </IonButton>
@@ -347,4 +376,4 @@ const AttendanceCard: React.FC = () => {
   );
 };
 
-export default AttendanceCard;
+export default CheckIn_CheckOut;
