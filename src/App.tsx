@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { IonApp, setupIonicReact } from "@ionic/react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./auth/Login";
 import Home from "./pages/Home";
+import History from "./pages/History";
+import Profile from "./pages/Profile";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -43,11 +46,39 @@ const App: React.FC = () => {
 
   return (
     <IonApp>
-      {isLoggedIn ? (
-        <Home onLogout={handleLogout} />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
+      <Router>
+        <Routes>
+          {/* 🔓 Public Route - Login */}
+          {!isLoggedIn && (
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          )}
+
+          {/* 🔒 Protected Routes */}
+          {isLoggedIn && (
+            <>
+              <Route path="/home" element={<Home />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
+            </>
+          )}
+
+          {/* 🔁 Default Redirects */}
+          <Route
+            path="/"
+            element={
+              isLoggedIn ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
+            }
+          />
+
+          {/* 🔁 Catch-all */}
+          <Route
+            path="*"
+            element={
+              isLoggedIn ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
+            }
+          />
+        </Routes>
+      </Router>
     </IonApp>
   );
 };
