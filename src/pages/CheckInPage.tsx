@@ -6,7 +6,7 @@ import Checkin from '../components/CheckIn_CheckOut';
 const CheckInPage: React.FC = () => {
   return (
     <IonPage>
-      <AppHeader title="Check In / Check Out" />
+      <AppHeader />
       <IonContent className="ion-padding">
         <Checkin />
       </IonContent>
