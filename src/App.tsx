@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { IonApp, setupIonicReact } from "@ionic/react";
 import Login from "./auth/Login";
-
+import Home from "./pages/Home";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -16,6 +16,7 @@ import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 
 setupIonicReact();
+
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
