@@ -9,6 +9,7 @@ import {
   IonToast,
   IonSpinner,
 } from "@ionic/react";
+
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -42,6 +43,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
+
         setToastMessage("Login successful!");
         setShowToast(true);
 
@@ -87,6 +89,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           >
             AttendMate
           </h1>
+
 
           <IonCard
             style={{

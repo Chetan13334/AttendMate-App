@@ -34,8 +34,7 @@ const Home: React.FC = () => {
         </div>
       </IonContent>
 
-      {/* ✅ FOOTER
-      <Footer /> */}
+     
     </IonPage>
   );
 };
