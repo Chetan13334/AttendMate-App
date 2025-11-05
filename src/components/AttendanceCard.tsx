@@ -14,8 +14,52 @@ import {
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
 import { doc, setDoc, collection, query, getDocs, where, Timestamp, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { Geolocation } from '@capacitor/geolocation';
 
 type Status = 'not-checked' | 'checked-in' | 'checked-out';
+
+const officeLat = 18.5564913;
+const officeLng = 73.9550623;
+const GEOFENCE_RADIUS = 14; // meters
+
+// Convert degrees → radians
+const toRad = (value: number) => (value * Math.PI) / 180;
+
+// Calculate distance (Haversine)
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371e3;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Check geofence & permissions
+const checkGeoFence = async () => {
+  const permissions = await Geolocation.checkPermissions();
+  if (permissions.location !== "granted") {
+    const req = await Geolocation.requestPermissions();
+    if (req.location !== "granted") throw new Error("Location permission denied");
+  }
+
+  const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+  const distance = getDistance(
+    officeLat,
+    officeLng,
+    pos.coords.latitude,
+    pos.coords.longitude
+  );
+
+  return distance <= GEOFENCE_RADIUS;
+};
 
 const CheckIn_CheckOut: React.FC = () => {
   const [status, setStatus] = useState<Status>('not-checked');
@@ -58,8 +102,7 @@ const CheckIn_CheckOut: React.FC = () => {
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-          console.error("Employee not found for email:", loggedInUserEmail);
-          setMsg("Employee not found. Please contact administrator.");
+          setMsg("Employee not found. Contact administrator.");
           setShowAlert(true);
           return;
         }
@@ -125,7 +168,20 @@ const CheckIn_CheckOut: React.FC = () => {
     setShowAlert(true);
   };
 
-  const handleTap = () => {
+  const handleTap = async () => {
+    try {
+      const inside = await checkGeoFence();
+      if (!inside) {
+        setMsg("❌ Oops! You are not near the office to mark attendance.");
+        setShowAlert(true);
+        return;
+      }
+    } catch (err: any) {
+      setMsg(err.message || "Location error occurred.");
+      setShowAlert(true);
+      return;
+    }
+
     if (status === 'not-checked') {
       confirmAction(handleCheckIn, 'Check In');
     } else if (status === 'checked-in') {

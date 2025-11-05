@@ -42,6 +42,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
+        // Store the user's email in localStorage for use in other components
+        localStorage.setItem('userEmail', email);
+        
         setToastMessage("Login successful!");
         setShowToast(true);
 
