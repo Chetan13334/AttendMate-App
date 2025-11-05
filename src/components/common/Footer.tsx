@@ -22,11 +22,6 @@ const Footer: React.FC = () => {
           <IonLabel>Home</IonLabel>
         </IonTabButton>
 
-        <IonTabButton tab="schedule" href="/schedule">
-          <IonIcon icon={calendarOutline} />
-          <IonLabel>Schedule</IonLabel>
-        </IonTabButton>
-
         <IonTabButton tab="history" href="/history">
           <IonIcon icon={documentOutline} />
           <IonLabel>History</IonLabel>
