@@ -40,17 +40,20 @@ const EventsSection: React.FC = () => {
         <IonCardContent style={{ padding: '18px' }}>
           <IonGrid>
             <IonRow className="ion-align-items-center">
-              <IonCol size="2">
+              <IonCol size="2" >
                 <div
                   style={{
-                    width: '48px',
-                    height: '48px',
+                    width: '40px',
+                    height: '40px',
                     backgroundColor: '#FFCA28',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginRight: '12px',
+                    position: 'relative',
+                    right: '2px',
+                    bottom: '2px',
                   }}
                 >
                   <IonIcon icon={giftOutline} style={{ fontSize: '26px', color: '#fff' }} />
@@ -96,10 +99,10 @@ const EventsSection: React.FC = () => {
                 <IonCol size="2">
                   <div
                     style={{
-                      width: '44px',
-                      height: '44px',
+                      width: '40px',
+                      height: '40px',
                       backgroundColor: ev.color,
-                      borderRadius: '12px',
+                      borderRadius: '8px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
