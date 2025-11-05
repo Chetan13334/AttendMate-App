@@ -17,40 +17,7 @@ import Footer from "../components/common/Footer"; // ✅ import Footer
 const Home: React.FC = () => {
   return (
     <IonPage>
-      {/* HEADER */}
-      <IonHeader>
-        <IonToolbar color="light">
-          <div
-            slot="start"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "16px",
-            }}
-          >
-            <img
-              src={logo}
-              alt="AttendMate"
-              style={{ height: "22px", marginRight: "8px" }}
-            />
-            <span
-              style={{ fontWeight: "bold", fontSize: "18px", color: "#333" }}
-            >
-              AttendMate
-            </span>
-          </div>
 
-          {/* PROFILE ICON ONLY (Logout moved to Profile) */}
-          <IonButtons slot="end">
-            <IonButton routerLink="/profile">
-              <IonIcon
-                icon={personCircleOutline}
-                style={{ fontSize: "26px", color: "#555" }}
-              />
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
 
       {/* ✅ FIXED CONTENT AREA */}
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
@@ -67,8 +34,8 @@ const Home: React.FC = () => {
         </div>
       </IonContent>
 
-      {/* ✅ FOOTER */}
-      <Footer />
+      {/* ✅ FOOTER
+      <Footer /> */}
     </IonPage>
   );
 };

@@ -45,9 +45,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setToastMessage("Login successful!");
         setShowToast(true);
 
-        // Optional: You can store the logged-in user info
-        // const userData = snapshot.docs[0].data();
-        // console.log("Logged-in user:", userData);
+        // ✅ Store login session info
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("userEmail", email);
 
         setTimeout(() => onLogin(), 1000);
       } else {
@@ -100,11 +100,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             }}
           >
             <IonCardContent style={{ padding: "40px 40px 20px" }}>
+              {/* Email Input */}
               <IonInput
                 type="email"
                 placeholder="Email"
                 value={email}
-                onIonChange={(e) => setEmail(e.detail.value!)}
+                onIonChange={(e) => setEmail(e.detail.value ?? "")}
                 style={{
                   "--padding-start": "12px",
                   "--padding-end": "12px",
@@ -119,11 +120,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 }}
               />
 
+              {/* Password Input */}
               <IonInput
                 type="password"
                 placeholder="Password"
                 value={password}
-                onIonChange={(e) => setPassword(e.detail.value!)}
+                onIonChange={(e) => setPassword(e.detail.value ?? "")}
                 style={{
                   "--padding-start": "12px",
                   "--padding-end": "12px",
@@ -138,6 +140,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 }}
               />
 
+              {/* Login Button */}
               <IonButton
                 expand="block"
                 onClick={handleLogin}
@@ -175,6 +178,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <span style={{ color: "#0095f6", fontWeight: 600 }}>Contact HR</span>
           </div>
 
+          {/* Toast */}
           <IonToast
             isOpen={showToast}
             message={toastMessage}
@@ -185,7 +189,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             style={{ "--border-radius": "8px" }}
           />
 
-          {/* ✅ Autofill fix styles */}
+          {/* Autofill Fix */}
           <style>
             {`
               input:-webkit-autofill,

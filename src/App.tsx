@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { IonApp, setupIonicReact } from "@ionic/react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  IonApp,
+  IonSpinner,
+  setupIonicReact,
+} from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+
 import Login from "./auth/Login";
-import Home from "./pages/Home";
-import History from "./pages/History";
-import Profile from "./pages/Profile";
+import HomeTabs from "./pages/HomeTabs";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -21,64 +24,60 @@ import "./theme/variables.css";
 setupIonicReact();
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  // ✅ Check sessionStorage on first load (refresh handling)
+  // ---------- Restore login from sessionStorage ----------
   useEffect(() => {
-    const savedLogin = sessionStorage.getItem("isLoggedIn");
-    if (savedLogin === "true") {
-      console.log("🔁 Restoring previous session...");
-      setIsLoggedIn(true);
-    }
+    const saved = sessionStorage.getItem("isLoggedIn");
+    setIsLoggedIn(saved === "true");
   }, []);
 
+  // ---------- Handlers ----------
   const handleLogin = () => {
-    console.log("✅ Logged in successfully");
     setIsLoggedIn(true);
-    sessionStorage.setItem("isLoggedIn", "true"); // ✅ persist login
+    sessionStorage.setItem("isLoggedIn", "true");
   };
 
   const handleLogout = () => {
-    console.log("🚪 Logged out, clearing session");
-    setIsLoggedIn(false);
-    sessionStorage.removeItem("isLoggedIn"); // ✅ clear on logout
-  };
+  console.log("🚪 Logging out... clearing session");
 
+  // Reset login state
+  setIsLoggedIn(false);
+
+  // Remove session values
+  sessionStorage.removeItem("isLoggedIn");
+  sessionStorage.removeItem("userEmail"); // ✅ this line is important
+};
+
+  // ---------- Loading ----------
+  if (isLoggedIn === null) {
+    return (
+      <IonApp>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            backgroundColor: "#f4f5f8",
+          }}
+        >
+          <IonSpinner name="crescent" />
+        </div>
+      </IonApp>
+    );
+  }
+
+  // ---------- Main render ----------
   return (
     <IonApp>
-      <Router>
-        <Routes>
-          {/* 🔓 Public Route - Login */}
-          {!isLoggedIn && (
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          )}
-
-          {/* 🔒 Protected Routes */}
-          {isLoggedIn && (
-            <>
-              <Route path="/home" element={<Home />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
-            </>
-          )}
-
-          {/* 🔁 Default Redirects */}
-          <Route
-            path="/"
-            element={
-              isLoggedIn ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
-            }
-          />
-
-          {/* 🔁 Catch-all */}
-          <Route
-            path="*"
-            element={
-              isLoggedIn ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
-            }
-          />
-        </Routes>
-      </Router>
+      <IonReactRouter>
+        {isLoggedIn ? (
+          <HomeTabs onLogout={handleLogout} />
+        ) : (
+          <Login onLogin={handleLogin} />
+        )}
+      </IonReactRouter>
     </IonApp>
   );
 };
