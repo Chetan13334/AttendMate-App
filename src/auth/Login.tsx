@@ -3,68 +3,60 @@ import {
   IonPage,
   IonContent,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
   IonCardContent,
   IonButton,
   IonInput,
-  IonItem,
-  IonLabel,
-  IonIcon,
   IonToast,
-  useIonRouter,
+  IonSpinner,
 } from "@ionic/react";
-import { personCircle, lockClosed } from "ionicons/icons";
-// @ts-ignore
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
-export const Login: React.FC = () => {
+interface LoginProps {
+  onLogin: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const router = useIonRouter();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setToastMessage("Please enter both email and password");
+      setToastMessage("Please enter email and password");
       setShowToast(true);
       return;
     }
 
     setLoading(true);
     try {
-      const employeeCollection = collection(db, "Employee_Details");
+      // ✅ Query Firestore for matching email & password
       const q = query(
-        employeeCollection,
+        collection(db, "Employee_Details"),
         where("Email", "==", email),
         where("Password", "==", password)
       );
-      
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
+
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
         setToastMessage("Login successful!");
         setShowToast(true);
-        setTimeout(() => {
-          router.push("/home");
-        }, 1500);
+
+        // Optional: You can store the logged-in user info
+        // const userData = snapshot.docs[0].data();
+        // console.log("Logged-in user:", userData);
+
+        setTimeout(() => onLogin(), 1000);
       } else {
         setToastMessage("Invalid email or password");
         setShowToast(true);
       }
-    } catch (error: any) {
-      let errorMessage = "Login failed. Please try again.";
-      if (error.code === "permission-denied") {
-        errorMessage = "Access denied. Please check Firebase Firestore rules.";
-      } else if (error.code === "unavailable") {
-        errorMessage = "Firebase unavailable. Check your connection.";
-      }
-      
-      setToastMessage(errorMessage);
+    } catch (error) {
+      console.error("Error during login:", error);
+      setToastMessage("Login failed. Please try again.");
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -73,78 +65,154 @@ export const Login: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent
-        fullscreen
-        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-blue-600"
-      >
-        <IonCard className="w-[70%] max-w-sm rounded-3xl shadow-2xl bg-white/95 backdrop-blur-md">
-          <IonCardHeader className="text-center p-6">
-            <IonCardTitle className="text-xl font-bold text-gray-900">
-              Welcome To Scaler Tech Hub
-            </IonCardTitle>
-            <IonCardSubtitle className="text-gray-600 mt-1 text-sm">
-              Sign in to continue
-            </IonCardSubtitle>
-          </IonCardHeader>
+      <IonContent fullscreen style={{ "--background": "#fafafa" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
+            padding: "20px",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: "'Billabong', cursive",
+              fontSize: "50px",
+              color: "#262626",
+              margin: "0 0 40px",
+            }}
+          >
+            AttendMate
+          </h1>
 
-          <IonCardContent className="space-y-5">
-            <IonItem lines="none" className="rounded-xl border border-gray-300 focus-within:border-indigo-500">
-              <IonIcon icon={personCircle} slot="start" color="medium" />
-              <IonLabel position="stacked" className="text-sm font-medium text-gray-700">
-                Email
-              </IonLabel>
+          <IonCard
+            style={{
+              width: "100%",
+              maxWidth: "350px",
+              borderRadius: "8px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              border: "1px solid #dbdbdb",
+              backgroundColor: "#ffffff",
+              padding: "10px 0",
+            }}
+          >
+            <IonCardContent style={{ padding: "40px 40px 20px" }}>
               <IonInput
                 type="email"
-                placeholder="Enter your email"
-                className="text-gray-900"
+                placeholder="Email"
                 value={email}
                 onIonChange={(e) => setEmail(e.detail.value!)}
+                style={{
+                  "--padding-start": "12px",
+                  "--padding-end": "12px",
+                  "--padding-top": "12px",
+                  "--padding-bottom": "12px",
+                  fontSize: "14px",
+                  border: "1px solid #dbdbdb",
+                  borderRadius: "6px",
+                  color: "#262626",
+                  height: "38px",
+                  marginBottom: "6px",
+                }}
               />
-            </IonItem>
 
-            <IonItem lines="none" className="rounded-xl border border-gray-300 focus-within:border-indigo-500">
-              <IonIcon icon={lockClosed} slot="start" color="medium" />
-              <IonLabel position="stacked" className="text-sm font-medium text-gray-700">
-                Password
-              </IonLabel>
               <IonInput
                 type="password"
-                placeholder="Enter your password"
-                className="text-gray-900"
+                placeholder="Password"
                 value={password}
                 onIonChange={(e) => setPassword(e.detail.value!)}
+                style={{
+                  "--padding-start": "12px",
+                  "--padding-end": "12px",
+                  "--padding-top": "12px",
+                  "--padding-bottom": "12px",
+                  fontSize: "14px",
+                  border: "1px solid #dbdbdb",
+                  borderRadius: "6px",
+                  color: "#262626",
+                  height: "38px",
+                  marginBottom: "12px",
+                }}
               />
-            </IonItem>
 
-            <div className="mt-6 space-y-3">
               <IonButton
                 expand="block"
-                color="primary"
-                className="rounded-xl text-base font-medium shadow-md"
                 onClick={handleLogin}
                 disabled={loading}
+                style={{
+                  "--border-radius": "8px",
+                  height: "44px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  "--background": "#0095f6",
+                  "--color": "#ffffff",
+                  margin: "8px 0",
+                }}
               >
-                {loading ? "Signing In..." : "Sign In"}
+                {loading ? <IonSpinner name="dots" /> : "Log In"}
               </IonButton>
+            </IonCardContent>
+          </IonCard>
 
-              <IonButton fill="clear" color="medium" className="w-full text-sm font-medium hover:text-indigo-600">
-                Forgot Password?
-              </IonButton>
-            </div>
+          <div
+            style={{
+              marginTop: "10px",
+              padding: "20px",
+              width: "100%",
+              maxWidth: "350px",
+              backgroundColor: "#ffffff",
+              border: "1px solid #dbdbdb",
+              borderRadius: "8px",
+              textAlign: "center",
+              fontSize: "14px",
+              color: "#262626",
+            }}
+          >
+            Don’t have an account?{" "}
+            <span style={{ color: "#0095f6", fontWeight: 600 }}>Contact HR</span>
+          </div>
 
-            <div className="text-center text-gray-600 text-sm mt-4">
-              Don't have an account?{" "}
-              <span className="text-indigo-600 font-semibold">Sign Up</span>
-            </div>
-          </IonCardContent>
-        </IonCard>
+          <IonToast
+            isOpen={showToast}
+            message={toastMessage}
+            duration={2000}
+            position="top"
+            onDidDismiss={() => setShowToast(false)}
+            color={toastMessage.includes("successful") ? "success" : "danger"}
+            style={{ "--border-radius": "8px" }}
+          />
 
-        <IonToast
-          isOpen={showToast}
-          onDidDismiss={() => setShowToast(false)}
-          message={toastMessage}
-          duration={2000}
-        />
+          {/* ✅ Autofill fix styles */}
+          <style>
+            {`
+              input:-webkit-autofill,
+              input:-webkit-autofill:hover,
+              input:-webkit-autofill:focus,
+              textarea:-webkit-autofill,
+              textarea:-webkit-autofill:hover,
+              textarea:-webkit-autofill:focus,
+              select:-webkit-autofill,
+              select:-webkit-autofill:hover,
+              select:-webkit-autofill:focus {
+                -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+                -webkit-text-fill-color: #262626 !important;
+                transition: background-color 5000s ease-in-out 0s !important;
+                border: 1px solid #dbdbdb !important;
+                border-radius: 6px !important;
+              }
+
+              ion-input input {
+                background-color: #ffffff !important;
+                color: #262626 !important;
+                border: 1px solid #dbdbdb !important;
+                border-radius: 6px !important;
+              }
+            `}
+          </style>
+        </div>
       </IonContent>
     </IonPage>
   );
