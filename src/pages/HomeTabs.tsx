@@ -13,7 +13,7 @@ import { homeOutline, documentOutline, personOutline } from "ionicons/icons";
 import Homepage from "./Home";
 import History from "./History";
 import Profile from "./Profile";
-import Header from "../components/common/Header"; // ✅ Import Header component
+import Header from "../components/common/Header";
 
 interface TabsProps {
   onLogout: () => void;
@@ -22,30 +22,30 @@ interface TabsProps {
 const HomeTabs: React.FC<TabsProps> = ({ onLogout }) => {
   return (
     <>
-      {/* ✅ Common Header visible on every tab */}
+      {/* Common Header for all tabs */}
       <Header />
 
       <IonTabs>
         <IonRouterOutlet>
-          <Route exact path="/home">
-            <Homepage />
-          </Route>
-
-          <Route exact path="/history">
-            <History />
-          </Route>
-
+          {/* Tab Routes */}
+          <Route exact path="/home" component={Homepage} />
+          <Route exact path="/history" component={History} />
           <Route exact path="/profile">
             <Profile onLogout={onLogout} />
           </Route>
 
-          {/* Redirect default route to /home */}
+          {/* Default redirect to /home */}
           <Route exact path="/">
+            <Redirect to="/home" />
+          </Route>
+
+          {/* Catch-all fallback */}
+          <Route>
             <Redirect to="/home" />
           </Route>
         </IonRouterOutlet>
 
-        {/* ✅ Footer Navigation (Tab Bar) */}
+        {/* Bottom Tab Bar */}
         <IonTabBar slot="bottom" color="light">
           <IonTabButton tab="home" href="/home">
             <IonIcon icon={homeOutline} />
