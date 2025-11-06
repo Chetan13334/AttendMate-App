@@ -13,7 +13,7 @@ import {
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
 import { doc, setDoc, collection, query, getDocs, where, Timestamp, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Geolocation } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import { Skeleton } from './ui/skeleton';
 
 type Status = 'not-checked' | 'checked-in' | 'checked-out';
@@ -44,21 +44,36 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 
 // Check geofence & permissions
 const checkGeoFence = async () => {
-  const permissions = await Geolocation.checkPermissions();
-  if (permissions.location !== "granted") {
-    const req = await Geolocation.requestPermissions();
-    if (req.location !== "granted") throw new Error("Location permission denied");
+  try {
+    const permissions = await Geolocation.checkPermissions();
+    if (permissions.location !== "granted") {
+      // Don't request permissions here, just return false
+      return { inside: false, error: "Location permission not granted" };
+    }
+
+    // Get position with timeout to prevent hanging
+    const positionPromise: Promise<Position> = Geolocation.getCurrentPosition({ 
+      enableHighAccuracy: true,
+      timeout: 10000 // 10 second timeout
+    });
+    
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error("Location timeout")), 10000)
+    );
+
+    const pos = await Promise.race([positionPromise, timeoutPromise]);
+
+    const distance = getDistance(
+      officeLat,
+      officeLng,
+      pos.coords.latitude,
+      pos.coords.longitude
+    );
+
+    return { inside: distance <= GEOFENCE_RADIUS, error: null };
+  } catch (err: any) {
+    return { inside: false, error: err.message || "Location error" };
   }
-
-  const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
-  const distance = getDistance(
-    officeLat,
-    officeLng,
-    pos.coords.latitude,
-    pos.coords.longitude
-  );
-
-  return distance <= GEOFENCE_RADIUS;
 };
 
 const CheckIn_CheckOut: React.FC = () => {
@@ -72,6 +87,8 @@ const CheckIn_CheckOut: React.FC = () => {
   const [pendingAction, setPendingAction] = useState<() => void>(() => {});
   const [employeeId, setEmployeeId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false); // New state for action processing
+  const [showLocationLoader, setShowLocationLoader] = useState(false); // New state for location loader
 
   const loggedInUserEmail = localStorage.getItem('userEmail');
   const today = new Date().toISOString().split('T')[0];
@@ -148,44 +165,83 @@ const CheckIn_CheckOut: React.FC = () => {
 
   const handleCheckIn = async () => {
     if (!employeeId) return;
-    const now = new Date();
-    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
-    await setDoc(docRef, { CheckIn: Timestamp.fromDate(now) }, { merge: true });
-    setStatus('checked-in');
-    setTime(now.toLocaleTimeString());
-    setMsg('Check In Successful');
-    setShowAlert(true);
+    
+    setIsProcessing(true); // Set processing state immediately
+    
+    try {
+      const now = new Date();
+      const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+      await setDoc(docRef, { CheckIn: Timestamp.fromDate(now) }, { merge: true });
+      setStatus('checked-in');
+      setTime(now.toLocaleTimeString());
+      setMsg('Check In Successful');
+      setShowAlert(true);
+    } catch (err) {
+      setMsg('Check In Failed. Please try again.');
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleCheckOut = async () => {
     if (!employeeId) return;
-    const now = new Date();
-    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
-    await setDoc(docRef, { CheckOut: Timestamp.fromDate(now) }, { merge: true });
-    setStatus('checked-out');
-    setTime(now.toLocaleTimeString());
-    setMsg('Checked Out Successfully');
-    setShowAlert(true);
+    
+    setIsProcessing(true); // Set processing state immediately
+    
+    try {
+      const now = new Date();
+      const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+      await setDoc(docRef, { CheckOut: Timestamp.fromDate(now) }, { merge: true });
+      setStatus('checked-out');
+      setTime(now.toLocaleTimeString());
+      setMsg('Checked Out Successfully');
+      setShowAlert(true);
+    } catch (err) {
+      setMsg('Check Out Failed. Please try again.');
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleTap = async () => {
+    // Show processing indicator immediately
+    if (isProcessing) return;
+    
+    // Show location loader
+    setShowLocationLoader(true);
+    
     try {
-      const inside = await checkGeoFence();
+      const { inside, error } = await checkGeoFence();
+      
+      // Hide location loader
+      setShowLocationLoader(false);
+      
       if (!inside) {
-        setMsg("❌ Oops! You are not near the office to mark attendance.");
-        setShowAlert(true);
-        return;
+        if (error) {
+          setMsg(`Location error: ${error}. Proceeding with check-in anyway.`);
+          setShowAlert(true);
+          // Still allow check-in even with location error
+        } else {
+          setMsg("❌ Oops! You are not near the office to mark attendance.");
+          setShowAlert(true);
+          return;
+        }
+      }
+      
+      // Proceed with the action
+      if (status === 'not-checked') {
+        confirmAction(handleCheckIn, 'Check In');
+      } else if (status === 'checked-in') {
+        confirmAction(handleCheckOut, 'Check Out');
       }
     } catch (err: any) {
+      // Hide location loader on error
+      setShowLocationLoader(false);
       setMsg(err.message || "Location error occurred.");
       setShowAlert(true);
       return;
-    }
-
-    if (status === 'not-checked') {
-      confirmAction(handleCheckIn, 'Check In');
-    } else if (status === 'checked-in') {
-      confirmAction(handleCheckOut, 'Check Out');
     }
   };
 
@@ -225,12 +281,14 @@ const CheckIn_CheckOut: React.FC = () => {
         <IonCard
           button
           onClick={handleTap}
+          disabled={isProcessing} // Disable while processing
           style={{
             '--background': '#ffffff',
             '--border-radius': '28px',
             margin: '20px',
             marginTop: '30px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            opacity: isProcessing ? 0.7 : 1, // Visual feedback
           }}
           className="ion-activatable ripple-parent"
         >
@@ -266,9 +324,13 @@ const CheckIn_CheckOut: React.FC = () => {
                   boxShadow: '0 4px 12px rgba(22,188,91,0.3)',
                 }}
               >
-                <IonText color="light" style={{ fontWeight: 700, fontSize: '16px' }}>
-                  CHECK IN
-                </IonText>
+                {isProcessing ? (
+                  <IonSpinner name="crescent" color="light" />
+                ) : (
+                  <IonText color="light" style={{ fontWeight: 700, fontSize: '16px' }}>
+                    CHECK IN
+                  </IonText>
+                )}
               </div>
             </div>
             <h3 style={{ margin: '0 0 8px', fontWeight: 600, fontSize: '18px', color: '#e37704' }}>
@@ -286,12 +348,14 @@ const CheckIn_CheckOut: React.FC = () => {
         <IonCard
           button
           onClick={handleTap}
+          disabled={isProcessing} // Disable while processing
           style={{
             '--background': '#ffffff',
             '--border-radius': '20px',
             margin: '16px',
             marginTop: '24px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            opacity: isProcessing ? 0.7 : 1, // Visual feedback
           }}
           className="ion-activatable ripple-parent"
         >
@@ -307,7 +371,9 @@ const CheckIn_CheckOut: React.FC = () => {
           >
             <IonIcon icon={timeOutline} style={{ fontSize: '36px', color: '#fff', marginRight: '16px' }} />
             <IonText color="light">
-              <h2 style={{ margin: 0, fontWeight: 700, fontSize: '18px' }}>CHECK OUT</h2>
+              <h2 style={{ margin: 0, fontWeight: 700, fontSize: '18px' }}>
+                {isProcessing ? 'PROCESSING...' : 'CHECK OUT'}
+              </h2>
               <p style={{ margin: '4px 0 0', fontSize: '14px' }}>Tap to end your shift</p>
             </IonText>
             <div
@@ -326,7 +392,11 @@ const CheckIn_CheckOut: React.FC = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
               }}
             >
-              <IonIcon icon={checkmarkCircle} style={{ fontSize: '38px', color: '#00BCD4' }} />
+              {isProcessing ? (
+                <IonSpinner name="crescent" color="primary" />
+              ) : (
+                <IonIcon icon={checkmarkCircle} style={{ fontSize: '38px', color: '#00BCD4' }} />
+              )}
             </div>
           </div>
           <IonCardContent style={{ padding: '16px 20px' }}>
@@ -430,15 +500,53 @@ const CheckIn_CheckOut: React.FC = () => {
             Are you sure you want to proceed?
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <IonButton color="success" onClick={executeAction}>
-              <IonIcon icon={checkmark} slot="start" />
-              Confirm
+            <IonButton 
+              color="success" 
+              onClick={executeAction}
+              disabled={isProcessing} // Disable while processing
+            >
+              {isProcessing ? (
+                <IonSpinner name="crescent" slot="start" />
+              ) : (
+                <IonIcon icon={checkmark} slot="start" />
+              )}
+              {isProcessing ? 'Processing...' : 'Confirm'}
             </IonButton>
-            <IonButton fill="outline" color="medium" onClick={() => setShowModal(false)}>
+            <IonButton 
+              fill="outline" 
+              color="medium" 
+              onClick={() => setShowModal(false)}
+              disabled={isProcessing} // Disable while processing
+            >
               <IonIcon icon={close} slot="start" />
               Cancel
             </IonButton>
           </div>
+        </div>
+      </IonModal>
+
+      {/* LOCATION LOADER MODAL */}
+      <IonModal
+        isOpen={showLocationLoader}
+        backdropDismiss={false}
+        mode="ios"
+        style={{
+          '--height': 'auto',
+          '--width': '90%',
+          '--max-width': '300px',
+          '--border-radius': '16px',
+        }}
+      >
+        <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <IonSpinner name="crescent" color="primary" style={{ width: '48px', height: '48px' }} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 8px' }}>
+            Checking Location
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--ion-color-medium)', margin: 0 }}>
+            Please wait while we verify your location...
+          </p>
         </div>
       </IonModal>
 

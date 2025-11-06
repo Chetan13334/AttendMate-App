@@ -20,7 +20,7 @@ const filesToReplace = [
   'ic_launcher_round.png'
 ];
 
-console.log('Changing APK logo to main_logo.png...');
+console.log('Updating APK logo to main_logo.png...');
 
 // Check if source logo exists
 if (!existsSync(sourceLogo)) {
@@ -49,8 +49,5 @@ mipmapDirs.forEach(dir => {
 });
 
 console.log('App icon update complete!');
-
-// Instructions for adaptive icon
-console.log('\nNote: For adaptive icons, you may also need to:');
-console.log('1. Update android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml');
-console.log('2. Consider using a maskable icon for better adaptive icon display');
+console.log('Note: Icons may appear too large/small until properly resized.');
+console.log('See resize_app_icons_instructions.txt for detailed resizing instructions.');
