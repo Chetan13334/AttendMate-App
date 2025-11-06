@@ -12,7 +12,6 @@ import {
 } from "@ionic/react";
 import { personCircleOutline } from "ionicons/icons";
 import Logo from "../assets/main_logo.png";
-// Import the PNG icons
 import ProfileIcon from "../assets/user.png";
 import LogoutIcon from "../assets/logout.png";
 
@@ -34,29 +33,42 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
     <IonHeader>
       <IonToolbar>
 
-        {/* ✅ Left section: Logo + App Name */}
-        <div style={{ display: "flex", alignItems: "center" }} slot="start">
-          <img
-            src={Logo}
-            alt="AttendMate"
-            height={26}
-            width={26}
-            style={{ marginRight: "8px", borderRadius: "6px" }}
-          />
-          <IonTitle
+        {/* ✅ Left: Logo + Title */}
+        <IonButtons slot="start">
+          <div
             style={{
-              fontWeight: 700,
-              fontSize: "1.2rem",
-              color: "#222",
-              padding: 0,
-              margin: 0,
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            {title}
-          </IonTitle>
-        </div>
+            <img
+              src={Logo}
+              alt="AttendMate"
+              height={26}
+              width={26}
+              style={{
+                marginRight: "8px",
+                borderRadius: "6px",
+                marginLeft: "9px",
+              }}
+            />
 
-        {/* ✅ Right Profile Icon */}
+            <IonTitle
+              style={{
+                fontWeight: 700,
+                fontSize: "1.2rem",
+                color: "#222",
+                padding: 0,
+                margin: 0,
+                textAlign: "left",
+              }}
+            >
+              {title}
+            </IonTitle>
+          </div>
+        </IonButtons>
+
+        {/* ✅ Right side profile */}
         <IonButtons slot="end">
           <IonButton
             onClick={(e) => {
@@ -69,7 +81,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
               style={{
                 fontSize: "27px",
                 color: "#555",
-                marginRight: "4px",
               }}
             />
           </IonButton>
@@ -117,6 +128,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
             </IonItem>
           </IonList>
         </IonPopover>
+
       </IonToolbar>
     </IonHeader>
   );
