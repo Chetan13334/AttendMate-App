@@ -23,6 +23,7 @@ import "./theme/variables.css";
 
 setupIonicReact();
 
+
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
