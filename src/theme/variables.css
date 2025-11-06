@@ -1,0 +1,31 @@
+/* src/theme/variables.css */
+:root {
+  --ion-background-color: #ffffff !important;
+  --ion-text-color: #000000 !important;
+
+  --ion-toolbar-background: #ffffff !important;
+  --ion-toolbar-color: #000000 !important;
+
+  --ion-tab-bar-background: #ffffff !important;
+  --ion-tab-bar-color: #666666 !important;
+  --ion-tab-bar-color-selected: #387ef5 !important;
+}
+
+/* Force ALL content to white */
+ion-content,
+ion-page,
+ion-header,
+ion-footer,
+ion-tab-bar {
+  --background: #ffffff !important;
+  background: #ffffff !important;
+  --color: #000000 !important;
+}
+
+/* Remove dark mode override */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #ffffff !important;
+    --ion-text-color: #000000 !important;
+  }
+}

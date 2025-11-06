@@ -1,0 +1,147 @@
+.page-bg {
+  background: #f5f7ff;
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+ion-content.page-bg::part(scroll) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 360px;
+  background: white;
+  border-radius: 22px;
+  padding: 32px;
+  text-align: left;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.06);
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+
+.logo-box {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  background: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,50,0.05);
+}
+
+.logo-image {
+  width: 38px;
+}
+
+.welcome {
+  text-align: center;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  font-weight: 800;
+  font-size: 26px;
+  color: #131822;
+}
+
+.subtext {
+  text-align: center;
+  font-size: 14px;
+  color: #8c92a4;
+  margin-bottom: 28px;
+}
+
+.field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303548;
+  margin-bottom: 6px;
+}
+
+.field-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #b5b8c6;
+}
+
+.field-input {
+  width: 100%;
+  height: 50px;
+  padding-left: 42px;
+  padding-right: 42px;
+  border: 1.5px solid #e5e6eb;
+  border-radius: 12px;
+  background: #fafbfe;
+  font-size: 15px;
+  transition: 0.2s;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.field-input:focus {
+  border-color: #4f65ff;
+  box-shadow: 0 0 0 2px rgba(82,117,255,0.15);
+  outline: none;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  color: #b5b8c6;
+  cursor: pointer;
+}
+
+.forgot-container {
+  text-align: right;
+  margin-top: -6px;
+  margin-bottom: 18px;
+}
+
+.forgot-link {
+  font-size: 13px;
+  color: #4f65ff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.signin-btn {
+  --background: linear-gradient(135deg,#407bff,#4f65ff);
+  --border-radius: 12px;
+  height: 50px;
+  font-weight: 700;
+  box-shadow: 0 2px 14px rgba(74,103,255,0.26);
+  width: 100%;
+}
+
+.signup-text {
+  margin-top: 22px;
+  font-size: 14px;
+  text-align: center;
+  color: #8c92a4;
+}
+
+.signup-link {
+  color: #4f65ff;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 4px;
+}
