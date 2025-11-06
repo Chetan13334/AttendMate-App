@@ -1,3 +1,4 @@
+// src/components/CheckIn_CheckOut.tsx
 import React, { useState, useEffect } from 'react';
 import {
   IonCard,
@@ -242,6 +243,12 @@ const CheckIn_CheckOut: React.FC = () => {
       setMsg(err.message || "Location error occurred.");
       setShowAlert(true);
       return;
+    }
+
+    if (status === 'not-checked') {
+      confirmAction(handleCheckIn, 'Check In');
+    } else if (status === 'checked-in') {
+      confirmAction(handleCheckOut, 'Check Out');
     }
   };
 

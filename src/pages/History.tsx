@@ -150,6 +150,14 @@ const History: React.FC = () => {
   return (
     <IonPage>
     <Header/>
+      {/* Header */}
+      <IonHeader translucent={true}>
+        <IonToolbar color="light">
+          <IonTitle style={{ fontWeight: 600, color: "#1a1a1a" }}>
+            Attendance History
+          </IonTitle>
+        </IonToolbar>
+      </IonHeader>
 
       {/* Content */}
       <IonContent

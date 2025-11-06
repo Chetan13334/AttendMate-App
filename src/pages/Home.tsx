@@ -17,11 +17,13 @@ import Header from "../components/AppHeader";
 import BottomTabs from "../components/BottomTabs";
 
 
+import Footer from "../components/common/Footer"; // ✅ import Footer
 
 const Home: React.FC = () => {
   return (
     <IonPage>
       <Header />
+
 
       {/* ✅ FIXED CONTENT AREA */}
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
@@ -29,6 +31,7 @@ const Home: React.FC = () => {
           style={{
             paddingTop: "var(--ion-safe-area-top, 20px)",
             paddingBottom: "80px", 
+            paddingBottom: "80px", // ✅ Ensures footer visibility
             minHeight: "100vh",
             backgroundColor: "#ffffff",
           }}
@@ -39,6 +42,8 @@ const Home: React.FC = () => {
       </IonContent>
 
       <BottomTabs />
+      {/* ✅ FOOTER */}
+      {/* <Footer /> */}
     </IonPage>
   );
 };

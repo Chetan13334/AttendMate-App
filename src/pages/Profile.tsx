@@ -57,6 +57,11 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
   return (
     <IonPage>
   <Header/>
+      <IonHeader>
+        <IonToolbar color="light">
+          <IonTitle>Profile</IonTitle>
+        </IonToolbar>
+      </IonHeader>
 
       <IonContent style={{ "--background": "#ffffff" }}>
         {loading ? (
