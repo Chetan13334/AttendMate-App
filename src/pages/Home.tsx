@@ -18,14 +18,12 @@ import Header from "../components/AppHeader";
 const Home: React.FC = () => {
   return (
     <IonPage>
-
-      {/* Common Header for all tabs */}
-            <Header />
-      {/* ✅ FIXED CONTENT AREA */}
+      <Header />
+      
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
         <div
           style={{
-            paddingTop: "var(--ion-safe-area-top, 20px)",
+            paddingTop: "var(--ion-safe-area-top, 10px)", // Reduced padding
             paddingBottom: "80px", // ✅ Ensures footer visibility
             minHeight: "100vh",
             backgroundColor: "#ffffff",

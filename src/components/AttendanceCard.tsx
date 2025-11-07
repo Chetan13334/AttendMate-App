@@ -315,8 +315,8 @@ const CheckIn_CheckOut: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 space-y-6">
-        <Skeleton style={{ height: '8rem', borderRadius: '1rem' }} />
+      <div style={{ padding: "20px", margin: "20px" }}>
+        <Skeleton style={{ height: "200px", borderRadius: "28px" }} />
       </div>
     );
   }
@@ -357,7 +357,7 @@ const CheckIn_CheckOut: React.FC = () => {
             '--background': '#ffffff',
             '--border-radius': '28px',
             margin: '20px',
-            marginTop: '8px',
+            marginTop: '10px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
             opacity: isProcessing ? 0.7 : 1,
           }}
@@ -422,7 +422,7 @@ const CheckIn_CheckOut: React.FC = () => {
             '--background': '#ffffff',
             '--border-radius': '20px',
             margin: '16px',
-            marginTop: '24px',
+            marginTop: '10px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             opacity: isProcessing ? 0.7 : 1,
           }}
@@ -481,7 +481,7 @@ const CheckIn_CheckOut: React.FC = () => {
             '--background': '#ffffff',
             '--border-radius': '20px',
             margin: '16px',
-            marginTop: '24px',
+            marginTop: '10px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           }}
         >

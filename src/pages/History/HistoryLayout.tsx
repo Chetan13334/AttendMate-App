@@ -18,6 +18,7 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
+import Skeleton from "../../components/Skeleton";
 
 interface HistoryLayoutProps {
   initials: string;
@@ -106,48 +107,103 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               marginBottom: "10px",
             }}
           >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "#ffffff",
-                color: "#0288D1",
-                fontWeight: "bold",
-                fontSize: "17px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: "10px",
-              }}
-            >
-              {initials}
-            </div>
-            <IonText color="light">
-              <h2
+            {loading ? (
+              <Skeleton width="40px" height="40px" borderRadius="50%" style={{ marginRight: "10px" }} />
+            ) : (
+              <div
                 style={{
-                  margin: 0,
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  color: "white",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "#ffffff",
+                  color: "#0288D1",
+                  fontWeight: "bold",
+                  fontSize: "17px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: "10px",
                 }}
               >
-                Hello, {userName.split(" ")[0]}
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "13px",
-                  opacity: 0.9,
-                  color: "#E1F5FE",
-                }}
-              >
-                Review your daily attendance.
-              </p>
-            </IonText>
+                {initials}
+              </div>
+            )}
+            {loading ? (
+              <>
+                <div>
+                  <Skeleton width="120px" height="16px" style={{ marginBottom: "6px" }} />
+                  <Skeleton width="180px" height="14px" />
+                </div>
+              </>
+            ) : (
+              <IonText color="light">
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    color: "white",
+                  }}
+                >
+                  Hello, {userName.split(" ")[0]}
+                </h2>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "13px",
+                    opacity: 0.9,
+                    color: "#E1F5FE",
+                  }}
+                >
+                  Review your daily attendance.
+                </p>
+              </IonText>
+            )}
           </div>
 
-          {todayRecord && (
+          {loading ? (
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "10px 14px",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
+                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
+                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
+              </div>
+              <div
+                style={{
+                  width: "1px",
+                  height: "30px",
+                  background: "#dcdcdc",
+                }}
+              />
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
+                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
+                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
+              </div>
+              <div
+                style={{
+                  width: "1px",
+                  height: "30px",
+                  background: "#dcdcdc",
+                }}
+              />
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
+                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
+                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
+              </div>
+            </div>
+          ) : todayRecord && (
             <div
               style={{
                 background: "#ffffff",
@@ -204,7 +260,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   style={{
                     margin: 0,
                     fontSize: "15px",
-                    color: "#01579B",
+                    color: "#c62828",
                   }}
                 >
                   {todayRecord.checkOut}
@@ -246,38 +302,68 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
         {/* 📅 Date Range Selector */}
         <div style={{ background: "#f5f7fa", padding: "10px 16px 8px" }}>
-          <IonButton
-            expand="block"
-            fill="solid"
-            color="light"
-            onClick={() => setShowModal(true)}
-            style={{
-              height: "48px",
-              borderRadius: "12px",
-              fontWeight: 600,
-              boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
-              "--color": "#0288D1",
-            }}
-          >
-            <IonIcon
-              slot="start"
-              icon={calendarOutline}
-              style={{ color: "#0288D1" }}
-            />
-            {rangeLabel}
-            <IonIcon
-              slot="end"
-              icon={chevronForwardOutline}
-              style={{ color: "#0288D1" }}
-            />
-          </IonButton>
+          {loading ? (
+            <Skeleton width="100%" height="48px" borderRadius="12px" />
+          ) : (
+            <IonButton
+              expand="block"
+              fill="solid"
+              color="light"
+              onClick={() => setShowModal(true)}
+              style={{
+                height: "48px",
+                borderRadius: "12px",
+                fontWeight: 600,
+                boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+                "--color": "#0288D1",
+              }}
+            >
+              <IonIcon
+                slot="start"
+                icon={calendarOutline}
+                style={{ color: "#0288D1" }}
+              />
+              {rangeLabel}
+              <IonIcon
+                slot="end"
+                icon={chevronForwardOutline}
+                style={{ color: "#0288D1" }}
+              />
+            </IonButton>
+          )}
         </div>
 
         {/* 📋 Attendance History */}
         <div style={{ background: "#f5f7fa", padding: "8px 16px 16px" }}>
           {loading ? (
-            <div style={{ textAlign: "center", padding: "50px 0" }}>
-              <IonSpinner name="crescent" color="primary" />
+            <div>
+              {[...Array(3)].map((_, index) => (
+                <IonCard
+                  key={index}
+                  style={{
+                    borderRadius: "12px",
+                    background: "#ffffff",
+                    marginBottom: "10px",
+                    boxShadow: "0 1px 5px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <IonCardContent>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div>
+                        <Skeleton width="120px" height="15px" style={{ marginBottom: "8px" }} />
+                        <Skeleton width="180px" height="13px" style={{ marginBottom: "6px" }} />
+                        <Skeleton width="100px" height="13px" />
+                      </div>
+                      <Skeleton width="20px" height="20px" />
+                    </div>
+                  </IonCardContent>
+                </IonCard>
+              ))}
             </div>
           ) : records.length > 0 ? (
             records.map((rec, idx) => (
