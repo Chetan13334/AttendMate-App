@@ -29,8 +29,8 @@ const Home: React.FC = () => {
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
         <div
           style={{
-            paddingTop: "var(--ion-safe-area-top, 20px)",
-            paddingBottom: "80px", 
+            paddingTop: "var(--ion-safe-area-top, 10px)",
+            paddingBottom: "4px", 
          // ✅ Ensures footer visibility
             minHeight: "100vh",
             backgroundColor: "#ffffff",

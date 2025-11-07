@@ -1,4 +1,3 @@
-// src/components/CheckIn_CheckOut.tsx
 import React, { useState, useEffect } from 'react';
 import {
   IonCard,
@@ -12,9 +11,21 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
-import { doc, setDoc, collection, query, getDocs, where, Timestamp, getDoc } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  collection,
+  query,
+  getDocs,
+  where,
+  Timestamp,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
+import { AppLauncher } from '@capacitor/app-launcher';
+import { App } from '@capacitor/app';
 import { Skeleton } from './ui/skeleton';
 
 type Status = 'not-checked' | 'checked-in' | 'checked-out';
@@ -30,19 +41,56 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   const dLon = toRad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
-// Non-blocking location check
+const openLocationSettings = async () => {
+  const platform = Capacitor.getPlatform();
+  try {
+    if (platform === 'android') {
+      await AppLauncher.openUrl({
+        url: 'intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end',
+      });
+    } else if (platform === 'ios') {
+      await AppLauncher.openUrl({ url: 'app-settings:' });
+    }
+  } catch (err) {
+    console.error('Error opening location settings:', err);
+  }
+};
+
+// NEW: Robust location enabler
+const enableLocation = async (): Promise<boolean> => {
+  try {
+    // Step 1: Request permission
+    const perm = await Geolocation.requestPermissions();
+    if (perm.location !== 'granted') {
+      return false;
+    }
+
+    // Step 2: Try to get position → this forces location services ON
+    await Geolocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 15000,
+    });
+    return true;
+  } catch (err: any) {
+    console.error('enableLocation error:', err);
+    if (err.message?.includes('Location services') || err.code === 2) {
+      // Location is OFF at system level → open settings
+      await openLocationSettings();
+    }
+    return false;
+  }
+};
+
 const quickGeoCheck = async () => {
   try {
     const pos = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
-      timeout: 8000,
+      timeout: 10000,
     });
     const distance = getDistance(
       officeLat,
@@ -50,9 +98,10 @@ const quickGeoCheck = async () => {
       pos.coords.latitude,
       pos.coords.longitude
     );
-    return { inside: distance <= GEOFENCE_RADIUS, distance };
-  } catch {
-    return { inside: false, distance: 0 };
+    return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
+  } catch (err) {
+    console.error('Geo check error:', err);
+    return { success: false, inside: false, distance: 0 };
   }
 };
 
@@ -64,13 +113,15 @@ const CheckIn_CheckOut: React.FC = () => {
   const [msg, setMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
-  const [pendingAction, setPendingAction] = useState<() => void>(() => {});
+  const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(() => () => {});
   const [employeeId, setEmployeeId] = useState('');
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showLocationLoader, setShowLocationLoader] = useState(false);
+  const [showLocationAlert, setShowLocationAlert] = useState(false);
+  const [showLocationChecking, setShowLocationChecking] = useState(false);
+  const [retryAction, setRetryAction] = useState<(() => void) | null>(null);
 
-  const loggedInUserEmail = localStorage.getItem('userEmail');
+  const loggedInUserEmail = localStorage.getItem('userEmail') || '';
   const today = new Date().toISOString().split('T')[0];
 
   const formatTime = () =>
@@ -89,16 +140,45 @@ const CheckIn_CheckOut: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch employee and record
+  useEffect(() => {
+    let listener: any;
+    
+    const setupListener = async () => {
+      listener = await App.addListener('resume', async () => {
+        // When app resumes from settings, check if location is now enabled
+        const perm = await Geolocation.checkPermissions();
+        if (perm.location === 'granted') {
+          setShowLocationAlert(false);
+          // If there's a pending action to retry, execute it
+          if (retryAction) {
+            retryAction();
+            setRetryAction(null);
+          }
+        }
+      });
+    };
+    
+    setupListener();
+    
+    return () => {
+      if (listener && typeof listener.remove === 'function') {
+        listener.remove();
+      }
+    };
+  }, [retryAction]);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const q = query(collection(db, 'Employee_Details'), where('Email', '==', loggedInUserEmail));
         const snapshot = await getDocs(q);
-        if (snapshot.empty) return;
+        if (snapshot.empty) {
+          setLoading(false);
+          return;
+        }
         const empData = snapshot.docs[0].data();
-        const empId = empData.EmployeeID;
+        const empId = (empData as any).EmployeeID;
         setEmployeeId(empId);
 
         const recordRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId);
@@ -108,14 +188,14 @@ const CheckIn_CheckOut: React.FC = () => {
           const data = record.data();
           if (data.CheckIn && !data.CheckOut) {
             setStatus('checked-in');
-            setTime(data.CheckIn.toDate().toLocaleTimeString());
+            setTime((data.CheckIn as Timestamp).toDate().toLocaleTimeString());
           } else if (data.CheckOut) {
             setStatus('checked-out');
-            setTime(data.CheckOut.toDate().toLocaleTimeString());
+            setTime((data.CheckOut as Timestamp).toDate().toLocaleTimeString());
           }
         }
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
@@ -123,66 +203,99 @@ const CheckIn_CheckOut: React.FC = () => {
     fetchData();
   }, [today, loggedInUserEmail]);
 
-  const confirmAction = (action: () => void, title: string) => {
+  const confirmAction = (action: (inside: boolean) => void, title: string) => {
     setPendingAction(() => action);
     setModalTitle(title);
     setShowModal(true);
   };
 
-  const executeAction = () => {
+  const executeAction = async () => {
     setShowModal(false);
-    pendingAction();
+    setShowLocationChecking(true);
+
+    try {
+      const { success, inside } = await quickGeoCheck();
+      setShowLocationChecking(false);
+
+      if (!success) {
+        setRetryAction(() => executeAction);
+        setShowLocationAlert(true);
+        return;
+      }
+
+      pendingAction(inside);
+    } catch (err) {
+      console.error('executeAction error:', err);
+      setShowLocationChecking(false);
+      setShowLocationAlert(true);
+    }
   };
 
-  const handleCheckIn = async () => {
+  const handleCheckIn = async (inside: boolean) => {
     if (!employeeId) return;
     setIsProcessing(true);
 
-    // Update UI instantly
-    setStatus('checked-in');
-    setTime(new Date().toLocaleTimeString());
-    setMsg('Processing Check-In...');
-    setShowAlert(true);
+    // If user is not in the designated location, prevent check-in
+    if (!inside) {
+      setIsProcessing(false);
+      setMsg('⚠️ Check-In Failed: You are not in the designated location!');
+      setShowAlert(true);
+      return;
+    }
 
-    // Run background Firestore + location
-    (async () => {
-      const { inside } = await quickGeoCheck();
-      const now = new Date();
-      await setDoc(doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId), {
+    const now = new Date();
+    await setDoc(
+      doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId),
+      {
         CheckIn: Timestamp.fromDate(now),
         LocationValid: inside,
-      }, { merge: true });
-      setMsg(inside ? ' Check-In Successful!' : '⚠️ Checked In (Outside Location)');
-      setShowAlert(true);
-      setIsProcessing(false);
-    })();
+      },
+      { merge: true }
+    );
+
+    setStatus('checked-in');
+    setTime(now.toLocaleTimeString());
+    setMsg('✅ Check-In Successful!');
+    setShowAlert(true);
+    setIsProcessing(false);
   };
 
-  const handleCheckOut = async () => {
+  const handleCheckOut = async (inside: boolean) => {
     if (!employeeId) return;
     setIsProcessing(true);
-    setStatus('checked-out');
-    setTime(new Date().toLocaleTimeString());
-    setMsg('Processing Check-Out...');
-    setShowAlert(true);
 
-    (async () => {
-      const { inside } = await quickGeoCheck();
-      const now = new Date();
-      await setDoc(doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId), {
+    // If user is not in the designated location, prevent check-out
+    if (!inside) {
+      setIsProcessing(false);
+      setMsg('⚠️ Check-Out Failed: You are not in the designated location!');
+      setShowAlert(true);
+      return;
+    }
+
+    const now = new Date();
+    await setDoc(
+      doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId),
+      {
         CheckOut: Timestamp.fromDate(now),
         LocationValid: inside,
-      }, { merge: true });
-      setMsg(inside ? ' Checked Out Successfully!' : '⚠️ Checked Out (Outside Location)');
-      setShowAlert(true);
-      setIsProcessing(false);
-    })();
+      },
+      { merge: true }
+    );
+
+    setStatus('checked-out');
+    setTime(now.toLocaleTimeString());
+    setMsg('✅ Check-Out Successful!');
+    setShowAlert(true);
+    setIsProcessing(false);
   };
 
   const handleTap = () => {
     if (isProcessing) return;
-    if (status === 'not-checked') confirmAction(handleCheckIn, 'Check In');
-    else if (status === 'checked-in') confirmAction(handleCheckOut, 'Check Out');
+    if (status === 'not-checked') {
+      confirmAction(handleCheckIn, 'Check In');
+    } else if (status === 'checked-in') {
+      confirmAction(handleCheckOut, 'Check Out');
+    }
   };
 
   if (loading) {
@@ -195,21 +308,44 @@ const CheckIn_CheckOut: React.FC = () => {
 
   return (
     <>
-      {/* === UI UNCHANGED BELOW === */}
+      <style>
+        {`
+          .alert-success {
+            --background: #e8f5e9;
+            --color: #2e7d32;
+            --border-color: #4caf50;
+          }
+          .alert-failed {
+            --background: #ffebee;
+            --color: #c62828;
+            --border-color: #f44336;
+          }
+          .alert-success .alert-button {
+            --background: #4caf50;
+            --color: white;
+          }
+          .alert-failed .alert-button {
+            --background: #f44336;
+            --color: white;
+          }
+        `}
+      </style>
+      
+      {/* ✅ UI remains exactly the same */}
       {status === 'not-checked' && (
         <IonCard
           button
           onClick={handleTap}
           disabled={isProcessing}
+          className="ion-activatable ripple-parent"
           style={{
             '--background': '#ffffff',
             '--border-radius': '28px',
             margin: '20px',
-            marginTop: '30px',
+            marginTop: '8px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
             opacity: isProcessing ? 0.7 : 1,
           }}
-          className="ion-activatable ripple-parent"
         >
           <div
             style={{
@@ -227,7 +363,7 @@ const CheckIn_CheckOut: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 30px',
+                margin: '0 auto 10px',
                 boxShadow: '0 20px 20px rgba(0,0,0,0.1)',
               }}
             >
@@ -266,6 +402,7 @@ const CheckIn_CheckOut: React.FC = () => {
           button
           onClick={handleTap}
           disabled={isProcessing}
+          className="ion-activatable ripple-parent"
           style={{
             '--background': '#ffffff',
             '--border-radius': '20px',
@@ -274,7 +411,6 @@ const CheckIn_CheckOut: React.FC = () => {
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             opacity: isProcessing ? 0.7 : 1,
           }}
-          className="ion-activatable ripple-parent"
         >
           <div
             style={{
@@ -288,7 +424,9 @@ const CheckIn_CheckOut: React.FC = () => {
           >
             <IonIcon icon={timeOutline} style={{ fontSize: '36px', color: '#fff', marginRight: '16px' }} />
             <IonText color="light">
-              <h2 style={{ margin: 0, fontWeight: 700, fontSize: '18px' }}>{isProcessing ? 'PROCESSING...' : 'CHECK OUT'}</h2>
+              <h2 style={{ margin: 0, fontWeight: 700, fontSize: '18px' }}>
+                {isProcessing ? 'PROCESSING...' : 'CHECK OUT'}
+              </h2>
               <p style={{ margin: '4px 0 0', fontSize: '14px' }}>Tap to end your shift</p>
             </IonText>
             <div
@@ -307,7 +445,11 @@ const CheckIn_CheckOut: React.FC = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
               }}
             >
-              {isProcessing ? <IonSpinner name="crescent" color="primary" /> : <IonIcon icon={checkmarkCircle} style={{ fontSize: '38px', color: '#00BCD4' }} />}
+              {isProcessing ? (
+                <IonSpinner name="crescent" color="primary" />
+              ) : (
+                <IonIcon icon={checkmarkCircle} style={{ fontSize: '38px', color: '#00BCD4' }} />
+              )}
             </div>
           </div>
           <IonCardContent style={{ padding: '16px 20px' }}>
@@ -328,16 +470,7 @@ const CheckIn_CheckOut: React.FC = () => {
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           }}
         >
-          <div
-            style={{
-              backgroundColor: '#3880ff',
-              borderRadius: '20px 20px 0 0',
-              padding: '24px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              position: 'relative',
-            }}
-          >
+          <div style={{ backgroundColor: '#3880ff', borderRadius: '20px 20px 0 0', padding: '24px 20px', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <IonIcon icon={timeOutline} style={{ fontSize: '36px', color: '#fff', marginRight: '16px' }} />
             <IonText color="light">
               <h2 style={{ margin: 0, fontWeight: 700, fontSize: '18px' }}>DAY COMPLETE</h2>
@@ -351,7 +484,6 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CONFIRMATION MODAL (unchanged) */}
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -365,48 +497,123 @@ const CheckIn_CheckOut: React.FC = () => {
         }}
       >
         <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              background: 'var(--ion-color-light)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px',
-              boxShadow: '0 4px 16px rgba(56, 128, 255, 0.15)',
-            }}
-          >
-            <IonIcon icon={timeOutline} style={{ fontSize: '48px', color: 'var(--ion-color-primary)' }} />
-          </div>
+          <IonIcon icon={timeOutline} style={{ fontSize: '48px', color: 'var(--ion-color-primary)', marginBottom: '20px' }} />
           <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 8px' }}>Confirm {modalTitle}</h2>
-          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>
-            Are you sure you want to proceed?
-          </p>
+          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>Are you sure you want to proceed?</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <IonButton color="success" onClick={executeAction} disabled={isProcessing}>
               {isProcessing ? <IonSpinner name="crescent" slot="start" /> : <IonIcon icon={checkmark} slot="start" />}
               {isProcessing ? 'Processing...' : 'Confirm'}
             </IonButton>
             <IonButton fill="outline" color="medium" onClick={() => setShowModal(false)} disabled={isProcessing}>
-              <IonIcon icon={close} slot="start" />
-              Cancel
+              <IonIcon icon={close} slot="start" /> Cancel
             </IonButton>
           </div>
         </div>
       </IonModal>
 
-      {/* SAME LOADER MODAL */}
-      <IonModal isOpen={showLocationLoader} backdropDismiss={false} mode="ios">
+      {/* Checking Location - styled like confirmation modal */}
+      <IonModal
+        isOpen={showLocationChecking}
+        backdropDismiss={false}
+        mode="ios"
+        style={{
+          '--height': 'auto',
+          '--width': '90%',
+          '--max-width': '380px',
+          '--border-radius': '24px',
+        }}
+      >
         <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-          <IonSpinner name="crescent" color="primary" style={{ width: '48px', height: '48px' }} />
-          <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: '10px' }}>Checking Location</h2>
-          <p style={{ fontSize: '14px', color: 'var(--ion-color-medium)' }}>Please wait while we verify your location...</p>
+          <IonSpinner name="crescent" color="primary" style={{ width: '48px', height: '48px', marginBottom: '20px' }} />
+          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 8px' }}>Checking Location</h2>
+          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>Please wait while we verify your location...</p>
         </div>
       </IonModal>
 
-      <IonAlert isOpen={showAlert} message={msg} buttons={['OK']} onDidDismiss={() => setShowAlert(false)} />
+      {/* Location Disabled */}
+      <IonAlert
+        isOpen={showLocationAlert}
+        header="Location Required"
+        message="We need your location to verify check-in/out. Tap below to turn it on."
+        buttons={[
+          {
+            text: 'Turn On Location',
+            cssClass: 'alert-button-success',
+            handler: async () => {
+              setShowLocationAlert(false);
+              setShowLocationChecking(true);
+
+              const success = await enableLocation();
+
+              setShowLocationChecking(false);
+
+              if (success && retryAction) {
+                retryAction();
+                setRetryAction(null);
+              } else if (!success) {
+                setMsg('Please turn on location in settings and try again.');
+                setShowAlert(true);
+              }
+            },
+          },
+          {
+            text: 'Cancel',
+            role: 'cancel',
+          },
+        ]}
+      />
+
+      {/* Info Alert - styled like confirmation modal */}
+      <IonModal
+        isOpen={showAlert}
+        onDidDismiss={() => setShowAlert(false)}
+        backdropDismiss={false}
+        mode="ios"
+        style={{
+          '--height': 'auto',
+          '--width': '90%',
+          '--max-width': '380px',
+          '--border-radius': '24px',
+        }}
+      >
+        <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ 
+            width: '60px', 
+            height: '60px', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            backgroundColor: msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? '#ffebee' : '#e8f5e9'
+          }}>
+            <IonIcon 
+              icon={msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? close : checkmark} 
+              style={{ 
+                fontSize: '32px', 
+                color: msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? '#f44336' : '#4caf50' 
+              }} 
+            />
+          </div>
+          <h2 style={{ 
+            fontSize: '22px', 
+            fontWeight: 700, 
+            margin: '0 0 8px',
+            color: msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? '#c62828' : '#2e7d32'
+          }}>
+            {msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? 'Action Failed' : 'Success'}
+          </h2>
+          <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>{msg.replace(/⚠️|✅/g, '').trim()}</p>
+          <IonButton 
+            expand="block" 
+            color={msg.includes('Failed') || msg.includes('Oops') || msg.includes('⚠️') ? 'danger' : 'success'}
+            onClick={() => setShowAlert(false)}
+          >
+            OK
+          </IonButton>
+        </div>
+      </IonModal>
     </>
   );
 };

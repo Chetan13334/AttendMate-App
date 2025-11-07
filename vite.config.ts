@@ -13,10 +13,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 2000,
   },
   optimizeDeps: {
+    // Force re-optimization on startup
+    force: true,
     esbuildOptions: {
       target: "esnext",
       // Disable parallel optimization for memory safety
       legalComments: "none",
     },
-  },
+  }
 });
