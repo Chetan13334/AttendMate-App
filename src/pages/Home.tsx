@@ -12,13 +12,15 @@ import {
 import { personCircleOutline } from "ionicons/icons"; // ✅ Removed logout icon
 import AttendanceCard from "../components/AttendanceCard";
 import EventsSection from "../components/EventsSection";
+import Header from "../components/common/Header";
 import Footer from "../components/common/Footer"; // ✅ import Footer
 
 const Home: React.FC = () => {
   return (
     <IonPage>
 
-
+      {/* Common Header for all tabs */}
+            <Header />
       {/* ✅ FIXED CONTENT AREA */}
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
         <div

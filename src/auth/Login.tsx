@@ -13,7 +13,7 @@ import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (email: string) => void; // ← Now takes email
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -43,16 +43,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       if (!snapshot.empty) {
         // Store the user's email in localStorage for use in other components
-        localStorage.setItem('userEmail', email);
-        
+        localStorage.setItem("userEmail", email);
+
         setToastMessage("Login successful!");
         setShowToast(true);
 
         // ✅ Store login session info
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.setItem("userEmail", email);
-
-        setTimeout(() => onLogin(), 1000);
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userEmail", email);
+        setTimeout(() => {
+          window.location.href = "/home";
+        }, 1000);
+        // ← Pass email
       } else {
         setToastMessage("Invalid email or password");
         setShowToast(true);
@@ -178,7 +180,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             }}
           >
             Don’t have an account?{" "}
-            <span style={{ color: "#0095f6", fontWeight: 600 }}>Contact HR</span>
+            <span style={{ color: "#0095f6", fontWeight: 600 }}>
+              Contact HR
+            </span>
           </div>
 
           {/* Toast */}
