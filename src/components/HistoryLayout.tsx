@@ -86,10 +86,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
         `}
       </style>
 
-      {/* Transparent Header (no shadow) */}
-      <IonHeader translucent={true}>
-        <IonToolbar />
-      </IonHeader>
 
       <IonContent fullscreen color="light">
         {/* Soft Light Blue Header */}

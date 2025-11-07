@@ -9,7 +9,9 @@ const History: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent fullscreen style={{ "--background": "#f5f7fa" }}>
-        <HistoryCom />
+        <div style={{ paddingBottom: "80px" }}>
+          <HistoryCom />
+        </div>
       </IonContent>
       <BottomTabs />
     </IonPage>

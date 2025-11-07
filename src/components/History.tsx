@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { IonPage } from "@ionic/react";
 import { db } from "../firebase";
 import {
   collection,
@@ -179,22 +178,20 @@ const History: React.FC = () => {
   })}`;
 
   return (
-    <IonPage>
-      <HistoryLayout
-        initials={initials}
-        userName={userName}
-        todayRecord={todayRecord}
-        rangeLabel={rangeLabel}
-        loading={loading}
-        records={records}
-        showModal={showModal}
-        startDate={startDate}
-        endDate={endDate}
-        setShowModal={setShowModal}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
-      />
-    </IonPage>
+    <HistoryLayout
+      initials={initials}
+      userName={userName}
+      todayRecord={todayRecord}
+      rangeLabel={rangeLabel}
+      loading={loading}
+      records={records}
+      showModal={showModal}
+      startDate={startDate}
+      endDate={endDate}
+      setShowModal={setShowModal}
+      setStartDate={setStartDate}
+      setEndDate={setEndDate}
+    />
   );
 };
 
