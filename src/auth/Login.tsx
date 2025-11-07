@@ -1,189 +1,196 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   IonPage,
   IonContent,
-  IonCard,
-  IonCardContent,
-  IonButton,
-  IonInput,
   IonToast,
   IonSpinner,
+  IonIcon,
+  IonButton,
 } from "@ionic/react";
+import {
+  eyeOutline,
+  eyeOffOutline,
+  mailOutline,
+  lockClosedOutline,
+} from "ionicons/icons";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import "./Login.css";
+import Logo from "../assets/main_logo.png";
 
 interface LoginProps {
-  onLogin: (email: string) => void; // ← Now takes email
+  onLogin: (email: string) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastColor, setToastColor] = useState<"danger" | "success">("danger");
+  const [showToast, setShowToast] = useState(false);
 
+  const emailRef = useRef(email);
+  const passwordRef = useRef(password);
+  const contentRef = useRef<HTMLIonContentElement>(null);
+
+  // 🔹 Keyboard scroll adjustments for mobile
+  useEffect(() => {
+    const handleKeyboardShow = () => {
+      setTimeout(() => {
+        if (contentRef.current) {
+          contentRef.current.scrollToPoint(0, 100, 300);
+        }
+      }, 100);
+    };
+
+    const handleKeyboardHide = () => {
+      if (contentRef.current) {
+        contentRef.current.scrollToTop(300);
+      }
+    };
+
+    window.addEventListener("keyboardWillShow", handleKeyboardShow);
+    window.addEventListener("keyboardWillHide", handleKeyboardHide);
+
+    return () => {
+      window.removeEventListener("keyboardWillShow", handleKeyboardShow);
+      window.removeEventListener("keyboardWillHide", handleKeyboardHide);
+    };
+  }, []);
+
+  // 🔹 Handle Login
   const handleLogin = async () => {
-    if (!email || !password) {
+    const trimmedEmail = emailRef.current.trim();
+    const trimmedPassword = passwordRef.current.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
       setToastMessage("Please enter email and password");
+      setToastColor("danger");
       setShowToast(true);
       return;
     }
 
     setLoading(true);
+
     try {
-      // ✅ Query Firestore for matching email & password
       const q = query(
         collection(db, "Employee_Details"),
-        where("Email", "==", email),
-        where("Password", "==", password)
+        where("Email", "==", trimmedEmail),
+        where("Password", "==", trimmedPassword)
       );
-
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
-        // Store the user's email in localStorage for use in other components
-        localStorage.setItem("userEmail", email);
+        // ✅ Store session data
+        localStorage.setItem("userEmail", trimmedEmail);
+        localStorage.setItem("isLoggedIn", "true");
 
         setToastMessage("Login successful!");
+        setToastColor("success");
         setShowToast(true);
 
-        // ✅ Store login session info
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("userEmail", email);
+        // Redirect
         setTimeout(() => {
+          setLoading(false);
           window.location.href = "/home";
-        }, 1000);
-        // ← Pass email
+        }, 800);
       } else {
         setToastMessage("Invalid email or password");
+        setToastColor("danger");
         setShowToast(true);
+        setLoading(false);
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Login error:", error);
       setToastMessage("Login failed. Please try again.");
+      setToastColor("danger");
       setShowToast(true);
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <IonPage>
-      <IonContent fullscreen style={{ "--background": "#fafafa" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            padding: "20px",
-            backgroundColor: "#fafafa",
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: "'Billabong', cursive",
-              fontSize: "50px",
-              color: "#262626",
-              margin: "0 0 40px",
-            }}
-          >
-            AttendMate
-          </h1>
-
-          <IonCard
-            style={{
-              width: "100%",
-              maxWidth: "350px",
-              borderRadius: "8px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              border: "1px solid #dbdbdb",
-              backgroundColor: "#ffffff",
-              padding: "10px 0",
-            }}
-          >
-            <IonCardContent style={{ padding: "40px 40px 20px" }}>
-              {/* Email Input */}
-              <IonInput
-                type="email"
-                placeholder="Email"
-                value={email}
-                onIonChange={(e) => setEmail(e.detail.value ?? "")}
-                style={{
-                  "--padding-start": "12px",
-                  "--padding-end": "12px",
-                  "--padding-top": "12px",
-                  "--padding-bottom": "12px",
-                  fontSize: "14px",
-                  border: "1px solid #dbdbdb",
-                  borderRadius: "6px",
-                  color: "#262626",
-                  height: "38px",
-                  marginBottom: "6px",
-                }}
-              />
-
-              {/* Password Input */}
-              <IonInput
-                type="password"
-                placeholder="Password"
-                value={password}
-                onIonChange={(e) => setPassword(e.detail.value ?? "")}
-                style={{
-                  "--padding-start": "12px",
-                  "--padding-end": "12px",
-                  "--padding-top": "12px",
-                  "--padding-bottom": "12px",
-                  fontSize: "14px",
-                  border: "1px solid #dbdbdb",
-                  borderRadius: "6px",
-                  color: "#262626",
-                  height: "38px",
-                  marginBottom: "12px",
-                }}
-              />
-
-              {/* Login Button */}
-              <IonButton
-                expand="block"
-                onClick={handleLogin}
-                disabled={loading}
-                style={{
-                  "--border-radius": "8px",
-                  height: "44px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  "--background": "#0095f6",
-                  "--color": "#ffffff",
-                  margin: "8px 0",
-                }}
-              >
-                {loading ? <IonSpinner name="dots" /> : "Log In"}
-              </IonButton>
-            </IonCardContent>
-          </IonCard>
-
-          <div
-            style={{
-              marginTop: "10px",
-              padding: "20px",
-              width: "100%",
-              maxWidth: "350px",
-              backgroundColor: "#ffffff",
-              border: "1px solid #dbdbdb",
-              borderRadius: "8px",
-              textAlign: "center",
-              fontSize: "14px",
-              color: "#262626",
-            }}
-          >
-            Don’t have an account?{" "}
-            <span style={{ color: "#0095f6", fontWeight: 600 }}>
-              Contact HR
-            </span>
+      <IonContent ref={contentRef} fullscreen className="page-bg" scrollY={true}>
+        <div className="card">
+          {/* Logo */}
+          <div className="logo-box">
+            <img src={Logo} alt="Logo" className="logo-image" />
           </div>
+
+          {/* Title */}
+          <h1 className="welcome">AttendMate</h1>
+          <p className="subtext">Scalar TechHub</p>
+
+          {/* Email */}
+          <label className="field-label">Email Address</label>
+          <div className="field-wrapper">
+            <IonIcon icon={mailOutline} className="field-icon" />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="field-input"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                emailRef.current = e.target.value;
+              }}
+              onFocus={() => {
+                setTimeout(() => {
+                  contentRef.current?.scrollToPoint(0, 100, 300);
+                }, 300);
+              }}
+            />
+          </div>
+
+          {/* Password */}
+          <label className="field-label">Password</label>
+          <div className="field-wrapper">
+            <IonIcon icon={lockClosedOutline} className="field-icon" />
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              className="field-input"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                passwordRef.current = e.target.value;
+              }}
+              onFocus={() => {
+                setTimeout(() => {
+                  contentRef.current?.scrollToPoint(0, 150, 300);
+                }, 300);
+              }}
+            />
+            <IonIcon
+              icon={showPassword ? eyeOffOutline : eyeOutline}
+              onClick={() => setShowPassword(!showPassword)}
+              className="eye-toggle"
+            />
+          </div>
+
+          {/* Forgot Password */}
+          <div className="forgot-container">
+            <span className="forgot-link">Forgot Password?</span>
+          </div>
+
+          {/* Login Button */}
+          <IonButton
+            expand="block"
+            onClick={handleLogin}
+            disabled={loading}
+            className="signin-btn"
+          >
+            {loading ? <IonSpinner name="crescent" /> : "Sign In"}
+          </IonButton>
+
+          {/* Sign Up */}
+          <p className="signup-text">
+            Don't have an account?
+            <span className="signup-link"> Contact HR</span>
+          </p>
 
           {/* Toast */}
           <IonToast
@@ -191,38 +198,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             message={toastMessage}
             duration={2000}
             position="top"
+            color={toastColor}
             onDidDismiss={() => setShowToast(false)}
-            color={toastMessage.includes("successful") ? "success" : "danger"}
-            style={{ "--border-radius": "8px" }}
+            style={{ "--border-radius": "10px" }}
           />
-
-          {/* Autofill Fix */}
-          <style>
-            {`
-              input:-webkit-autofill,
-              input:-webkit-autofill:hover,
-              input:-webkit-autofill:focus,
-              textarea:-webkit-autofill,
-              textarea:-webkit-autofill:hover,
-              textarea:-webkit-autofill:focus,
-              select:-webkit-autofill,
-              select:-webkit-autofill:hover,
-              select:-webkit-autofill:focus {
-                -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-                -webkit-text-fill-color: #262626 !important;
-                transition: background-color 5000s ease-in-out 0s !important;
-                border: 1px solid #dbdbdb !important;
-                border-radius: 6px !important;
-              }
-
-              ion-input input {
-                background-color: #ffffff !important;
-                color: #262626 !important;
-                border: 1px solid #dbdbdb !important;
-                border-radius: 6px !important;
-              }
-            `}
-          </style>
         </div>
       </IonContent>
     </IonPage>

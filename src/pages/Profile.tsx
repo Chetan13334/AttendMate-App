@@ -18,6 +18,8 @@ import {
 } from "ionicons/icons";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import AppHeader from "../components/AppHeader";
+import Skeleton from "../components/Skeleton";
 
 interface ProfileProps {
   onLogout: () => void;
@@ -70,16 +72,77 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar color="light">
-          <IonTitle>Profile</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-
+      <AppHeader title="Profile" />
+      
       <IonContent style={{ "--background": "#ffffff" }}>
         {loading ? (
-          <div className="centered">
-            <IonSpinner name="crescent" />
+          <div style={{ padding: "30px 20px", textAlign: "center" }}>
+            {/* Avatar Skeleton */}
+            <Skeleton width="110px" height="110px" borderRadius="50%" style={{ margin: "0 auto 20px" }} />
+            
+            {/* Name + Email Skeleton */}
+            <Skeleton width="160px" height="22px" style={{ margin: "10px auto 2px" }} />
+            <Skeleton width="200px" height="15px" style={{ margin: "0 auto 20px" }} />
+            
+            {/* Date Joined Skeleton */}
+            <div
+              style={{
+                borderTop: "1px solid #e5e7eb",
+                borderBottom: "1px solid #e5e7eb",
+                padding: "15px 0",
+                marginBottom: "25px",
+              }}
+            >
+              <Skeleton width="80px" height="13px" style={{ margin: "0 auto 6px" }} />
+              <Skeleton width="120px" height="15px" style={{ margin: "6px auto 0" }} />
+            </div>
+            
+            {/* Options Skeleton */}
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "360px",
+                margin: "0 auto",
+                textAlign: "left",
+              }}
+            >
+              {[...Array(3)].map((_, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "14px 10px",
+                    borderBottom: "1px solid #f1f1f1",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <Skeleton width="20px" height="20px" style={{ marginRight: "12px" }} />
+                    <Skeleton width="120px" height="15px" />
+                  </div>
+                  <Skeleton width="18px" height="18px" />
+                </div>
+              ))}
+            </div>
+            
+            {/* Logout Skeleton */}
+            <div
+              style={{
+                marginTop: "30px",
+                width: "100%",
+                maxWidth: "360px",
+                padding: "14px 10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Skeleton width="20px" height="20px" style={{ marginRight: "10px" }} />
+                <Skeleton width="80px" height="15px" />
+              </div>
+            </div>
           </div>
         ) : (
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
@@ -238,15 +301,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
           </div>
         )}
       </IonContent>
-
-      <style>{`
-        .centered {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 85vh;
-        }
-      `}</style>
     </IonPage>
   );
 };

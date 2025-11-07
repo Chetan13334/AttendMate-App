@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IonPage } from "@ionic/react";
-import { db } from "../../firebase";
+import { db } from "../firebase";
 import {
   collection,
   query,
@@ -10,7 +10,7 @@ import {
   getDocs,
   getDoc,
 } from "firebase/firestore";
-import HistoryLayout from "./HistoryLayout";
+import HistoryLayout from "../pages/History/HistoryLayout";
 
 /* --------------------- Utility Functions --------------------- */
 const getInitials = (name: string) =>
@@ -32,7 +32,7 @@ const getDuration = (checkIn: Date, checkOut: Date) => {
 const History: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
   const [todayRecord, setTodayRecord] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 

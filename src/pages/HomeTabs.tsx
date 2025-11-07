@@ -13,6 +13,7 @@ import { homeOutline, documentOutline, personOutline, logOutOutline } from "ioni
 import Homepage from "./Home";
 import History from "./History/History";
 import Profile from "./Profile";
+import AppHeader from "../components/AppHeader";
 
 interface TabsProps {
   onLogout: () => void;
@@ -21,6 +22,7 @@ interface TabsProps {
 const HomeTabs: React.FC<TabsProps> = ({ onLogout }) => {
   return (
     <IonTabs>
+      <AppHeader />
       <IonRouterOutlet>
         <Route exact path="/home" component={Homepage} />
         <Route exact path="/history" component={History} />

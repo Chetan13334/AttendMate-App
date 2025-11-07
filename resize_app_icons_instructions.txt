@@ -1,0 +1,40 @@
+APK Icon Resizing Instructions
+============================
+
+The APK icons are appearing too large because they need to be properly sized for each Android density folder. Follow these steps to fix this:
+
+1. Resize your main_logo.png to the following dimensions:
+   - mipmap-mdpi: 48x48 pixels
+   - mipmap-hdpi: 72x72 pixels
+   - mipmap-xhdpi: 96x96 pixels
+   - mipmap-xxhdpi: 144x144 pixels
+   - mipmap-xxxhdpi: 192x192 pixels
+
+2. Replace the existing files in each folder:
+   - android/app/src/main/res/mipmap-mdpi/
+   - android/app/src/main/res/mipmap-hdpi/
+   - android/app/src/main/res/mipmap-xhdpi/
+   - android/app/src/main/res/mipmap-xxhdpi/
+   - android/app/src/main/res/mipmap-xxxhdpi/
+
+3. Each folder should contain these three files with the correct dimensions:
+   - ic_launcher.png
+   - ic_launcher_foreground.png
+   - ic_launcher_round.png
+
+Alternative Solution (Recommended):
+==================================
+Use Android Studio's Image Asset Studio:
+1. Open your project in Android Studio
+2. Navigate to android/app/src/main/res/
+3. Right-click on the res folder
+4. Select "New" > "Image Asset"
+5. In the Image Asset Studio:
+   - Set "Icon Type" to "Launcher Icons (Adaptive and Legacy)"
+   - Set "Name" to "ic_launcher"
+   - Set "Asset Type" to "Image"
+   - Click on the "Path" field and select your main_logo.png file from src/assets/
+   - Adjust the scaling as needed
+   - Click "Next" and then "Finish"
+
+This will automatically generate all the required icon sizes for different screen densities.
