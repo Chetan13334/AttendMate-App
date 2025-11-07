@@ -9,10 +9,9 @@ import {
   IonModal,
   IonButton,
   IonRippleEffect,
-  IonSpinner,
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
-import { doc, setDoc, collection, query, getDocs, where, Timestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, getDocs, where, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Geolocation } from '@capacitor/geolocation';
 
@@ -30,14 +29,9 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   const R = 6371e3;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -45,19 +39,12 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 // Check geofence & permissions
 const checkGeoFence = async () => {
   const permissions = await Geolocation.checkPermissions();
-  if (permissions.location !== "granted") {
+  if (permissions.location !== 'granted') {
     const req = await Geolocation.requestPermissions();
-    if (req.location !== "granted") throw new Error("Location permission denied");
+    if (req.location !== 'granted') throw new Error('Location permission denied');
   }
-
   const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
-  const distance = getDistance(
-    officeLat,
-    officeLng,
-    pos.coords.latitude,
-    pos.coords.longitude
-  );
-
+  const distance = getDistance(officeLat, officeLng, pos.coords.latitude, pos.coords.longitude);
   return distance <= GEOFENCE_RADIUS;
 };
 
@@ -71,20 +58,20 @@ const CheckIn_CheckOut: React.FC = () => {
   const [modalTitle, setModalTitle] = useState('');
   const [pendingAction, setPendingAction] = useState<() => void>(() => {});
   const [employeeId, setEmployeeId] = useState('');
-  const [loading, setLoading] = useState(true);
 
   const loggedInUserEmail = localStorage.getItem('userEmail');
   const today = new Date().toISOString().split('T')[0];
 
-  const formatTime = () => new Date().toLocaleString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formatTime = () =>
+    new Date().toLocaleString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
 
   useEffect(() => {
     const update = () => setCurrentTime(formatTime());
@@ -93,16 +80,16 @@ const CheckIn_CheckOut: React.FC = () => {
     return () => clearInterval(id);
   }, []);
 
+  // 🔹 Fetch Employee ID once
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
-        const employeeCollection = collection(db, "Employee_Details");
-        const q = query(employeeCollection, where("Email", "==", loggedInUserEmail));
+        const employeeCollection = collection(db, 'Employee_Details');
+        const q = query(employeeCollection, where('Email', '==', loggedInUserEmail));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-          setMsg("Employee not found. Contact administrator.");
+          setMsg('Employee not found. Contact administrator.');
           setShowAlert(true);
           return;
         }
@@ -110,30 +97,36 @@ const CheckIn_CheckOut: React.FC = () => {
         const empData = snapshot.docs[0].data();
         const empId = empData.EmployeeID;
         setEmployeeId(empId);
-
-        const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId);
-        const record = await getDoc(docRef);
-
-        if (record.exists()) {
-          const data = record.data();
-          if (data.CheckIn && !data.CheckOut) {
-            setStatus('checked-in');
-            setTime(data.CheckIn.toDate().toLocaleTimeString());
-          } else if (data.CheckOut) {
-            setStatus('checked-out');
-            setTime(data.CheckOut.toDate().toLocaleTimeString());
-          }
-        } else {
-          setStatus('not-checked');
-        }
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
-  }, [today, loggedInUserEmail]);
+  }, [loggedInUserEmail]);
+
+  // 🔄 Real-time listener for today's attendance
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.CheckIn && !data.CheckOut) {
+          setStatus('checked-in');
+          setTime(data.CheckIn.toDate().toLocaleTimeString());
+        } else if (data.CheckOut) {
+          setStatus('checked-out');
+          setTime(data.CheckOut.toDate().toLocaleTimeString());
+        }
+      } else {
+        setStatus('not-checked');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [employeeId, today]);
 
   const confirmAction = (action: () => void, title: string) => {
     setPendingAction(() => action);
@@ -151,8 +144,6 @@ const CheckIn_CheckOut: React.FC = () => {
     const now = new Date();
     const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
     await setDoc(docRef, { CheckIn: Timestamp.fromDate(now) }, { merge: true });
-    setStatus('checked-in');
-    setTime(now.toLocaleTimeString());
     setMsg('Check In Successful');
     setShowAlert(true);
   };
@@ -162,8 +153,6 @@ const CheckIn_CheckOut: React.FC = () => {
     const now = new Date();
     const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
     await setDoc(docRef, { CheckOut: Timestamp.fromDate(now) }, { merge: true });
-    setStatus('checked-out');
-    setTime(now.toLocaleTimeString());
     setMsg('Checked Out Successfully');
     setShowAlert(true);
   };
@@ -172,12 +161,12 @@ const CheckIn_CheckOut: React.FC = () => {
     try {
       const inside = await checkGeoFence();
       if (!inside) {
-        setMsg("❌ Oops! You are not near the office to mark attendance.");
+        setMsg('❌ Oops! You are not near the office to mark attendance.');
         setShowAlert(true);
         return;
       }
     } catch (err: any) {
-      setMsg(err.message || "Location error occurred.");
+      setMsg(err.message || 'Location error occurred.');
       setShowAlert(true);
       return;
     }
@@ -189,17 +178,9 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full p-6">
-        <IonSpinner name="crescent" />
-        <p className="mt-2">Loading attendance...</p>
-      </div>
-    );
-  }
-
   return (
     <>
+      {/* --- Status Cards --- */}
       {status === 'not-checked' && (
         <IonCard
           button
@@ -253,9 +234,7 @@ const CheckIn_CheckOut: React.FC = () => {
             <h3 style={{ margin: '0 0 8px', fontWeight: 600, fontSize: '18px', color: '#e37704' }}>
               STATUS: Pending
             </h3>
-            <p style={{ margin: 0, fontSize: '15px', color: '#0035f4' }}>
-              {currentTime}
-            </p>
+            <p style={{ margin: 0, fontSize: '15px', color: '#0035f4' }}>{currentTime}</p>
           </div>
           <IonRippleEffect />
         </IonCard>
@@ -402,9 +381,7 @@ const CheckIn_CheckOut: React.FC = () => {
           >
             <IonIcon icon={timeOutline} style={{ fontSize: '48px', color: 'var(--ion-color-primary)' }} />
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 8px' }}>
-            Confirm {modalTitle}
-          </h2>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 8px' }}>Confirm {modalTitle}</h2>
           <p style={{ fontSize: '15px', color: 'var(--ion-color-medium)', margin: '0 0 28px' }}>
             Are you sure you want to proceed?
           </p>

@@ -3,14 +3,16 @@ import { IonPage } from "@ionic/react";
 import { db } from "../../firebase";
 import {
   collection,
-  getDocs,
   query,
   where,
   doc,
+  onSnapshot,
+  getDocs,
   getDoc,
 } from "firebase/firestore";
 import HistoryLayout from "./HistoryLayout";
 
+/* --------------------- Utility Functions --------------------- */
 const getInitials = (name: string) =>
   name
     .split(" ")
@@ -26,11 +28,8 @@ const getDuration = (checkIn: Date, checkOut: Date) => {
   return `${hrs}h ${mins}m`;
 };
 
+/* --------------------- Component --------------------- */
 const History: React.FC = () => {
-  const [startDate, setStartDate] = useState<Date>(
-    new Date(new Date().setDate(new Date().getDate() - 6))
-  );
-  const [endDate, setEndDate] = useState<Date>(new Date());
   const [records, setRecords] = useState<any[]>([]);
   const [todayRecord, setTodayRecord] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +40,13 @@ const History: React.FC = () => {
   const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee";
   const initials = getInitials(userName);
 
-  // Fetch Employee ID
+  // Default range (last 6 days + today)
+  const [startDate, setStartDate] = useState<Date>(
+    new Date(new Date().setDate(new Date().getDate() - 6))
+  );
+  const [endDate, setEndDate] = useState<Date>(new Date());
+
+  /* --------------------- Fetch Employee ID --------------------- */
   useEffect(() => {
     const fetchEmployeeId = async () => {
       if (!userEmail) return;
@@ -62,58 +67,48 @@ const History: React.FC = () => {
     fetchEmployeeId();
   }, [userEmail]);
 
-  // Fetch Attendance
+  /* --------------------- Real-time + Past Records --------------------- */
   useEffect(() => {
     if (!employeeId) return;
 
-    const fetchTodayAttendance = async () => {
-      setLoading(true);
-      try {
-        const today = new Date();
-        const dateKey = `${today.getFullYear()}-${String(
-          today.getMonth() + 1
-        ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    setLoading(true);
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-        const docRef = doc(
-          db,
-          "Employee_CheckIn_CheckOut",
-          dateKey,
-          "employee_records",
-          employeeId
-        );
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
-          const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
-          setTodayRecord({
-            checkIn: checkIn
-              ? checkIn.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Not marked",
-            checkOut: checkOut
-              ? checkOut.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Not marked",
-            duration:
-              checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
-          });
-        } else {
-          setTodayRecord(null);
-        }
-      } catch (err) {
-        console.error("Error fetching today's record:", err);
-      } finally {
-        setLoading(false);
+    /* 🔹 Real-time listener for today's record */
+    const todayRef = doc(
+      db,
+      "Employee_CheckIn_CheckOut",
+      todayKey,
+      "employee_records",
+      employeeId
+    );
+
+    const unsubToday = onSnapshot(todayRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
+        const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
+
+        setTodayRecord({
+          date: new Date(today),
+          checkIn: checkIn
+            ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Not marked",
+          checkOut: checkOut
+            ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Not marked",
+          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+        });
+      } else {
+        setTodayRecord(null);
       }
-    };
+    });
 
-    const fetchRangeData = async () => {
-      setLoading(true);
+    /* 🔹 Fetch last 6 days' records */
+    const fetchPreviousRecords = async () => {
       const allRecords: any[] = [];
       try {
         const start = new Date(startDate);
@@ -125,14 +120,14 @@ const History: React.FC = () => {
             current.getMonth() + 1
           ).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
 
-          const docRef = doc(
+          const recordRef = doc(
             db,
             "Employee_CheckIn_CheckOut",
             dateKey,
             "employee_records",
             employeeId
           );
-          const snap = await getDoc(docRef);
+          const snap = await getDoc(recordRef);
           if (snap.exists()) {
             const data = snap.data();
             const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
@@ -141,35 +136,47 @@ const History: React.FC = () => {
             allRecords.push({
               date: new Date(current),
               checkIn: checkIn
-                ? checkIn.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                 : "Not marked",
               checkOut: checkOut
-                ? checkOut.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                 : "Not marked",
-              duration:
-                checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+              duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
             });
           }
           current.setDate(current.getDate() + 1);
         }
-        setRecords(allRecords);
+
+        /* Sort by date (latest → oldest) */
+        const sorted = allRecords.sort(
+          (a, b) => b.date.getTime() - a.date.getTime()
+        );
+
+        /* Limit to max 6 (default display) */
+        const limited = sorted.slice(0, 6);
+
+        /* Add today's record on top (if available) */
+        const finalRecords =
+          todayRecord && !limited.some((r) => r.date.toDateString() === new Date().toDateString())
+            ? [todayRecord, ...limited]
+            : limited;
+
+        setRecords(finalRecords);
       } catch (err) {
-        console.error("Error fetching range data:", err);
+        console.error("Error fetching past records:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTodayAttendance();
-    fetchRangeData();
+    fetchPreviousRecords();
+
+    return () => {
+      unsubToday();
+    };
   }, [employeeId, startDate, endDate]);
 
+  /* --------------------- Date Range Label --------------------- */
   const rangeLabel = `This Week: ${startDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -178,6 +185,7 @@ const History: React.FC = () => {
     day: "numeric",
   })}`;
 
+  /* --------------------- Render --------------------- */
   return (
     <IonPage>
       <HistoryLayout
