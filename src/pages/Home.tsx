@@ -31,7 +31,7 @@ const Home: React.FC = () => {
           style={{
             paddingTop: "var(--ion-safe-area-top, 20px)",
             paddingBottom: "80px", 
-            paddingBottom: "80px", // ✅ Ensures footer visibility
+         // ✅ Ensures footer visibility
             minHeight: "100vh",
             backgroundColor: "#ffffff",
           }}
