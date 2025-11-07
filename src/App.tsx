@@ -4,7 +4,8 @@ import { IonReactRouter } from "@ionic/react-router";
 import { IonRouterOutlet } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
 
-import HomeTabs from "./pages/Routes";
+import Login from "./auth/Login";
+import HomeTabs from "./pages/HomeTabs";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -32,9 +33,6 @@ const App: React.FC = () => {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("userEmail", email);
     setIsLoggedIn(true);
-    sessionStorage.setItem("isLoggedIn", "true");
-    // Redirect to home page after login
-    window.location.replace("/home");
   };
 
   const handleLogout = () => {
@@ -44,18 +42,6 @@ const App: React.FC = () => {
     setIsLoggedIn(false);
   };
 
-  // Reset login state
-  setIsLoggedIn(false);
-
-  // Remove session values
-  sessionStorage.removeItem("isLoggedIn");
-  sessionStorage.removeItem("userEmail"); // ✅ this line is important
-  
-  // Redirect to root path after logout
-  window.location.replace("/");
-};
-
-  // ---------- Loading ----------
   if (isLoggedIn === null) {
     return (
       <IonApp>

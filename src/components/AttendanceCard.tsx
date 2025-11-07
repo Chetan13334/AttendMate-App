@@ -8,9 +8,10 @@ import {
   IonModal,
   IonButton,
   IonRippleEffect,
+  IonSpinner,
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
-import { doc, setDoc, collection, query, getDocs, where, Timestamp, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, collection, query, getDocs, where, Timestamp, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';

@@ -17,10 +17,8 @@ import {
   mailOutline,
 } from "ionicons/icons";
 import { db } from "../firebase";
-import Header from "../components/AppHeader";
-import BottomTabs from "../components/BottomTabs";
-
 import { collection, query, where, getDocs } from "firebase/firestore";
+import AppHeader from "../components/AppHeader";
 
 interface ProfileProps {
   onLogout: () => void;
@@ -73,7 +71,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
 
   return (
     <IonPage>
-  <Header/>
       <IonHeader>
         <IonToolbar color="light">
           <IonTitle>Profile</IonTitle>
@@ -251,7 +248,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
           height: 85vh;
         }
       `}</style>
-      <BottomTabs />
     </IonPage>
   );
 };

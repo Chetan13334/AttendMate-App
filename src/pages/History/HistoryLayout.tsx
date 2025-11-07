@@ -351,7 +351,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
-        {/* 🩵 Date Range Modal — Light Blue Header Fixed */}
+        {/*  Date Range Modal — Light Blue Header Fixed */}
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
