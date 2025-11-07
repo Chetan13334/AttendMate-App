@@ -8,19 +8,9 @@ import {
   IonModal,
   IonButton,
   IonRippleEffect,
-  IonSpinner,
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
-import {
-  doc,
-  setDoc,
-  collection,
-  query,
-  getDocs,
-  where,
-  Timestamp,
-  getDoc,
-} from 'firebase/firestore';
+import { doc, setDoc, collection, query, getDocs, where, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
@@ -140,6 +130,7 @@ const CheckIn_CheckOut: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // 🔹 Fetch Employee ID once
   useEffect(() => {
     let listener: any;
     
@@ -169,7 +160,6 @@ const CheckIn_CheckOut: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
         const q = query(collection(db, 'Employee_Details'), where('Email', '==', loggedInUserEmail));
         const snapshot = await getDocs(q);
@@ -201,7 +191,31 @@ const CheckIn_CheckOut: React.FC = () => {
       }
     };
     fetchData();
-  }, [today, loggedInUserEmail]);
+  }, [loggedInUserEmail]);
+
+  // 🔄 Real-time listener for today's attendance
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', employeeId);
+
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.CheckIn && !data.CheckOut) {
+          setStatus('checked-in');
+          setTime(data.CheckIn.toDate().toLocaleTimeString());
+        } else if (data.CheckOut) {
+          setStatus('checked-out');
+          setTime(data.CheckOut.toDate().toLocaleTimeString());
+        }
+      } else {
+        setStatus('not-checked');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [employeeId, today]);
 
   const confirmAction = (action: (inside: boolean) => void, title: string) => {
     setPendingAction(() => action);

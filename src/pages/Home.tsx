@@ -17,6 +17,7 @@ import Header from "../components/AppHeader";
 import BottomTabs from "../components/BottomTabs";
 
 
+import Header from "../components/common/Header";
 import Footer from "../components/common/Footer"; // ✅ import Footer
 
 const Home: React.FC = () => {
@@ -24,7 +25,8 @@ const Home: React.FC = () => {
     <IonPage>
       <Header />
 
-
+      {/* Common Header for all tabs */}
+            <Header />
       {/* ✅ FIXED CONTENT AREA */}
       <IonContent color="light" style={{ "--background": "#ffffff" }}>
         <div

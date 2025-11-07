@@ -31,7 +31,24 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
-  const userEmail = sessionStorage.getItem("userEmail");
+  const userEmail = localStorage.getItem("userEmail");
+
+  if (!userEmail) {
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar color="light">
+          <IonTitle>Profile</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <div className="centered">
+          <p>Not logged in. Redirecting...</p>
+        </div>
+      </IonContent>
+    </IonPage>
+  );
+}
 
   useEffect(() => {
     const fetchUserDetails = async () => {

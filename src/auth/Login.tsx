@@ -14,7 +14,7 @@ import "./Login.css";
 import Logo from "../assets/main_logo.png";
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (email: string) => void; // ← Now takes email
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {

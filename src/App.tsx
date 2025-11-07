@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  IonApp,
-  IonSpinner,
-  setupIonicReact,
-} from "@ionic/react";
+import { IonApp, IonSpinner, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
+import { IonRouterOutlet } from "@ionic/react";
+import { Route, Redirect } from "react-router-dom";
 
-import Login from "./auth/Login";
 import HomeTabs from "./pages/Routes";
 
 import "@ionic/react/css/core.css";
@@ -23,18 +20,17 @@ import "./theme/variables.css";
 
 setupIonicReact();
 
-
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  // ---------- Restore login from sessionStorage ----------
   useEffect(() => {
-    const saved = sessionStorage.getItem("isLoggedIn");
+    const saved = localStorage.getItem("isLoggedIn");
     setIsLoggedIn(saved === "true");
   }, []);
 
-  // ---------- Handlers ----------
-  const handleLogin = () => {
+  const handleLogin = (email: string) => {
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userEmail", email);
     setIsLoggedIn(true);
     sessionStorage.setItem("isLoggedIn", "true");
     // Redirect to home page after login
@@ -42,7 +38,11 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-  console.log("🚪 Logging out... clearing session");
+    console.log("Logging out...");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userEmail");
+    setIsLoggedIn(false);
+  };
 
   // Reset login state
   setIsLoggedIn(false);
@@ -74,15 +74,30 @@ const App: React.FC = () => {
     );
   }
 
-  // ---------- Main render ----------
   return (
     <IonApp>
       <IonReactRouter>
-        {isLoggedIn ? (
-          <HomeTabs onLogout={handleLogout} />
-        ) : (
-          <Login onLogin={handleLogin} />
-        )}
+        <IonRouterOutlet>
+          <Route exact path="/">
+            <Redirect to={isLoggedIn ? "/home" : "/login"} />
+          </Route>
+
+          <Route exact path="/login">
+            {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
+          </Route>
+
+          <Route path="/home">
+            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+          </Route>
+
+          <Route path="/profile">
+            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+          </Route>
+
+          <Route path="/history">
+            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+          </Route>
+        </IonRouterOutlet>
       </IonReactRouter>
     </IonApp>
   );
