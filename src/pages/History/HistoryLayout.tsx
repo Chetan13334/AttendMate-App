@@ -52,7 +52,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
     <>
       <style>
         {`
-          /* 🔹 Remove top toolbar shadow & border only */
           ion-header, ion-toolbar {
             --background: transparent;
             --border-width: 0;
@@ -60,13 +59,12 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             border: none !important;
           }
 
-          /* 🔹 Date picker styling */
           input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0);
             opacity: 1;
           }
+
           input[type="date"] {
-            color-scheme: light;
             background-color: #ffffff !important;
             color: #000000 !important;
             border: 1px solid #dcdcdc;
@@ -78,6 +76,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             transition: border-color 0.2s ease-in-out;
           }
+
           input[type="date"]:focus {
             border-color: #4FC3F7;
             outline: none;
@@ -86,13 +85,12 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
         `}
       </style>
 
-      {/* Transparent Header (no shadow) */}
       <IonHeader translucent={true}>
         <IonToolbar />
       </IonHeader>
 
       <IonContent fullscreen color="light">
-        {/* Soft Light Blue Header */}
+        {/* 🩵 Soft Light Blue Header */}
         <div
           style={{
             backgroundColor: "#4FC3F7",
@@ -101,7 +99,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             borderBottomRightRadius: "18px",
           }}
         >
-          {/* Profile Section */}
           <div
             style={{
               display: "flex",
@@ -150,7 +147,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             </IonText>
           </div>
 
-          {/* Unified Info Bar */}
           {todayRecord && (
             <div
               style={{
@@ -248,7 +244,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
-        {/* Date Range Selector */}
+        {/* 📅 Date Range Selector */}
         <div style={{ background: "#f5f7fa", padding: "10px 16px 8px" }}>
           <IonButton
             expand="block"
@@ -277,7 +273,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           </IonButton>
         </div>
 
-        {/* Attendance History */}
+        {/* 📋 Attendance History */}
         <div style={{ background: "#f5f7fa", padding: "8px 16px 16px" }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: "50px 0" }}>
@@ -355,7 +351,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
-        {/* Date Range Modal */}
+        {/* 🩵 Date Range Modal — Light Blue Header Fixed */}
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
@@ -363,23 +359,36 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           breakpoints={[0, 0.7, 1]}
         >
           <IonHeader>
-            <IonToolbar color="primary">
+            <IonToolbar
+              style={{
+                backgroundColor: "#16a6e9ff", // 🩵 light blue (same as header)
+                color: "white",
+              }}
+            >
               <IonText
                 slot="start"
-                style={{ padding: "12px", fontWeight: 600, color: "white" }}
+                style={{
+                  padding: "12px",
+                  fontWeight: 600,
+                  color: "White",
+                }}
               >
                 Select Date Range
               </IonText>
               <IonButton
                 slot="end"
                 fill="clear"
-                color="light"
+                style={{
+                  color: "white",
+                  fontWeight: 600,
+                }}
                 onClick={() => setShowModal(false)}
               >
                 Done
               </IonButton>
             </IonToolbar>
           </IonHeader>
+
           <IonContent className="ion-padding">
             <p style={{ marginBottom: "8px", fontWeight: 600 }}>Start Date</p>
             <input
@@ -388,6 +397,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               onChange={(e) => setStartDate(new Date(e.target.value))}
               max={new Date().toISOString().split("T")[0]}
             />
+
             <p
               style={{
                 marginBottom: "8px",

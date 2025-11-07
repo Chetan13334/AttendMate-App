@@ -92,22 +92,40 @@ const History: React.FC = () => {
         const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
         const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
 
-        setTodayRecord({
+        const updatedRecord = {
           date: new Date(today),
           checkIn: checkIn
-            ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? checkIn.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "Not marked",
           checkOut: checkOut
-            ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? checkOut.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "Not marked",
           duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+        };
+
+        setTodayRecord(updatedRecord);
+
+        // 🔄 Also update the same record inside list view in real-time
+        setRecords((prev) => {
+          const otherRecords = prev.filter(
+            (r) => r.date.toDateString() !== updatedRecord.date.toDateString()
+          );
+          return [updatedRecord, ...otherRecords].sort(
+            (a, b) => b.date.getTime() - a.date.getTime()
+          );
         });
       } else {
         setTodayRecord(null);
       }
     });
 
-    /* 🔹 Fetch last 6 days' records */
+    /* 🔹 Fetch last 6 days' records once */
     const fetchPreviousRecords = async () => {
       const allRecords: any[] = [];
       try {
@@ -136,32 +154,43 @@ const History: React.FC = () => {
             allRecords.push({
               date: new Date(current),
               checkIn: checkIn
-                ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                ? checkIn.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : "Not marked",
               checkOut: checkOut
-                ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                ? checkOut.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : "Not marked",
-              duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+              duration:
+                checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
             });
           }
           current.setDate(current.getDate() + 1);
         }
 
-        /* Sort by date (latest → oldest) */
         const sorted = allRecords.sort(
           (a, b) => b.date.getTime() - a.date.getTime()
         );
-
-        /* Limit to max 6 (default display) */
         const limited = sorted.slice(0, 6);
 
-        /* Add today's record on top (if available) */
-        const finalRecords =
-          todayRecord && !limited.some((r) => r.date.toDateString() === new Date().toDateString())
-            ? [todayRecord, ...limited]
-            : limited;
-
-        setRecords(finalRecords);
+        // Merge today’s record cleanly
+        setRecords((prev) => {
+          const finalList = [...limited];
+          if (
+            todayRecord &&
+            !finalList.some(
+              (r) =>
+                r.date.toDateString() === new Date(todayRecord.date).toDateString()
+            )
+          ) {
+            finalList.unshift(todayRecord);
+          }
+          return finalList.sort((a, b) => b.date.getTime() - a.date.getTime());
+        });
       } catch (err) {
         console.error("Error fetching past records:", err);
       } finally {
