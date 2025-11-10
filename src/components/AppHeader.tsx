@@ -33,7 +33,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
     <IonHeader>
       <IonToolbar>
 
-        {/* ✅ Left: Logo + Title */}
         <IonButtons slot="start">
           <div
             style={{
@@ -68,7 +67,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
           </div>
         </IonButtons>
 
-        {/* ✅ Right side profile */}
         <IonButtons slot="end">
           <IonButton
             onClick={(e) => {
@@ -86,7 +84,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
           </IonButton>
         </IonButtons>
 
-        {/* ✅ Popover */}
         <IonPopover
           event={popoverEvent}
           isOpen={showPopover}

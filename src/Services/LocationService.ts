@@ -2,10 +2,11 @@
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { AppLauncher } from '@capacitor/app-launcher';
+import { officeLocation } from '../config/constants';
 
-const officeLat = 18.5564913;
-const officeLng = 73.9550623;
-const GEOFENCE_RADIUS = 14;
+const officeLat = officeLocation.latitude;
+const officeLng = officeLocation.longitude;
+const GEOFENCE_RADIUS = officeLocation.radius
 
 const toRad = (value: number) => (value * Math.PI) / 180;
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {

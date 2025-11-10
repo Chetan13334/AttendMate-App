@@ -1,28 +1,26 @@
-// src/services/attendanceService.ts
-import { db } from '../firebase';
+
 import {
-  doc,
   setDoc,
-  collection,
   query,
   getDocs,
   where,
   Timestamp,
   onSnapshot,
   getDoc,
-} from 'firebase/firestore';
+} from "firebase/firestore";
+import { DB } from "../config/databaseConfig";
+
 
 export const fetchEmployeeId = async (email: string) => {
-  const q = query(collection(db, 'Employee_Details'), where('Email', '==', email));
+  const q = query(DB.collections.Employee_Details, where("Email", "==", email));
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
-
   const empData = snapshot.docs[0].data();
   return (empData as any).EmployeeID;
 };
 
 export const fetchTodayRecord = async (today: string, empId: string) => {
-  const recordRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId);
+  const recordRef = DB.employeeRecord(today, empId);
   const record = await getDoc(recordRef);
   return record.exists() ? record.data() : null;
 };
@@ -30,7 +28,7 @@ export const fetchTodayRecord = async (today: string, empId: string) => {
 export const saveCheckIn = async (today: string, empId: string, inside: boolean) => {
   const now = new Date();
   await setDoc(
-    doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId),
+    DB.employeeRecord(today, empId),
     { CheckIn: Timestamp.fromDate(now), LocationValid: inside },
     { merge: true }
   );
@@ -40,7 +38,7 @@ export const saveCheckIn = async (today: string, empId: string, inside: boolean)
 export const saveCheckOut = async (today: string, empId: string, inside: boolean) => {
   const now = new Date();
   await setDoc(
-    doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId),
+    DB.employeeRecord(today, empId),
     { CheckOut: Timestamp.fromDate(now), LocationValid: inside },
     { merge: true }
   );
@@ -48,7 +46,7 @@ export const saveCheckOut = async (today: string, empId: string, inside: boolean
 };
 
 export const listenToAttendance = (today: string, empId: string, callback: Function) => {
-  const docRef = doc(db, 'Employee_CheckIn_CheckOut', today, 'employee_records', empId);
+  const docRef = DB.employeeRecord(today, empId);
   return onSnapshot(docRef, (snapshot) => {
     callback(snapshot.exists() ? snapshot.data() : null);
   });

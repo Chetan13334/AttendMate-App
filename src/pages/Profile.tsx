@@ -77,14 +77,14 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
       <IonContent style={{ "--background": "#ffffff" }}>
         {loading ? (
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
-            {/* Avatar Skeleton */}
+            
             <Skeleton width="110px" height="110px" borderRadius="50%" style={{ margin: "0 auto 20px" }} />
             
-            {/* Name + Email Skeleton */}
+           
             <Skeleton width="160px" height="22px" style={{ margin: "10px auto 2px" }} />
             <Skeleton width="200px" height="15px" style={{ margin: "0 auto 20px" }} />
             
-            {/* Date Joined Skeleton */}
+           
             <div
               style={{
                 borderTop: "1px solid #e5e7eb",
@@ -96,8 +96,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               <Skeleton width="80px" height="13px" style={{ margin: "0 auto 6px" }} />
               <Skeleton width="120px" height="15px" style={{ margin: "6px auto 0" }} />
             </div>
-            
-            {/* Options Skeleton */}
+        
             <div
               style={{
                 width: "100%",
@@ -126,7 +125,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               ))}
             </div>
             
-            {/* Logout Skeleton */}
+       
             <div
               style={{
                 marginTop: "30px",
@@ -146,7 +145,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
           </div>
         ) : (
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
-            {/* Avatar */}
+         
             <div
               style={{
                 width: "110px",
@@ -166,7 +165,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               {userData?.Name ? userData.Name.charAt(0).toUpperCase() : "U"}
             </div>
 
-            {/* Name + Email */}
+       
             <h2
               style={{
                 margin: "10px 0 2px",
@@ -187,7 +186,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               {userData?.Email || "No email found"}
             </p>
 
-            {/* Date Joined */}
+            
             <div
               style={{
                 borderTop: "1px solid #e5e7eb",
@@ -211,7 +210,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               </p>
             </div>
 
-            {/* Options */}
+       
             <div
               style={{
                 width: "100%",
@@ -259,7 +258,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               ))}
             </div>
 
-            {/* Logout */}
+        
             <div
               style={{
                 marginTop: "30px",
@@ -287,7 +286,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               </div>
             </div>
 
-            {/* Logout Alert */}
             <IonAlert
               isOpen={showLogoutAlert}
               header="Confirm Logout"

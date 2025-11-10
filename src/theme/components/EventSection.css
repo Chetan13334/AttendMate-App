@@ -1,0 +1,141 @@
+.events-wrapper {
+  background-color: #ffffff;
+  padding: 0 14px;
+  margin-top: 8px;
+  margin-bottom: 80px;
+}
+
+
+.birthday-card {
+  border-radius: 18px;
+  background-color: #fff8e1;
+  margin-bottom: 6px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.birthday-card-content {
+  padding: 10px;
+}
+
+.birthday-icon {
+  width: 36px;
+  height: 36px;
+  background-color: #ffca28;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.birthday-icon-inner {
+  font-size: 22px;
+  color: #fff;
+}
+
+.birthday-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: #333;
+}
+
+.birthday-msg {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #555;
+}
+
+
+.event-header {
+  font-weight: 700;
+  font-size: 17px;
+  margin: 10px 0 6px 0;
+  color: #000;
+}
+
+
+.event-card {
+  border-radius: 18px;
+  min-height: 54px;
+  margin-bottom: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+
+.yellow-theme {
+  background-color: #fff8e1;
+}
+
+.green-theme {
+  background-color: #e8f5e9;
+}
+
+.red-theme {
+  background-color: #ffebee;
+}
+
+.blue-theme {
+  background-color: #e3f2fd;
+}
+
+
+.event-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.yellow-theme .event-icon {
+  background-color: #ffca28;
+}
+
+.green-theme .event-icon {
+  background-color: #4caf50;
+}
+
+.red-theme .event-icon {
+  background-color: #e53935;
+}
+
+.blue-theme .event-icon {
+  background-color: #2196f3;
+}
+
+.event-icon-inner {
+  font-size: 22px;
+  color: #fff !important;
+}
+
+
+.event-grid {
+  padding: 8px 6px;
+}
+
+.event-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.event-date {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  color: #666;
+}
+
+.loading {
+  background-color: #e3f2fd;
+  padding: 6px 10px;
+}
+
+
+.no-events {
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+  margin-top: 4px;
+}
