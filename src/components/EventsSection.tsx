@@ -284,6 +284,40 @@ const EventsSection: React.FC = () => {
               <IonGrid style={{ padding: "6px 0" }}>
                 <IonRow className="ion-align-items-center">
                   <IonCol size="2">
+                    <Skeleton width="36px" height="36px" borderRadius="8px" />
+                  </IonCol>
+                  <IonCol size="10">
+                    <Skeleton
+                      width="120px"
+                      height="14px"
+                      style={{ marginBottom: "3px" }}
+                    />
+                    <Skeleton width="90px" height="12px" />
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </IonCard>
+          ))}
+        </div>
+      ) : sortedEvents.length === 0 ? (
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "14px",
+            color: "#777",
+            marginTop: "4px",
+          }}
+        >
+          No upcoming events found.
+        </p>
+      ) : (
+        visibleEvents.map((ev) => {
+          const theme = getThemeClass(ev.event_theme);
+          return (
+            <IonCard key={ev.id} className={`event-card ${theme}-theme`}>
+              <IonGrid className="event-grid">
+                <IonRow className="ion-align-items-center">
+                  <IonCol size="2">
                     <Skeleton style={{ width: "36px", height: "36px", borderRadius: "8px" }} />
                   </IonCol>
                   <IonCol size="10">
