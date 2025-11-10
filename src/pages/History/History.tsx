@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IonPage } from "@ionic/react";
 import { db } from "../../firebase";
 import {
@@ -40,11 +40,12 @@ const History: React.FC = () => {
   const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee";
   const initials = getInitials(userName);
 
-  // Default range (last 6 days + today)
   const [startDate, setStartDate] = useState<Date>(
     new Date(new Date().setDate(new Date().getDate() - 6))
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
+
+  const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /* --------------------- Fetch Employee ID --------------------- */
   useEffect(() => {
@@ -77,7 +78,6 @@ const History: React.FC = () => {
       today.getMonth() + 1
     ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-    /* 🔹 Real-time listener for today's record */
     const todayRef = doc(
       db,
       "Employee_CheckIn_CheckOut",
@@ -86,46 +86,107 @@ const History: React.FC = () => {
       employeeId
     );
 
+    // 🟢 Real-time listener
     const unsubToday = onSnapshot(todayRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
-        const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
+      if (liveTimerRef.current) clearInterval(liveTimerRef.current);
 
-        const updatedRecord = {
-          date: new Date(today),
-          checkIn: checkIn
-            ? checkIn.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Not marked",
-          checkOut: checkOut
-            ? checkOut.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Not marked",
-          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+      // 🧹 Case 1: Record deleted
+      if (!snap.exists()) {
+        console.log("🧹 Record deleted → clearing todayRecord and records");
+        setTodayRecord(null);
+        setRecords((prev) =>
+          prev.filter((r) => r.date.toDateString() !== today.toDateString())
+        );
+        return;
+      }
+
+      const data = snap.data();
+      const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
+      const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
+
+      // 🟢 Case 2: Ongoing Check-in (either new or existing)
+      if (checkIn && !checkOut) {
+        console.log("⏱ Ongoing Check-in detected → starting live updates");
+
+        const updateLiveDuration = () => {
+          const now = new Date();
+          const liveDuration = getDuration(checkIn, now);
+
+          const liveRecord = {
+            date: new Date(today),
+            checkIn: checkIn.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            checkOut: "Not marked",
+            duration: liveDuration,
+          };
+
+          // Update both todayRecord & list
+          setTodayRecord(liveRecord);
+          setRecords((prev) => {
+            const others = prev.filter(
+              (r) => r.date.toDateString() !== today.toDateString()
+            );
+            return [liveRecord, ...others].sort(
+              (a, b) => b.date.getTime() - a.date.getTime()
+            );
+          });
         };
 
-        setTodayRecord(updatedRecord);
+        // Initial + schedule every 30 sec for smoother updates
+        updateLiveDuration();
+        liveTimerRef.current = setInterval(updateLiveDuration, 30000);
+        return;
+      }
 
-        // 🔄 Also update the same record inside list view in real-time
+      // 🟢 Case 3: Finalized Check-out
+      if (checkIn && checkOut) {
+        console.log("✅ Checked out → stopping timer and finalizing");
+        if (liveTimerRef.current) clearInterval(liveTimerRef.current);
+
+        const finalDuration = getDuration(checkIn, checkOut);
+        const finalRecord = {
+          date: new Date(today),
+          checkIn: checkIn.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          checkOut: checkOut.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          duration: finalDuration,
+        };
+
+        setTodayRecord(finalRecord);
         setRecords((prev) => {
-          const otherRecords = prev.filter(
-            (r) => r.date.toDateString() !== updatedRecord.date.toDateString()
+          const others = prev.filter(
+            (r) => r.date.toDateString() !== today.toDateString()
           );
-          return [updatedRecord, ...otherRecords].sort(
+          return [finalRecord, ...others].sort(
             (a, b) => b.date.getTime() - a.date.getTime()
           );
         });
-      } else {
-        setTodayRecord(null);
+        return;
+      }
+
+      // 🟢 Case 4: No Check-in yet
+      if (!checkIn && !checkOut) {
+        console.log("🕒 No check-in found for today");
+        setTodayRecord({
+          date: new Date(today),
+          checkIn: "Not marked",
+          checkOut: "Not marked",
+          duration: "N/A",
+        });
+        setRecords((prev) =>
+          prev.filter((r) => r.date.toDateString() !== today.toDateString())
+        );
       }
     });
 
-    /* 🔹 Fetch last 6 days' records once */
+    // 🔹 Fetch past records
     const fetchPreviousRecords = async () => {
       const allRecords: any[] = [];
       try {
@@ -175,22 +236,7 @@ const History: React.FC = () => {
         const sorted = allRecords.sort(
           (a, b) => b.date.getTime() - a.date.getTime()
         );
-        const limited = sorted.slice(0, 6);
-
-        // Merge today’s record cleanly
-        setRecords((prev) => {
-          const finalList = [...limited];
-          if (
-            todayRecord &&
-            !finalList.some(
-              (r) =>
-                r.date.toDateString() === new Date(todayRecord.date).toDateString()
-            )
-          ) {
-            finalList.unshift(todayRecord);
-          }
-          return finalList.sort((a, b) => b.date.getTime() - a.date.getTime());
-        });
+        setRecords(sorted);
       } catch (err) {
         console.error("Error fetching past records:", err);
       } finally {
@@ -202,10 +248,10 @@ const History: React.FC = () => {
 
     return () => {
       unsubToday();
+      if (liveTimerRef.current) clearInterval(liveTimerRef.current);
     };
   }, [employeeId, startDate, endDate]);
 
-  /* --------------------- Date Range Label --------------------- */
   const rangeLabel = `This Week: ${startDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -214,7 +260,6 @@ const History: React.FC = () => {
     day: "numeric",
   })}`;
 
-  /* --------------------- Render --------------------- */
   return (
     <IonPage>
       <HistoryLayout
