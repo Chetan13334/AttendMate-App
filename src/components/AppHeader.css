@@ -1,11 +1,10 @@
-/* AppHeader.css - Empty file for now, can be used for custom styling later */.app-header-toolbar {
+.app-header-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 8px;
 }
 
-/* Left section */
 .header-left {
   display: flex;
   align-items: center;
@@ -24,7 +23,6 @@
   color: #222;
 }
 
-/* Right section */
 .header-right {
   display: flex;
   align-items: center;
@@ -41,7 +39,6 @@
   color: #333;
 }
 
-/* Profile image */
 .profile-btn {
   margin: 0 4px;
   --padding-start: 4px;
@@ -55,7 +52,6 @@
   object-fit: cover;
 }
 
-/* Responsive adjustments */
 @media (max-width: 480px) {
   .app-title {
     font-size: 16px;

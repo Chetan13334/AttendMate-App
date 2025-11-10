@@ -5,7 +5,7 @@ import { IonRouterOutlet } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
 
 import Login from "./auth/Login";
-import HomeTabs from "./pages/HomeTabs";
+import HomeTabs from "./routes/Routing";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";

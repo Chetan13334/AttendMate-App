@@ -15,7 +15,7 @@ import {
 } from "ionicons/icons";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import "./Login.css";
+import "../theme/components/Login.css";
 import Logo from "../assets/main_logo.png";
 
 interface LoginProps {
@@ -35,7 +35,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const passwordRef = useRef(password);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
-  // 🔹 Keyboard scroll adjustments for mobile
   useEffect(() => {
     const handleKeyboardShow = () => {
       setTimeout(() => {
@@ -60,7 +59,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     };
   }, []);
 
-  // 🔹 Handle Login
   const handleLogin = async () => {
     const trimmedEmail = emailRef.current.trim();
     const trimmedPassword = passwordRef.current.trim();
@@ -83,7 +81,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
-        // ✅ Store session data
         localStorage.setItem("userEmail", trimmedEmail);
         localStorage.setItem("isLoggedIn", "true");
 
@@ -91,7 +88,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setToastColor("success");
         setShowToast(true);
 
-        // Redirect
         setTimeout(() => {
           setLoading(false);
           window.location.href = "/home";
@@ -115,16 +111,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <IonPage>
       <IonContent ref={contentRef} fullscreen className="page-bg" scrollY={true}>
         <div className="card">
-          {/* Logo */}
           <div className="logo-box">
             <img src={Logo} alt="Logo" className="logo-image" />
           </div>
 
-          {/* Title */}
           <h1 className="welcome">AttendMate</h1>
           <p className="subtext">Scalar TechHub</p>
 
-          {/* Email */}
           <label className="field-label">Email Address</label>
           <div className="field-wrapper">
             <IonIcon icon={mailOutline} className="field-icon" />
@@ -145,7 +138,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             />
           </div>
 
-          {/* Password */}
           <label className="field-label">Password</label>
           <div className="field-wrapper">
             <IonIcon icon={lockClosedOutline} className="field-icon" />
@@ -171,12 +163,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             />
           </div>
 
-          {/* Forgot Password */}
           <div className="forgot-container">
             <span className="forgot-link">Forgot Password?</span>
           </div>
 
-          {/* Login Button */}
           <IonButton
             expand="block"
             onClick={handleLogin}
@@ -186,13 +176,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             {loading ? <IonSpinner name="crescent" /> : "Sign In"}
           </IonButton>
 
-          {/* Sign Up */}
           <p className="signup-text">
             Don't have an account?
             <span className="signup-link"> Contact HR</span>
           </p>
 
-          {/* Toast */}
           <IonToast
             isOpen={showToast}
             message={toastMessage}

@@ -24,7 +24,6 @@ const Skeleton: React.FC<SkeletonProps> = ({
     ...style
   };
 
-  // Add keyframes for animation
   const styleWithKeyframes = `
     @keyframes pulse {
       0% { opacity: 1; }

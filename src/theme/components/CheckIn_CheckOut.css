@@ -1,0 +1,183 @@
+.skeleton-wrapper {
+  padding: 20px;
+  margin: 20px;
+}
+
+.checkin-card {
+  --background: #ffffff;
+  --border-radius: 28px;
+  margin: 20px;
+  margin-top: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.checkin-header {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  padding: 50px 20px 40px;
+  text-align: center;
+}
+
+.checkin-circle-outer {
+  width: 120px;
+  height: 120px;
+  background-color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  box-shadow: 0 20px 20px rgba(0, 0, 0, 0.1);
+}
+
+.checkin-circle-inner {
+  width: 100px;
+  height: 100px;
+  background-color: #16bc5b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(22, 188, 91, 0.3);
+}
+
+.checkin-status {
+  margin: 0 0 8px;
+  font-weight: 600;
+  font-size: 18px;
+  color: #e37704;
+}
+
+.checkin-time {
+  margin: 0;
+  font-size: 15px;
+  color: #0035f4;
+}
+
+.checkedin-card {
+  --background: #ffffff;
+  --border-radius: 20px;
+  margin: 16px;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkedin-header {
+  background-color: #00bcd4;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.checkedin-icon {
+  font-size: 36px;
+  color: #fff;
+  margin-right: 16px;
+}
+
+.checkedin-badge {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.checkedin-badge-icon {
+  font-size: 38px;
+  color: #00bcd4;
+}
+
+.checkedin-content h4 {
+  margin: 0;
+  font-weight: 600;
+  color: #29c546;
+}
+
+.checkedin-content p {
+  margin: 6px 0 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.checkedout-card {
+  --background: #ffffff;
+  --border-radius: 20px;
+  margin: 16px;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.checkedout-header {
+  background-color: #3880ff;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.checkedout-icon {
+  font-size: 36px;
+  color: #fff;
+  margin-right: 16px;
+}
+
+.checkedout-content h4 {
+  margin: 0;
+  font-weight: 600;
+  color: #d32f2f;
+}
+
+.checkedout-content p {
+  margin: 6px 0 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.confirm-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 380px;
+  --border-radius: 24px;
+}
+
+.confirm-modal-content {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 48px;
+  color: var(--ion-color-primary);
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.alert-modal-content {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.alert-icon-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ 
+}
