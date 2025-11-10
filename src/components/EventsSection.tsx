@@ -11,7 +11,7 @@ import {
 import { giftOutline, calendarOutline } from "ionicons/icons";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
-import { Skeleton } from "../components/ui/skeleton";
+import Skeleton from "./Skeleton";
 
 /* ---------- Type Definitions ---------- */
 interface EventData {
@@ -177,13 +177,15 @@ const EventsSection: React.FC = () => {
                 <IonGrid>
                   <IonRow className="ion-align-items-center">
                     <IonCol size="2">
-                      <Skeleton style={{ width: "36px", height: "36px", borderRadius: "8px" }} />
+                      <Skeleton width="36px" height="36px" borderRadius="8px" />
                     </IonCol>
                     <IonCol size="10">
                       <Skeleton
-                        style={{ width: "130px", height: "14px", marginBottom: "4px" }}
+                        width="130px"
+                        height="14px"
+                        style={{ marginBottom: "4px" }}
                       />
-                      <Skeleton style={{ width: "160px", height: "12px" }} />
+                      <Skeleton width="160px" height="12px" />
                     </IonCol>
                   </IonRow>
                 </IonGrid>
@@ -293,38 +295,6 @@ const EventsSection: React.FC = () => {
                       style={{ marginBottom: "3px" }}
                     />
                     <Skeleton width="90px" height="12px" />
-                  </IonCol>
-                </IonRow>
-              </IonGrid>
-            </IonCard>
-          ))}
-        </div>
-      ) : sortedEvents.length === 0 ? (
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "14px",
-            color: "#777",
-            marginTop: "4px",
-          }}
-        >
-          No upcoming events found.
-        </p>
-      ) : (
-        visibleEvents.map((ev) => {
-          const theme = getThemeClass(ev.event_theme);
-          return (
-            <IonCard key={ev.id} className={`event-card ${theme}-theme`}>
-              <IonGrid className="event-grid">
-                <IonRow className="ion-align-items-center">
-                  <IonCol size="2">
-                    <Skeleton style={{ width: "36px", height: "36px", borderRadius: "8px" }} />
-                  </IonCol>
-                  <IonCol size="10">
-                    <Skeleton
-                      style={{ width: "120px", height: "14px", marginBottom: "3px" }}
-                    />
-                    <Skeleton style={{ width: "90px", height: "12px" }} />
                   </IonCol>
                 </IonRow>
               </IonGrid>
