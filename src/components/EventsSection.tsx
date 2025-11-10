@@ -111,8 +111,10 @@ const EventsSection: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  /* 🗓️ Dynamic Month Logic */
+  /* 🗓️ Dynamic Month Logic (with future-only filtering) */
   const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize time for comparison
+
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
   const nextMonth = (currentMonth + 1) % 12;
@@ -122,18 +124,30 @@ const EventsSection: React.FC = () => {
   const visibleEvents = events.filter((ev) => {
     if (!ev.event_date) return false;
     const evDate = new Date(ev.event_date);
-    const month = evDate.getMonth();
-    const year = evDate.getFullYear();
+    evDate.setHours(0, 0, 0, 0);
 
-    if (month === currentMonth && year === currentYear) return true;
-    if (includeNextMonth && month === nextMonth && year === nextMonthYear)
+    // ❌ skip past events
+    if (evDate < today) return false;
+
+    // ✅ current month
+    if (evDate.getMonth() === currentMonth && evDate.getFullYear() === currentYear)
       return true;
+
+    // ✅ next month (only after 25th)
+    if (
+      includeNextMonth &&
+      evDate.getMonth() === nextMonth &&
+      evDate.getFullYear() === nextMonthYear
+    )
+      return true;
+
     return false;
   });
 
+  // Sort ascending (nearest event first)
   const sortedEvents = [...visibleEvents].sort(
     (a, b) =>
-      new Date(b.event_date!).getTime() - new Date(a.event_date!).getTime()
+      new Date(a.event_date!).getTime() - new Date(b.event_date!).getTime()
   );
 
   /* ---------- UI ---------- */
@@ -296,7 +310,7 @@ const EventsSection: React.FC = () => {
             marginTop: "4px",
           }}
         >
-          No events found for this period.
+          No upcoming events found.
         </p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>

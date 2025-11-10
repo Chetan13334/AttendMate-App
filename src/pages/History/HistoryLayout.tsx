@@ -83,6 +83,12 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             outline: none;
             box-shadow: 0 0 0 2px rgba(79,195,247,0.15);
           }
+
+          @keyframes blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+          }
         `}
       </style>
 
@@ -173,35 +179,13 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
               }}
             >
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
-                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
-                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
-              </div>
-              <div
-                style={{
-                  width: "1px",
-                  height: "30px",
-                  background: "#dcdcdc",
-                }}
-              />
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
-                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
-                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
-              </div>
-              <div
-                style={{
-                  width: "1px",
-                  height: "30px",
-                  background: "#dcdcdc",
-                }}
-              />
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
-                <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
-                <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
-              </div>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                  <Skeleton width="20px" height="20px" style={{ margin: "0 auto 4px" }} />
+                  <Skeleton width="60px" height="12px" style={{ margin: "4px auto" }} />
+                  <Skeleton width="80px" height="15px" style={{ margin: "4px auto" }} />
+                </div>
+              ))}
             </div>
           ) : todayRecord && (
             <div
@@ -215,85 +199,65 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
               }}
             >
+              {/* Check In */}
               <div style={{ flex: 1, textAlign: "center" }}>
                 <IonIcon icon={logInOutline} color="primary" />
-                <p
-                  style={{
-                    margin: "4px 0",
-                    fontSize: "12px",
-                    color: "#0288D1",
-                  }}
-                >
-                  Check In
-                </p>
-                <h5
-                  style={{
-                    margin: 0,
-                    fontSize: "15px",
-                    color: "#01579B",
-                  }}
-                >
+                <p style={{ margin: "4px 0", fontSize: "12px", color: "#0288D1" }}>Check In</p>
+                <h5 style={{ margin: 0, fontSize: "15px", color: "#01579B" }}>
                   {todayRecord.checkIn}
                 </h5>
               </div>
 
-              <div
-                style={{
-                  width: "1px",
-                  height: "30px",
-                  background: "#dcdcdc",
-                }}
-              />
+              <div style={{ width: "1px", height: "30px", background: "#dcdcdc" }} />
 
+              {/* Check Out */}
               <div style={{ flex: 1, textAlign: "center" }}>
                 <IonIcon icon={logOutOutline} color="danger" />
-                <p
-                  style={{
-                    margin: "4px 0",
-                    fontSize: "12px",
-                    color: "#e53935",
-                  }}
-                >
-                  Check Out
-                </p>
-                <h5
-                  style={{
-                    margin: 0,
-                    fontSize: "15px",
-                    color: "#c62828",
-                  }}
-                >
+                <p style={{ margin: "4px 0", fontSize: "12px", color: "#e53935" }}>Check Out</p>
+                <h5 style={{ margin: 0, fontSize: "15px", color: "#c62828" }}>
                   {todayRecord.checkOut}
                 </h5>
               </div>
 
-              <div
-                style={{
-                  width: "1px",
-                  height: "30px",
-                  background: "#dcdcdc",
-                }}
-              />
+              <div style={{ width: "1px", height: "30px", background: "#dcdcdc" }} />
 
+              {/* Duration (🟢 Ongoing or Final) */}
               <div style={{ flex: 1, textAlign: "center" }}>
                 <IonIcon icon={timeOutline} color="medium" />
                 <p
                   style={{
                     margin: "4px 0",
                     fontSize: "12px",
-                    color: "#0288D1",
+                    color: todayRecord.checkOut === "Not marked" ? "#00BFA5" : "#0288D1",
                   }}
                 >
-                  Duration
+                  {todayRecord.checkOut === "Not marked"
+                    ? "Ongoing Duration"
+                    : "Total Duration"}
                 </p>
                 <h5
                   style={{
                     margin: 0,
                     fontSize: "15px",
-                    color: "#01579B",
+                    color: todayRecord.checkOut === "Not marked" ? "#00BFA5" : "#01579B",
+                    fontWeight: todayRecord.checkOut === "Not marked" ? 700 : 600,
+                    transition: "color 0.3s ease",
                   }}
                 >
                   {todayRecord.duration}
+                  {todayRecord.checkOut === "Not marked" && (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        marginLeft: "6px",
+                        fontSize: "10px",
+                        color: "#00BFA5",
+                        animation: "blink 1s infinite",
+                      }}
+                    >
+                      •
+                    </span>
+                  )}
                 </h5>
               </div>
             </div>
@@ -318,17 +282,9 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 "--color": "#0288D1",
               }}
             >
-              <IonIcon
-                slot="start"
-                icon={calendarOutline}
-                style={{ color: "#0288D1" }}
-              />
+              <IonIcon slot="start" icon={calendarOutline} style={{ color: "#0288D1" }} />
               {rangeLabel}
-              <IonIcon
-                slot="end"
-                icon={chevronForwardOutline}
-                style={{ color: "#0288D1" }}
-              />
+              <IonIcon slot="end" icon={chevronForwardOutline} style={{ color: "#0288D1" }} />
             </IonButton>
           )}
         </div>
@@ -437,7 +393,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
-        {/*  Date Range Modal — Light Blue Header Fixed */}
+        {/* Date Range Modal */}
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
@@ -447,7 +403,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           <IonHeader>
             <IonToolbar
               style={{
-                backgroundColor: "#16a6e9ff", // 🩵 light blue (same as header)
+                backgroundColor: "#16a6e9ff",
                 color: "white",
               }}
             >
