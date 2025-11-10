@@ -55,15 +55,46 @@ const EventsSection: React.FC = () => {
     return () => unsub();
   }, []);
 
-  const visibleEvents = getVisibleEvents(events);
-  const includeNextMonth = new Date().getDate() >= 25;
+  /* 🗓️ Dynamic Month Logic (with future-only filtering) */
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize time for comparison
 
-  const getThemeClass = (theme?: string) => {
-    const normalized = (theme || "blue").toLowerCase().trim();
-    if (["yellow", "green", "red", "blue"].includes(normalized)) return normalized;
-    return "blue";
-  };
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  const nextMonth = (currentMonth + 1) % 12;
+  const nextMonthYear = nextMonth === 0 ? currentYear + 1 : currentYear;
+  const includeNextMonth = today.getDate() >= 25;
 
+  const visibleEvents = events.filter((ev) => {
+    if (!ev.event_date) return false;
+    const evDate = new Date(ev.event_date);
+    evDate.setHours(0, 0, 0, 0);
+
+    // ❌ skip past events
+    if (evDate < today) return false;
+
+    // ✅ current month
+    if (evDate.getMonth() === currentMonth && evDate.getFullYear() === currentYear)
+      return true;
+
+    // ✅ next month (only after 25th)
+    if (
+      includeNextMonth &&
+      evDate.getMonth() === nextMonth &&
+      evDate.getFullYear() === nextMonthYear
+    )
+      return true;
+
+    return false;
+  });
+
+  // Sort ascending (nearest event first)
+  const sortedEvents = [...visibleEvents].sort(
+    (a, b) =>
+      new Date(a.event_date!).getTime() - new Date(b.event_date!).getTime()
+  );
+
+  /* ---------- UI ---------- */
   return (
     <div className="events-wrapper">
       
@@ -118,23 +149,48 @@ const EventsSection: React.FC = () => {
 
      
       {loading ? (
-        [...Array(3)].map((_, index) => (
-          <IonCard key={index} className="event-card loading">
-            <IonGrid className="event-grid">
-              <IonRow className="ion-align-items-center">
-                <IonCol size="2">
-                  <Skeleton width="36px" height="36px" borderRadius="8px" />
-                </IonCol>
-                <IonCol size="10">
-                  <Skeleton width="120px" height="14px" style={{ marginBottom: "3px" }} />
-                  <Skeleton width="90px" height="12px" />
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </IonCard>
-        ))
-      ) : visibleEvents.length === 0 ? (
-        <p className="no-events">No events found for this period.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {[...Array(3)].map((_, index) => (
+            <IonCard
+              key={index}
+              style={{
+                backgroundColor: "#E3F2FD",
+                borderRadius: "18px",
+                minHeight: "54px",
+                padding: "6px 10px",
+                marginBottom: "4px",
+                boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
+              }}
+            >
+              <IonGrid style={{ padding: "6px 0" }}>
+                <IonRow className="ion-align-items-center">
+                  <IonCol size="2">
+                    <Skeleton width="36px" height="36px" borderRadius="8px" />
+                  </IonCol>
+                  <IonCol size="10">
+                    <Skeleton
+                      width="120px"
+                      height="14px"
+                      style={{ marginBottom: "3px" }}
+                    />
+                    <Skeleton width="90px" height="12px" />
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </IonCard>
+          ))}
+        </div>
+      ) : sortedEvents.length === 0 ? (
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "14px",
+            color: "#777",
+            marginTop: "4px",
+          }}
+        >
+          No upcoming events found.
+        </p>
       ) : (
         visibleEvents.map((ev) => {
           const theme = getThemeClass(ev.event_theme);
