@@ -10,9 +10,9 @@ import {
 import { Route, Redirect } from "react-router-dom";
 import { homeOutline, documentOutline, personOutline, logOutOutline } from "ionicons/icons";
 
-import Homepage from "./Home";
-import History from "./History/History";
-import Profile from "./Profile";
+import Homepage from "../pages/Home";
+import History from "../components/History";
+import Profile from "../pages/Profile";
 import AppHeader from "../components/AppHeader";
 
 interface TabsProps {

@@ -18,7 +18,7 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
-import Skeleton from "../../components/Skeleton";
+import Skeleton from "./Skeleton";
 
 interface HistoryLayoutProps {
   initials: string;

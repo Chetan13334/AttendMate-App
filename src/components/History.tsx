@@ -10,7 +10,7 @@ import {
   getDocs,
   getDoc,
 } from "firebase/firestore";
-import HistoryLayout from "../pages/History/HistoryLayout";
+import HistoryLayout from "./HistoryLayout";
 
 /* --------------------- Utility Functions --------------------- */
 const getInitials = (name: string) =>
@@ -32,7 +32,7 @@ const getDuration = (checkIn: Date, checkOut: Date) => {
 const History: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
   const [todayRecord, setTodayRecord] = useState<any | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
