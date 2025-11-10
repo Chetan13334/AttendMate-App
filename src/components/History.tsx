@@ -26,7 +26,7 @@ const History: React.FC = () => {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-
+  /* ---------------- Fetch Employee ID ---------------- */
   useEffect(() => {
     if (!userEmail) return;
     const loadEmployeeId = async () => {
@@ -36,28 +36,33 @@ const History: React.FC = () => {
     loadEmployeeId();
   }, [userEmail]);
 
+  /* ---------------- Listen + Fetch Data ---------------- */
   useEffect(() => {
     if (!employeeId) return;
     setLoading(true);
 
+    const today = new Date();
     const unsub = subscribeToTodayRecord(
       employeeId,
       ({ checkIn, checkOut }) => {
         if (liveTimerRef.current) clearInterval(liveTimerRef.current);
 
-        const today = new Date();
         if (checkIn && !checkOut) {
           const updateLiveDuration = () => {
             const now = new Date();
             const liveDuration = getDuration(checkIn, now);
             const liveRecord = {
               date: today,
-              checkIn: checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              checkIn: checkIn.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
               checkOut: "Not marked",
               duration: liveDuration,
             };
             setTodayRecord(liveRecord);
             setRecords((prev) => {
+              // Remove today's old entry before adding new
               const others = prev.filter(
                 (r) => r.date.toDateString() !== today.toDateString()
               );
@@ -71,8 +76,14 @@ const History: React.FC = () => {
         } else if (checkIn && checkOut) {
           const finalRecord = {
             date: today,
-            checkIn: checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            checkOut: checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            checkIn: checkIn.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            checkOut: checkOut.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
             duration: getDuration(checkIn, checkOut),
           };
           setTodayRecord(finalRecord);
@@ -96,7 +107,18 @@ const History: React.FC = () => {
 
     const loadPastRecords = async () => {
       const pastRecords = await fetchPastRecords(employeeId, startDate, endDate);
-      setRecords((prev) => [...prev, ...pastRecords]);
+
+      // ✅ Remove today's record from pastRecords to avoid duplication
+      const filteredPast = pastRecords.filter(
+        (rec) =>
+          rec.date.toDateString() !== new Date().toDateString()
+      );
+
+      setRecords((prev) =>
+        [...filteredPast, ...prev].sort(
+          (a, b) => b.date.getTime() - a.date.getTime()
+        )
+      );
       setLoading(false);
     };
     loadPastRecords();

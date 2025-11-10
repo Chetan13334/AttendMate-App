@@ -17,8 +17,8 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
-import Skeleton from "../components/Skeleton";
-import "../theme/components/HistoryLayout.css"
+import { Skeleton } from "../components/ui/skeleton";
+import "../theme/components/HistoryLayout.css";
 
 interface HistoryLayoutProps {
   initials: string;
@@ -56,14 +56,17 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
       </IonHeader>
 
       <IonContent fullscreen color="light">
+        {/* Header Section */}
         <div className="history-header">
           <div className="user-section">
             {loading ? (
               <Skeleton
-                width="40px"
-                height="40px"
-                borderRadius="50%"
-                style={{ marginRight: "10px" }}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  marginRight: "10px"
+                }}
               />
             ) : (
               <div className="user-avatar">{initials}</div>
@@ -71,8 +74,8 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
             {loading ? (
               <div>
-                <Skeleton width="120px" height="16px" style={{ marginBottom: "6px" }} />
-                <Skeleton width="180px" height="14px" />
+                <Skeleton style={{ width: "120px", height: "16px", marginBottom: "6px" }} />
+                <Skeleton style={{ width: "180px", height: "14px" }} />
               </div>
             ) : (
               <IonText color="light">
@@ -126,6 +129,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
+        {/* Date Range Button */}
         <div className="range-container">
           <IonButton
             expand="block"
@@ -140,6 +144,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           </IonButton>
         </div>
 
+        {/* Records Section */}
         <div className="records-container">
           {records.length > 0 ? (
             records.map((rec, idx) => (
@@ -176,6 +181,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
+        {/* Date Picker Modal */}
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
