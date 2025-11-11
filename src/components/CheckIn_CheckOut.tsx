@@ -281,7 +281,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* Confirm Modal */}
+      
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -314,7 +314,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* Location Checking Modal */}
+      
       <IonModal
         isOpen={showLocationChecking}
         backdropDismiss={false}
@@ -328,7 +328,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* Location Alert */}
+      
       <IonAlert
         isOpen={showLocationAlert}
         header="Location Required"
@@ -365,7 +365,7 @@ const CheckIn_CheckOut: React.FC = () => {
         ]}
       />
 
-      {/* Final Alert – SOLID DARK RED CIRCLE (NO BLUR) */}
+      
       <IonModal
         isOpen={showAlert}
         onDidDismiss={() => setShowAlert(false)}
@@ -401,7 +401,7 @@ const CheckIn_CheckOut: React.FC = () => {
                     borderRadius: '50%',
                     marginBottom: '20px',
                     ...(isBlocking || isWarning
-                      ? { backgroundColor: 'rgba(244, 9, 9, 0.58)' } // solid dark red
+                      ? { backgroundColor: 'rgba(244, 9, 9, 0.58)' } 
                       : {}),
                   }}
                 >
