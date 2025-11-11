@@ -26,7 +26,7 @@ const History: React.FC = () => {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  /* ---------------- Fetch Employee ID ---------------- */
+  
   useEffect(() => {
     if (!userEmail) return;
     const loadEmployeeId = async () => {
@@ -36,17 +36,20 @@ const History: React.FC = () => {
     loadEmployeeId();
   }, [userEmail]);
 
-  /* ---------------- Listen + Fetch Data ---------------- */
+
   useEffect(() => {
     if (!employeeId) return;
     setLoading(true);
 
     const today = new Date();
+
+    
     const unsub = subscribeToTodayRecord(
       employeeId,
       ({ checkIn, checkOut }) => {
         if (liveTimerRef.current) clearInterval(liveTimerRef.current);
 
+        
         if (checkIn && !checkOut) {
           const updateLiveDuration = () => {
             const now = new Date();
@@ -61,8 +64,9 @@ const History: React.FC = () => {
               duration: liveDuration,
             };
             setTodayRecord(liveRecord);
+
+           
             setRecords((prev) => {
-              // Remove today's old entry before adding new
               const others = prev.filter(
                 (r) => r.date.toDateString() !== today.toDateString()
               );
@@ -71,9 +75,13 @@ const History: React.FC = () => {
               );
             });
           };
+
           updateLiveDuration();
-          liveTimerRef.current = setInterval(updateLiveDuration, 30000);
-        } else if (checkIn && checkOut) {
+          liveTimerRef.current = setInterval(updateLiveDuration, 5000);
+        }
+
+        
+        else if (checkIn && checkOut) {
           const finalRecord = {
             date: today,
             checkIn: checkIn.toLocaleTimeString([], {
@@ -86,12 +94,32 @@ const History: React.FC = () => {
             }),
             duration: getDuration(checkIn, checkOut),
           };
+
           setTodayRecord(finalRecord);
           setRecords((prev) => {
             const others = prev.filter(
               (r) => r.date.toDateString() !== today.toDateString()
             );
             return [finalRecord, ...others].sort(
+              (a, b) => b.date.getTime() - a.date.getTime()
+            );
+          });
+        }
+
+       
+        else {
+          const emptyRecord = {
+            date: today,
+            checkIn: "Not marked",
+            checkOut: "Not marked",
+            duration: "N/A",
+          };
+          setTodayRecord(emptyRecord);
+          setRecords((prev) => {
+            const others = prev.filter(
+              (r) => r.date.toDateString() !== today.toDateString()
+            );
+            return [emptyRecord, ...others].sort(
               (a, b) => b.date.getTime() - a.date.getTime()
             );
           });
@@ -105,30 +133,51 @@ const History: React.FC = () => {
       }
     );
 
+    
     const loadPastRecords = async () => {
-      const pastRecords = await fetchPastRecords(employeeId, startDate, endDate);
+      try {
+        let start = new Date(startDate);
+        let end = new Date(endDate);
 
-      // ✅ Remove today's record from pastRecords to avoid duplication
-      const filteredPast = pastRecords.filter(
-        (rec) =>
-          rec.date.toDateString() !== new Date().toDateString()
-      );
+        
+        if (start > end) [start, end] = [end, start];
 
-      setRecords((prev) =>
-        [...filteredPast, ...prev].sort(
-          (a, b) => b.date.getTime() - a.date.getTime()
-        )
-      );
-      setLoading(false);
+        const pastRecords = await fetchPastRecords(employeeId, start, end);
+
+       
+        const filteredPast = pastRecords.filter(
+          (rec) => rec.date.toDateString() !== today.toDateString()
+        );
+
+        
+        setRecords((prev) => {
+          const all = [...filteredPast, ...prev];
+          const unique = all.filter(
+            (item, index, self) =>
+              index ===
+              self.findIndex(
+                (r) => r.date.toDateString() === item.date.toDateString()
+              )
+          );
+          return unique.sort((a, b) => b.date.getTime() - a.date.getTime());
+        });
+      } catch (err) {
+        console.error("Error loading past records:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+
     loadPastRecords();
 
+    
     return () => {
       unsub();
       if (liveTimerRef.current) clearInterval(liveTimerRef.current);
     };
   }, [employeeId, startDate, endDate]);
 
+  
   const rangeLabel = `This Week: ${startDate.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

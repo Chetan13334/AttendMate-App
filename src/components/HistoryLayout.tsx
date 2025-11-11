@@ -17,14 +17,13 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
-import { Skeleton } from "../components/ui/skeleton";
-import "../theme/components/HistoryLayout.css";
+import Skeleton from "../components/Skeleton";
 
 interface HistoryLayoutProps {
   initials: string;
   userName: string;
   todayRecord: any;
-  rangeLabel: string;
+  rangeLabel: string;     
   loading: boolean;
   records: any[];
   showModal: boolean;
@@ -51,137 +50,308 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 }) => {
   return (
     <>
-      <IonHeader translucent>
+      <style>
+        {`
+          ion-header, ion-toolbar {
+            --background: transparent;
+            --border-width: 0;
+            box-shadow: none !important;
+            border: none !important;
+          }
+
+          input[type="date"] {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #dcdcdc;
+            border-radius: 10px;
+            height: 48px;
+            width: 100%;
+            font-size: 15px;
+            padding: 0 12px;
+            transition: border-color 0.2s ease-in-out;
+          }
+
+          input[type="date"]:focus {
+            border-color: #4FC3F7;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(79,195,247,0.15);
+          }
+
+          @keyframes blink {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+          }
+        `}
+      </style>
+
+      <IonHeader translucent={true}>
         <IonToolbar />
       </IonHeader>
 
       <IonContent fullscreen color="light">
-        {/* Header Section */}
-        <div className="history-header">
-          <div className="user-section">
+        
+        <div
+          style={{
+            backgroundColor: "#4FC3F7",
+            padding: "12px 16px 10px",
+            borderBottomLeftRadius: "18px",
+            borderBottomRightRadius: "18px",
+          }}
+        >
+          
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
             {loading ? (
               <Skeleton
+                width="40px"
+                height="40px"
+                borderRadius="50%"
+                style={{ marginRight: "10px" }}
+              />
+            ) : (
+              <div
                 style={{
                   width: "40px",
                   height: "40px",
                   borderRadius: "50%",
-                  marginRight: "10px"
+                  background: "#ffffff",
+                  color: "#0288D1",
+                  fontWeight: "bold",
+                  fontSize: "17px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: "10px",
                 }}
-              />
-            ) : (
-              <div className="user-avatar">{initials}</div>
+              >
+                {initials}
+              </div>
             )}
 
             {loading ? (
               <div>
-                <Skeleton style={{ width: "120px", height: "16px", marginBottom: "6px" }} />
-                <Skeleton style={{ width: "180px", height: "14px" }} />
+                <Skeleton width="120px" height="16px" style={{ marginBottom: "6px" }} />
+                <Skeleton width="180px" height="14px" />
               </div>
             ) : (
               <IonText color="light">
-                <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
-                <p className="user-subtitle">Review your daily attendance.</p>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    color: "white",
+                  }}
+                >
+                  Hello, {userName.split(" ")[0]}
+                </h2>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "13px",
+                    opacity: 0.9,
+                    color: "#E1F5FE",
+                  }}
+                >
+                  Review your daily attendance.
+                </p>
               </IonText>
             )}
           </div>
 
-          {todayRecord && (
-            <div className="today-card">
-              <div className="today-item">
-                <IonIcon icon={logInOutline} color="primary" />
-                <p className="today-label in">Check In</p>
-                <h5 className="today-time in">{todayRecord.checkIn}</h5>
-              </div>
-
-              <div className="divider" />
-
-              <div className="today-item">
-                <IonIcon icon={logOutOutline} color="danger" />
-                <p className="today-label out">Check Out</p>
-                <h5 className="today-time out">{todayRecord.checkOut}</h5>
-              </div>
-
-              <div className="divider" />
-
-              <div className="today-item">
-                <IonIcon icon={timeOutline} color="medium" />
-                <p
-                  className={`today-label ${
-                    todayRecord.checkOut === "Not marked" ? "ongoing" : "total"
-                  }`}
-                >
-                  {todayRecord.checkOut === "Not marked"
-                    ? "Ongoing Duration"
-                    : "Total Duration"}
-                </p>
-                <h5
-                  className={`today-time ${
-                    todayRecord.checkOut === "Not marked" ? "ongoing" : "total"
-                  }`}
-                >
-                  {todayRecord.duration}
-                  {todayRecord.checkOut === "Not marked" && (
-                    <span className="blink-dot">•</span>
-                  )}
-                </h5>
-              </div>
+         
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "12px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px 14px",
+            }}
+          >
+            
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <IonIcon icon={logInOutline} color="primary" />
+              <p style={{ margin: "4px 0", fontSize: "12px", color: "#0288D1" }}>
+                Check In
+              </p>
+              <h5 style={{ margin: 0, fontSize: "15px", color: "#01579B" }}>
+                {todayRecord?.checkIn || "Not marked"}
+              </h5>
             </div>
-          )}
+
+            <div style={{ width: "1px", height: "30px", background: "#dcdcdc" }} />
+
+           
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <IonIcon icon={logOutOutline} color="danger" />
+              <p style={{ margin: "4px 0", fontSize: "12px", color: "#e53935" }}>
+                Check Out
+              </p>
+              <h5 style={{ margin: 0, fontSize: "15px", color: "#c62828" }}>
+                {todayRecord?.checkOut || "Not marked"}
+              </h5>
+            </div>
+
+            <div style={{ width: "1px", height: "30px", background: "#dcdcdc" }} />
+
+            
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <IonIcon icon={timeOutline} color="medium" />
+              <p
+                style={{
+                  margin: "4px 0",
+                  fontSize: "12px",
+                  color:
+                    todayRecord?.checkOut === "Not marked" ? "#00BFA5" : "#0288D1",
+                }}
+              >
+                {todayRecord?.checkOut === "Not marked"
+                  ? "Ongoing Duration"
+                  : "Total Duration"}
+              </p>
+              <h5
+                style={{
+                  margin: 0,
+                  fontSize: "15px",
+                  color:
+                    todayRecord?.checkOut === "Not marked" ? "#00BFA5" : "#01579B",
+                  fontWeight: todayRecord?.checkOut === "Not marked" ? 700 : 600,
+                }}
+              >
+                {todayRecord?.duration === "N/A"
+                  ? "00h 00m"
+                  : todayRecord?.duration || "00h 00m"}
+                {todayRecord?.checkOut === "Not marked" &&
+                  todayRecord?.checkIn !== "Not marked" && (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        marginLeft: "6px",
+                        fontSize: "10px",
+                        color: "#00BFA5",
+                        animation: "blink 1s infinite",
+                      }}
+                    >
+                      •
+                    </span>
+                  )}
+              </h5>
+            </div>
+          </div>
         </div>
 
-        {/* Date Range Button */}
-        <div className="range-container">
+       
+        <div style={{ background: "#f5f7fa", padding: "10px 16px 8px" }}>
           <IonButton
             expand="block"
             fill="solid"
             color="light"
             onClick={() => setShowModal(true)}
-            className="range-btn"
+            style={{
+              height: "48px",
+              borderRadius: "12px",
+              fontWeight: 600,
+              "--color": "#0288D1",
+            }}
           >
-            <IonIcon slot="start" icon={calendarOutline} className="range-icon" />
-            {rangeLabel}
-            <IonIcon slot="end" icon={chevronForwardOutline} className="range-icon" />
+            <IonIcon slot="start" icon={calendarOutline} style={{ color: "#0288D1" }} />
+            Timeline:{" "}
+            {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}{" "}
+            -{" "}
+            {endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            <IonIcon slot="end" icon={chevronForwardOutline} style={{ color: "#0288D1" }} />
           </IonButton>
         </div>
 
-        {/* Records Section */}
-        <div className="records-container">
-          {records.length > 0 ? (
-            records.map((rec, idx) => (
-              <IonCard key={idx} className="record-card">
+        
+        <div style={{ background: "#f5f7fa", padding: "8px 16px 16px" }}>
+          {loading ? (
+            [...Array(6)].map((_, i) => (
+              <IonCard
+                key={i}
+                style={{
+                  borderRadius: "12px",
+                  background: "#ffffff",
+                  marginBottom: "10px",
+                  boxShadow: "none",
+                }}
+              >
                 <IonCardContent>
-                  <div className="record-row">
-                    <div>
-                      <h3 className="record-date">
-                        {rec.date.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </h3>
-                      <p className="record-info">
-                        In: {rec.checkIn} | Out: {rec.checkOut}
-                      </p>
-                      <p className="record-duration">
-                        Duration: {rec.duration}
-                      </p>
-                    </div>
-                    <IonIcon icon={timeOutline} color="primary" className="record-icon" />
+                  <div style={{ marginBottom: "6px" }}>
+                    <Skeleton width="60%" height="14px" />
+                  </div>
+                  <div style={{ marginBottom: "6px" }}>
+                    <Skeleton width="80%" height="12px" />
+                  </div>
+                  <div>
+                    <Skeleton width="40%" height="12px" />
                   </div>
                 </IonCardContent>
               </IonCard>
             ))
+          ) : records.length > 0 ? (
+            records.map((rec, i) => (
+              <IonCard
+                key={i}
+                style={{
+                  borderRadius: "12px",
+                  background: "#ffffff",
+                  marginBottom: "10px",
+                  boxShadow: "none",
+                }}
+              >
+                <IonCardContent>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: "15px",
+                      fontWeight: 600,
+                      color: "#0288D1",
+                    }}
+                  >
+                    {rec.date.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </h3>
+                  <p style={{ fontSize: "13px", margin: "4px 0" }}>
+                    In: {rec.checkIn} | Out: {rec.checkOut}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#01579B",
+                    }}
+                  >
+                    Duration: {rec.duration === "N/A" ? "00h 00m" : rec.duration}
+                  </p>
+                </IonCardContent>
+              </IonCard>
+            ))
           ) : (
-            <div className="no-records">
-              <IonIcon icon={timeOutline} className="no-records-icon" />
+            <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <IonIcon
+                icon={timeOutline}
+                style={{ fontSize: "46px", color: "#ccc", marginBottom: "16px" }}
+              />
               <IonText color="medium">
-                <h3 className="no-records-text">No Records Found</h3>
+                <h3 style={{ fontWeight: 600 }}>No Records Found</h3>
               </IonText>
             </div>
           )}
         </div>
 
-        {/* Date Picker Modal */}
+        
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
@@ -189,14 +359,14 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           breakpoints={[0, 0.7, 1]}
         >
           <IonHeader>
-            <IonToolbar className="modal-toolbar">
-              <IonText slot="start" className="modal-title">
+            <IonToolbar style={{ backgroundColor: "#16a6e9ff", color: "white" }}>
+              <IonText slot="start" style={{ padding: "12px", fontWeight: 600, color: "white" }}>
                 Select Date Range
               </IonText>
               <IonButton
                 slot="end"
                 fill="clear"
-                className="modal-done"
+                style={{ color: "white", fontWeight: 600 }}
                 onClick={() => setShowModal(false)}
               >
                 Done
@@ -205,7 +375,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           </IonHeader>
 
           <IonContent className="ion-padding">
-            <p className="modal-label">Start Date</p>
+            <p style={{ marginBottom: "8px", fontWeight: 600 }}>Start Date</p>
             <input
               type="date"
               value={startDate.toISOString().split("T")[0]}
@@ -213,7 +383,9 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               max={new Date().toISOString().split("T")[0]}
             />
 
-            <p className="modal-label end">End Date</p>
+            <p style={{ marginBottom: "8px", marginTop: "20px", fontWeight: 600 }}>
+              End Date
+            </p>
             <input
               type="date"
               value={endDate.toISOString().split("T")[0]}

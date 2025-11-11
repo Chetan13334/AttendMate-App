@@ -13,7 +13,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import Skeleton from "./Skeleton";
 
-/* ---------- Type Definitions ---------- */
+
 interface EventData {
   id: string;
   event_title: string;
@@ -29,14 +29,14 @@ interface EmployeeData {
   Photo?: string;
 }
 
-/* ---------- Component ---------- */
+
 const EventsSection: React.FC = () => {
   const [events, setEvents] = useState<EventData[]>([]);
   const [birthdays, setBirthdays] = useState<EmployeeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [birthdayLoading, setBirthdayLoading] = useState(true);
 
-  /* 🔹 Real-time Events Listener */
+
   useEffect(() => {
     const colRef = collection(db, "Events");
     const unsubscribe = onSnapshot(
@@ -69,7 +69,7 @@ const EventsSection: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  /* 🎂 Real-time Birthdays Listener */
+
   useEffect(() => {
     const colRef = collection(db, "Employee_Details");
     const unsubscribe = onSnapshot(
@@ -111,9 +111,9 @@ const EventsSection: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  /* 🗓️ Dynamic Month Logic (with future-only filtering) */
+
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // normalize time for comparison
+  today.setHours(0, 0, 0, 0);
 
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
@@ -126,14 +126,11 @@ const EventsSection: React.FC = () => {
     const evDate = new Date(ev.event_date);
     evDate.setHours(0, 0, 0, 0);
 
-    // ❌ skip past events
     if (evDate < today) return false;
 
-    // ✅ current month
     if (evDate.getMonth() === currentMonth && evDate.getFullYear() === currentYear)
       return true;
 
-    // ✅ next month (only after 25th)
     if (
       includeNextMonth &&
       evDate.getMonth() === nextMonth &&
@@ -144,23 +141,24 @@ const EventsSection: React.FC = () => {
     return false;
   });
 
-  // Sort ascending (nearest event first)
   const sortedEvents = [...visibleEvents].sort(
     (a, b) =>
       new Date(a.event_date!).getTime() - new Date(b.event_date!).getTime()
   );
 
-  /* ---------- UI ---------- */
+
   return (
     <div
       style={{
         backgroundColor: "#ffffff",
         padding: "0 14px",
         marginTop: "8px",
-        marginBottom: "80px",
+        marginBottom: "0px", 
+        paddingBottom: "0px", 
+        overflow: "hidden", 
       }}
     >
-      {/* 🎂 Birthday Section */}
+      
       {birthdayLoading ? (
         <div>
           {[...Array(2)].map((_, index) => (
@@ -255,7 +253,7 @@ const EventsSection: React.FC = () => {
         ))
       )}
 
-      {/* 🗓️ Events Section */}
+      
       <IonText>
         <h2
           style={{
