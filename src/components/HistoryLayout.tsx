@@ -17,7 +17,7 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
-import Skeleton from "../components/Skeleton";
+import Skeleton from "./Skeleton";
 import "../theme/components/HistoryLayout.css";
 
 interface HistoryLayoutProps {
@@ -56,7 +56,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
       </IonHeader>
 
       <IonContent fullscreen color="light">
-        {/* Header */}
+      
         <div className="history-header">
           <div className="user-section">
             {loading ? (
@@ -74,7 +74,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             )}
           </div>
 
-          {/* Today Summary Card */}
+          
           <div className="today-card">
             <div className="today-item">
               <IonIcon icon={logInOutline} color="primary" />
@@ -124,7 +124,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           </div>
         </div>
 
-        {/* Range Button */}
         <div className="range-container">
           <IonButton
             expand="block"
@@ -146,7 +145,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           </IonButton>
         </div>
 
-        {/* Record List */}
+        
         <div className="records-container">
           {loading ? (
             [...Array(3)].map((_, i) => (
@@ -188,7 +187,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
           )}
         </div>
 
-        {/* Date Filter Modal */}
         <IonModal
           isOpen={showModal}
           onDidDismiss={() => setShowModal(false)}
@@ -223,6 +221,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 const newDate = new Date(e.target.value);
                 newDate.setHours(0, 0, 0, 0);
                 console.log("Setting start date to:", newDate.toISOString());
+                console.log("Start date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
                 setStartDate(newDate);
               }}
               max={new Date().toISOString().split("T")[0]}
@@ -236,6 +235,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 const newDate = new Date(e.target.value);
                 newDate.setHours(23, 59, 59, 999);
                 console.log("Setting end date to:", newDate.toISOString());
+                console.log("End date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
                 setEndDate(newDate);
               }}
               max={new Date().toISOString().split("T")[0]}

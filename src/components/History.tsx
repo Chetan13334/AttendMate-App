@@ -61,6 +61,23 @@ const History: React.FC = () => {
         new Date(dateRangeRef.current.start).toISOString(), 
         "to", 
         new Date(dateRangeRef.current.end).toISOString());
+      
+      // Check if we're narrowing the range
+      const prevStart = new Date(dateRangeRef.current.start);
+      const prevEnd = new Date(dateRangeRef.current.end);
+      const newStart = new Date(startDate);
+      const newEnd = new Date(endDate);
+      
+      prevStart.setHours(0, 0, 0, 0);
+      prevEnd.setHours(0, 0, 0, 0);
+      newStart.setHours(0, 0, 0, 0);
+      newEnd.setHours(0, 0, 0, 0);
+      
+      const isNarrowing = (newStart > prevStart) || (newEnd < prevEnd);
+      console.log("Is narrowing range:", isNarrowing);
+      if (isNarrowing) {
+        console.log("Range is being narrowed - should clear previous records");
+      }
     }
     dateRangeRef.current = {start: startDate.getTime(), end: endDate.getTime()};
     console.log("Stored new date range in ref");
@@ -179,6 +196,8 @@ const History: React.FC = () => {
         
         console.log("Normalized date range:", start.toISOString(), "to", end.toISOString());
         console.log("Normalized start time:", start.getTime(), "Normalized end time:", end.getTime());
+        console.log("Normalized start values - Year:", start.getFullYear(), "Month:", start.getMonth(), "Date:", start.getDate());
+        console.log("Normalized end values - Year:", end.getFullYear(), "Month:", end.getMonth(), "Date:", end.getDate());
       
         const pastRecords = await fetchPastRecords(employeeId, start, end);
       
@@ -195,6 +214,7 @@ const History: React.FC = () => {
           todayDate.setHours(0, 0, 0, 0);
           const shouldInclude = recordDate.getTime() !== todayDate.getTime();
           console.log("Filtering record:", recordDate.toISOString(), "Today:", todayDate.toISOString(), "Include:", shouldInclude);
+          console.log("Record time:", recordDate.getTime(), "Today time:", todayDate.getTime());
           return shouldInclude;
         });
 
@@ -216,6 +236,38 @@ const History: React.FC = () => {
           console.log("Setting records with:", combined.length, "records");
           combined.forEach((record, index) => {
             console.log(`Combined Record ${index}:`, record.date.toISOString());
+          });
+          
+          // Additional logging to see what dates we're actually setting
+          console.log("=== RECORDS BEING SET ===");
+          combined.forEach((record, index) => {
+            const recordDate = new Date(record.date);
+            recordDate.setHours(0, 0, 0, 0);
+            console.log(`Final Record ${index}:`, recordDate.toISOString(), "Date:", recordDate.getDate());
+          });
+          
+          // Check if any records are outside the expected range
+          console.log("=== RANGE VALIDATION ===");
+          const expectedStart = new Date(start);
+          expectedStart.setHours(0, 0, 0, 0);
+          const expectedEnd = new Date(end);
+          expectedEnd.setHours(0, 0, 0, 0);
+          
+          console.log("Expected date range:", expectedStart.toISOString(), "to", expectedEnd.toISOString());
+          
+          combined.forEach((record, index) => {
+            const recordDate = new Date(record.date);
+            recordDate.setHours(0, 0, 0, 0);
+            
+            const recordDateObj = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
+            const expectedStartObj = new Date(expectedStart.getFullYear(), expectedStart.getMonth(), expectedStart.getDate());
+            const expectedEndObj = new Date(expectedEnd.getFullYear(), expectedEnd.getMonth(), expectedEnd.getDate());
+            
+            const inRange = recordDateObj >= expectedStartObj && recordDateObj <= expectedEndObj;
+            console.log(`Record ${index} (${recordDate.toISOString()}) in expected range: ${inRange}`);
+            if (!inRange) {
+              console.log(`  OUT OF RANGE: Record date ${recordDateObj.toISOString()} not in ${expectedStartObj.toISOString()} to ${expectedEndObj.toISOString()}`);
+            }
           });
           
           return combined.sort((a, b) => b.date.getTime() - a.date.getTime());

@@ -1,7 +1,7 @@
 import { DB } from "../config/databaseConfig";
 import { query, where, onSnapshot, getDocs, getDoc } from "firebase/firestore";
 
-/* ---------------- Utility ---------------- */
+
 export const getInitials = (name: string) =>
   name
     .split(" ")
@@ -17,7 +17,7 @@ export const getDuration = (checkIn: Date, checkOut: Date) => {
   return `${hrs}h ${mins}m`;
 };
 
-/* ---------------- Fetch Employee ID ---------------- */
+
 export const fetchEmployeeId = async (email: string): Promise<string | null> => {
   try {
     const q = query(DB.collections.Employee_Details, where("Email", "==", email));
@@ -33,7 +33,7 @@ export const fetchEmployeeId = async (email: string): Promise<string | null> => 
   }
 };
 
-/* ---------------- Subscribe to Today's Record ---------------- */
+
 export const subscribeToTodayRecord = (
   employeeId: string,
   onUpdate: (data: { checkIn: Date | null; checkOut: Date | null }) => void,
@@ -59,7 +59,7 @@ export const subscribeToTodayRecord = (
   return unsubscribe;
 };
 
-/* ---------------- Fetch Past Records (timezone-safe) ---------------- */
+
 export const fetchPastRecords = async (
   employeeId: string,
   startDate: Date,
@@ -67,20 +67,28 @@ export const fetchPastRecords = async (
 ): Promise<any[]> => {
   const allRecords: any[] = [];
   try {
-    // ✅ Normalize to LOCAL midnight (not UTC)
+   
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);
 
     const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999); // include entire end day
+    end.setHours(23, 59, 59, 999); 
 
     console.log("=== FETCHING RECORDS ===");
     console.log("Requested date range:", start.toISOString(), "to", end.toISOString());
     console.log("Start time:", start.getTime(), "End time:", end.getTime());
+    console.log("Start date values - Year:", start.getFullYear(), "Month:", start.getMonth(), "Date:", start.getDate());
+    console.log("End date values - Year:", end.getFullYear(), "Month:", end.getMonth(), "Date:", end.getDate());
 
     const current = new Date(start.getTime());
     console.log("Initial current date:", current.toISOString());
+    console.log("Initial current date values - Year:", current.getFullYear(), "Month:", current.getMonth(), "Date:", current.getDate());
 
+    // Log the comparison that's causing the issue
+    console.log("=== DATE COMPARISON DEBUG ===");
+    console.log("Start date as date object:", new Date(start.getFullYear(), start.getMonth(), start.getDate()).toISOString());
+    console.log("End date as date object:", new Date(end.getFullYear(), end.getMonth(), end.getDate()).toISOString());
+    
     let iteration = 0;
     while (current <= end) {
       iteration++;
@@ -89,9 +97,20 @@ export const fetchPastRecords = async (
         "0"
       )}-${String(current.getDate()).padStart(2, "0")}`;
 
-      console.log(`Iteration ${iteration}: Checking dateKey:`, dateKey, "for date:", current.toISOString());
-      console.log(`Iteration ${iteration}: Current time:`, current.getTime(), "End time:", end.getTime());
-      console.log(`Iteration ${iteration}: Current <= End:`, current.getTime() <= end.getTime());
+      console.log(`Iteration ${iteration}:`);
+      console.log(`  DateKey:`, dateKey);
+      console.log(`  Current date:`, current.toISOString());
+      console.log(`  Current values - Year:`, current.getFullYear(), "Month:", current.getMonth(), "Date:", current.getDate());
+      console.log(`  Current time:`, current.getTime());
+      console.log(`  End time:`, end.getTime());
+      console.log(`  Current <= End:`, current.getTime() <= end.getTime());
+      
+      
+      const currentDateOnly = new Date(current.getFullYear(), current.getMonth(), current.getDate());
+      const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      console.log(`  Current date only:`, currentDateOnly.toISOString());
+      console.log(`  End date only:`, endDateOnly.toISOString());
+      console.log(`  Current date <= End date:`, currentDateOnly <= endDateOnly);
 
       const recordRef = DB.employeeRecord(dateKey, employeeId);
       const snap = await getDoc(recordRef);
@@ -102,7 +121,7 @@ export const fetchPastRecords = async (
         const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
 
         const recordDate = new Date(current.getTime());
-        console.log("Found record for date:", recordDate.toISOString());
+        console.log("  Found record for date:", recordDate.toISOString());
 
         allRecords.push({
           date: recordDate,
@@ -114,12 +133,15 @@ export const fetchPastRecords = async (
             : "Not marked",
           duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
         });
+      } else {
+        console.log(`  No record found for dateKey:`, dateKey);
       }
 
-      // move to next LOCAL day safely
+
       current.setDate(current.getDate() + 1);
       current.setHours(0, 0, 0, 0);
-      console.log(`Iteration ${iteration}: Next date will be:`, current.toISOString());
+      console.log(`  Next date will be:`, current.toISOString());
+      console.log(`  Next date values - Year:`, current.getFullYear(), "Month:", current.getMonth(), "Date:", current.getDate());
     }
 
     console.log("=== FETCH COMPLETE ===");
@@ -128,8 +150,7 @@ export const fetchPastRecords = async (
       console.log(`Record ${index}:`, record.date.toISOString());
     });
 
-    // Since we're already iterating through the correct date range,
-    // no additional filtering is needed
+   
     return allRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
   } catch (err) {
     console.error("Error fetching past records:", err);
