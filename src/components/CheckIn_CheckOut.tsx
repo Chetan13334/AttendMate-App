@@ -12,6 +12,7 @@ import {
 } from '@ionic/react';
 import { timeOutline, checkmarkCircle, checkmark, close } from 'ionicons/icons';
 import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { Skeleton } from './ui/skeleton';
 
 import { enableLocation, quickGeoCheck } from '../Services/LocationService';
@@ -35,7 +36,7 @@ const CheckIn_CheckOut: React.FC = () => {
   const [msg, setMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
-  const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(() => () => { });
+  const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(() => () => {});
   const [employeeId, setEmployeeId] = useState('');
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,7 +47,8 @@ const CheckIn_CheckOut: React.FC = () => {
   const loggedInUserEmail = localStorage.getItem('userEmail') || '';
   const today = new Date().toISOString().split('T')[0];
 
-  const isWeb = typeof (window as any).capacitor === 'undefined' || !(window as any).capacitor?.isNative;
+  // Fixed platform detection
+  const isWeb = Capacitor.getPlatform() === 'web';
 
   const formatTime = () =>
     new Date().toLocaleString('en-US', {
@@ -60,6 +62,7 @@ const CheckIn_CheckOut: React.FC = () => {
     });
 
   useEffect(() => {
+    setCurrentTime(formatTime());
     const timer = setInterval(() => setCurrentTime(formatTime()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -67,14 +70,18 @@ const CheckIn_CheckOut: React.FC = () => {
   useEffect(() => {
     let listener: any;
     const setupListener = async () => {
-      listener = await App.addListener('resume', async () => {
-        const success = await enableLocation();
-        if (success && retryAction) {
-          retryAction();
-          setRetryAction(null);
-          setShowLocationAlert(false);
-        }
-      });
+      try {
+        listener = await App.addListener('resume', async () => {
+          const success = await enableLocation();
+          if (success && retryAction) {
+            retryAction();
+            setRetryAction(null);
+            setShowLocationAlert(false);
+          }
+        });
+      } catch (e) {
+        console.warn('App listener setup failed:', e);
+      }
     };
     setupListener();
     return () => {
@@ -145,7 +152,7 @@ const CheckIn_CheckOut: React.FC = () => {
         setShowLocationAlert(true);
         return;
       }
-      pendingAction(inside);
+      pendingAction?.(inside);
     } catch (err) {
       console.error('executeAction error:', err);
       setShowLocationChecking(false);
@@ -203,13 +210,14 @@ const CheckIn_CheckOut: React.FC = () => {
   if (loading) {
     return (
       <div className="skeleton-wrapper">
-        <Skeleton style={{ height: '200px', borderRadius: '28px' }} />
+        <Skeleton className="skeleton-box" />
       </div>
     );
   }
 
   return (
     <>
+      {/* ==================== NOT CHECKED ==================== */}
       {status === 'not-checked' && (
         <IonCard
           button
@@ -236,6 +244,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
+      {/* ==================== CHECKED IN ==================== */}
       {status === 'checked-in' && (
         <IonCard
           button
@@ -265,6 +274,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
+      {/* ==================== CHECKED OUT ==================== */}
       {status === 'checked-out' && (
         <IonCard className="checkedout-card">
           <div className="checkedout-header">
@@ -281,7 +291,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      
+      {/* ==================== CONFIRM MODAL ==================== */}
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -314,7 +324,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      
+      {/* ==================== LOCATION CHECKING ==================== */}
       <IonModal
         isOpen={showLocationChecking}
         backdropDismiss={false}
@@ -328,7 +338,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      
+      {/* ==================== LOCATION ALERT ==================== */}
       <IonAlert
         isOpen={showLocationAlert}
         header="Location Required"
@@ -365,7 +375,7 @@ const CheckIn_CheckOut: React.FC = () => {
         ]}
       />
 
-      
+      {/* ==================== FINAL ALERT MODAL ==================== */}
       <IonModal
         isOpen={showAlert}
         onDidDismiss={() => setShowAlert(false)}
@@ -373,38 +383,16 @@ const CheckIn_CheckOut: React.FC = () => {
         mode="ios"
         className="confirm-modal"
       >
-        <div
-          className="alert-modal-content"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            padding: '30px 20px',
-          }}
-        >
+        <div className="alert-modal-content alert-modal-inner">
           {(() => {
             const isBlocking = msg.includes('requires GPS') || msg.includes('not supported');
             const isWarning = msg.includes('Warning') || msg.includes('Failed');
+            const failedClass = isBlocking || isWarning ? 'alert-failed' : 'alert-success';
+            const titleClass = isBlocking || isWarning ? 'alert-failed-title' : 'alert-success-title';
 
             return (
               <>
-                <div
-                  className={`alert-icon-container ${isBlocking || isWarning ? 'alert-failed' : 'alert-success'}`}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: '50%',
-                    marginBottom: '20px',
-                    ...(isBlocking || isWarning
-                      ? { backgroundColor: 'rgba(244, 9, 9, 0.58)' } 
-                      : {}),
-                  }}
-                >
+                <div className={`alert-icon-container ${failedClass}`}>
                   <IonIcon
                     icon={isBlocking || isWarning ? close : checkmark}
                     className="alert-icon"
@@ -412,18 +400,11 @@ const CheckIn_CheckOut: React.FC = () => {
                   />
                 </div>
 
-                <h2
-                  className={isBlocking || isWarning ? 'alert-failed-title' : 'alert-success-title'}
-                  style={{
-                    fontWeight: 700,
-                    fontSize: '20px',
-                    marginBottom: '8px',
-                  }}
-                >
+                <h2 className={`alert-modal-title ${titleClass}`}>
                   {isBlocking ? 'Action Required' : isWarning ? 'Action Failed' : 'Success'}
                 </h2>
 
-                <p style={{ marginBottom: '20px', fontSize: '14px', color: '#444' }}>
+                <p className="alert-modal-message">
                   {msg.replace(/Warning:|Success:|Action Required:/g, '').trim()}
                 </p>
 
@@ -431,12 +412,7 @@ const CheckIn_CheckOut: React.FC = () => {
                   expand="block"
                   color={isBlocking || isWarning ? 'danger' : 'success'}
                   onClick={() => setShowAlert(false)}
-                  style={{
-                    width: '80%',
-                    maxWidth: '220px',
-                    fontWeight: 600,
-                    borderRadius: '10px',
-                  }}
+                  className="alert-ok-btn"
                 >
                   OK
                 </IonButton>

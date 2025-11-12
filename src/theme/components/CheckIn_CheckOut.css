@@ -1,8 +1,19 @@
+/* ==============================
+   Skeleton Loader
+============================== */
 .skeleton-wrapper {
   padding: 20px;
   margin: 20px;
 }
 
+.skeleton-box {
+  height: 200px;
+  border-radius: 28px;
+}
+
+/* ==============================
+   Check-In Card
+============================== */
 .checkin-card {
   --background: #ffffff;
   --border-radius: 28px;
@@ -53,6 +64,9 @@
   color: #0035f4;
 }
 
+/* ==============================
+   Checked-In Card
+============================== */
 .checkedin-card {
   --background: #ffffff;
   --border-radius: 20px;
@@ -108,6 +122,9 @@
   font-size: 14px;
 }
 
+/* ==============================
+   Checked-Out Card
+============================== */
 .checkedout-card {
   --background: #ffffff;
   --border-radius: 20px;
@@ -143,6 +160,9 @@
   font-size: 14px;
 }
 
+/* ==============================
+   Modal Styles
+============================== */
 .confirm-modal {
   --height: auto;
   --width: 90%;
@@ -167,17 +187,75 @@
   justify-content: center;
 }
 
+/* ==============================
+   Alert Modal (Success / Warning)
+============================== */
 .alert-modal-content {
   padding: 32px 24px;
   text-align: center;
 }
 
-.alert-icon-container {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+/* inner layout for alert modal */
+.alert-modal-inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
- 
+  text-align: center;
+  padding: 30px 20px;
+}
+
+/* alert icon container (green/red circle) */
+.alert-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.alert-icon-container.alert-failed {
+  background-color: rgba(244, 9, 9, 0.58); /* solid dark red */
+}
+
+.alert-icon-container.alert-success {
+  background-color: #16bc5b; /* green circle for success */
+}
+
+/* alert title and message */
+.alert-modal-title {
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.alert-modal-message {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #444;
+}
+
+/* OK button inside alert modal */
+.alert-ok-btn {
+  width: 80%;
+  max-width: 220px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* ==============================
+   Utility
+============================== */
+.alert-failed-title {
+  color: #d32f2f;
+}
+
+.alert-success-title {
+  color: #16bc5b;
+}
+
+.location-spinner {
+  margin-bottom: 16px;
 }
