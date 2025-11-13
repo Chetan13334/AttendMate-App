@@ -58,26 +58,46 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
     fetchUserDetails();
   }, [userEmail]);
 
-  // Function to handle photo loading errors
   const handlePhotoError = () => {
     setPhotoError(true);
+  };
+
+  // ✅ FIXED LOGOUT FUNCTION (Safe logout)
+  const logout = () => {
+    try {
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
 
   return (
     <IonPage>
       <AppHeader title="Profile" />
-      
+
       <IonContent style={{ "--background": "#ffffff" }}>
         {loading ? (
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
-            
-            <Skeleton width="110px" height="110px" borderRadius="50%" style={{ margin: "0 auto 20px" }} />
-            
-           
-            <Skeleton width="160px" height="22px" style={{ margin: "10px auto 2px" }} />
-            <Skeleton width="200px" height="15px" style={{ margin: "0 auto 20px" }} />
-            
-           
+            <Skeleton
+              width="110px"
+              height="110px"
+              borderRadius="50%"
+              style={{ margin: "0 auto 20px" }}
+            />
+
+            <Skeleton
+              width="160px"
+              height="22px"
+              style={{ margin: "10px auto 2px" }}
+            />
+            <Skeleton
+              width="200px"
+              height="15px"
+              style={{ margin: "0 auto 20px" }}
+            />
+
             <div
               style={{
                 borderTop: "1px solid #e5e7eb",
@@ -86,10 +106,18 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                 marginBottom: "25px",
               }}
             >
-              <Skeleton width="80px" height="13px" style={{ margin: "0 auto 6px" }} />
-              <Skeleton width="120px" height="15px" style={{ margin: "6px auto 0" }} />
+              <Skeleton
+                width="80px"
+                height="13px"
+                style={{ margin: "0 auto 6px" }}
+              />
+              <Skeleton
+                width="120px"
+                height="15px"
+                style={{ margin: "6px auto 0" }}
+              />
             </div>
-        
+
             <div
               style={{
                 width: "100%",
@@ -110,15 +138,18 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <Skeleton width="20px" height="20px" style={{ marginRight: "12px" }} />
+                    <Skeleton
+                      width="20px"
+                      height="20px"
+                      style={{ marginRight: "12px" }}
+                    />
                     <Skeleton width="120px" height="15px" />
                   </div>
                   <Skeleton width="18px" height="18px" />
                 </div>
               ))}
             </div>
-            
-       
+
             <div
               style={{
                 marginTop: "30px",
@@ -131,14 +162,17 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center" }}>
-                <Skeleton width="20px" height="20px" style={{ marginRight: "10px" }} />
+                <Skeleton
+                  width="20px"
+                  height="20px"
+                  style={{ marginRight: "10px" }}
+                />
                 <Skeleton width="80px" height="15px" />
               </div>
             </div>
           </div>
         ) : (
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
-         
             <div
               style={{
                 width: "110px",
@@ -168,11 +202,14 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                   onError={handlePhotoError}
                 />
               ) : (
-                <span>{userData?.Name ? userData.Name.charAt(0).toUpperCase() : "U"}</span>
+                <span>
+                  {userData?.Name
+                    ? userData.Name.charAt(0).toUpperCase()
+                    : "U"}
+                </span>
               )}
             </div>
 
-       
             <h2
               style={{
                 margin: "10px 0 2px",
@@ -193,7 +230,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               {userData?.Email || "No email found"}
             </p>
 
-            
             <div
               style={{
                 borderTop: "1px solid #e5e7eb",
@@ -202,7 +238,9 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                 marginBottom: "25px",
               }}
             >
-              <p style={{ color: "#999", fontSize: "13px", margin: "0 0 6px" }}>
+              <p
+                style={{ color: "#999", fontSize: "13px", margin: "0 0 6px" }}
+              >
                 Date Joined
               </p>
               <p
@@ -217,7 +255,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               </p>
             </div>
 
-       
             <div
               style={{
                 width: "100%",
@@ -233,7 +270,11 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                   color: "#333",
                 },
                 { icon: settingsOutline, label: "Settings", color: "#333" },
-                { icon: helpCircleOutline, label: "Help & Support", color: "#333" },
+                {
+                  icon: helpCircleOutline,
+                  label: "Help & Support",
+                  color: "#333",
+                },
               ].map((item, idx) => (
                 <div
                   key={idx}
@@ -265,7 +306,6 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
               ))}
             </div>
 
-        
             <div
               style={{
                 marginTop: "30px",
@@ -289,17 +329,31 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                     color: "#d9534f",
                   }}
                 />
-                <span style={{ fontSize: "15px", fontWeight: 600 }}>Log Out</span>
+                <span style={{ fontSize: "15px", fontWeight: 600 }}>
+                  Log Out
+                </span>
               </div>
             </div>
 
+            {/* FIXED LOGOUT ALERT */}
             <IonAlert
               isOpen={showLogoutAlert}
               header="Confirm Logout"
               message="Are you sure you want to log out?"
               buttons={[
                 { text: "Cancel", role: "cancel" },
-                { text: "Logout", role: "confirm", handler: onLogout },
+                {
+                  text: "Logout",
+                  role: "confirm",
+                  handler: () => {
+                    try {
+                      if (typeof onLogout === "function") onLogout();
+                    } catch (e) {
+                      console.warn(e);
+                    }
+                    logout();
+                  },
+                },
               ]}
               onDidDismiss={() => setShowLogoutAlert(false)}
             />

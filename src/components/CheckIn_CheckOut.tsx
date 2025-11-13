@@ -1,4 +1,4 @@
-// src/components/CheckIn_CheckOut.tsx
+
 import React, { useEffect, useState } from "react";
 import {
   IonCard,
@@ -66,7 +66,7 @@ const CheckIn_CheckOut: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // initial load
+  
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -95,7 +95,7 @@ const CheckIn_CheckOut: React.FC = () => {
     loadData();
   }, [loggedInUserEmail]);
 
-  // real-time listener -> updates UI only (no alerts)
+  
   useEffect(() => {
     if (!employeeId) return;
     const unsubscribe = listenToAttendance(today, employeeId, (data: any) => {
@@ -120,7 +120,7 @@ const CheckIn_CheckOut: React.FC = () => {
     setShowModal(true);
   };
 
-  // verify location and call pendingAction (if possible)
+  
   const executeAction = async () => {
     setShowModal(false);
     setShowLocationChecking(true);
@@ -129,12 +129,12 @@ const CheckIn_CheckOut: React.FC = () => {
       setShowLocationChecking(false);
 
       if (!success) {
-        // Could not obtain coords (GPS off or permission denied)
+        
         setShowLocationAlert(true);
         return;
       }
 
-      // run handler (handler will show success/warning)
+      
       pendingAction?.(inside);
     } catch (err) {
       console.error("executeAction error:", err);
@@ -190,8 +190,7 @@ const CheckIn_CheckOut: React.FC = () => {
     else if (status === "checked-in") confirmAction(handleCheckOut, "Check Out");
   };
 
-  // User chose "Turn On Location" in the alert -> try silent enable (no settings redirect),
-  // then verify position and run pendingAction if available.
+  
   const onTurnOnLocation = async () => {
     setShowLocationAlert(false);
     setShowLocationChecking(true);
@@ -200,12 +199,12 @@ const CheckIn_CheckOut: React.FC = () => {
       setShowLocationChecking(false);
 
       if (!enabled) {
-        // silent enable failed -> show simple informational alert with OK (No buttons other than OK)
+       
         setShowNoThanksAlert(true);
         return;
       }
 
-      // enabled succeeded -> verify position now
+      
       const { success, inside } = await quickGeoCheck();
       if (!success) {
         setMsg("Warning: Could not verify location after enabling location.");
@@ -213,7 +212,7 @@ const CheckIn_CheckOut: React.FC = () => {
         return;
       }
 
-      // Verified -> run handler
+      
       pendingAction?.(inside);
     } catch (err) {
       console.error("onTurnOnLocation error:", err);
@@ -222,7 +221,7 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
-  // User selected Cancel/No Thanks from Turn On alert -> show the informational OK alert
+  
   const onNoThanks = () => {
     setShowLocationAlert(false);
     setShowNoThanksAlert(true);
@@ -249,7 +248,7 @@ const CheckIn_CheckOut: React.FC = () => {
 
   return (
     <>
-      {/* NOT CHECKED */}
+      
       {status === "not-checked" && (
         <IonCard button onClick={handleTap} disabled={isProcessing} className="checkin-card ion-activatable ripple-parent">
           <div className="checkin-header">
@@ -267,7 +266,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED IN */}
+      
       {status === "checked-in" && (
         <IonCard button onClick={handleTap} disabled={isProcessing} className="checkedin-card ion-activatable ripple-parent">
           <div className="checkedin-header">
@@ -288,7 +287,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED OUT */}
+      
       {status === "checked-out" && (
         <IonCard className="checkedout-card">
           <div className="checkedout-header">
@@ -305,7 +304,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CONFIRM MODAL */}
+      
       <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)} backdropDismiss={false} mode="ios" className="confirm-modal">
         <div className="confirm-modal-content">
           <IonIcon icon={timeOutline} className="modal-icon" />
@@ -323,7 +322,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* LOCATION CHECKING (spinner) */}
+      
       <IonModal isOpen={showLocationChecking} backdropDismiss={false} mode="ios" className="confirm-modal">
         <div className="confirm-modal-content">
           <IonSpinner name="crescent" color="primary" className="location-spinner" />
@@ -332,41 +331,24 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* LOCATION ALERT: Turn On / Cancel */}
+      
       <IonAlert
-        isOpen={showLocationAlert}
-        header="Location Required"
-        message="Location is off. Please turn on location to continue."
-        buttons={[
-          // {
-          //   text: "Turn On Location",
-          //   cssClass: "alert-button-success",
-          //   handler: () => onTurnOnLocation(),
-          // },
-          {
-            text: "Okay",
-            role: "cancel",
-            handler: () => onNoThanks(),
-          },
-        ]}
-      />
-
-      {/* NO THANKS informational alert with OK button */}
-      {/* <IonAlert
         isOpen={showNoThanksAlert}
         header="Location Required"
-        message="To check-in you must turn on the location."
+        message="To CHECK IN you need to turn on the location."
         buttons={[
           {
-            text: "OK",
+            text: "Ok",
             role: "cancel",
             handler: () => setShowNoThanksAlert(false),
           },
         ]}
-        onDidDismiss={() => setShowNoThanksAlert(false)}
-      /> */}
+         onDidDismiss={() => setShowNoThanksAlert(false)}
+      />
 
-      {/* FINAL ALERT MODAL (success / warning) */}
+      
+
+      
       <IonModal isOpen={showAlert} onDidDismiss={() => setShowAlert(false)} backdropDismiss={false} mode="ios" className="confirm-modal">
         <div className="alert-modal-content alert-modal-inner">
           {(() => {
