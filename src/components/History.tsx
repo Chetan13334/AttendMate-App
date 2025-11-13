@@ -42,7 +42,7 @@ const History: React.FC = () => {
     return date;
   });
 
-  // Fetch user photo
+  
   useEffect(() => {
     const fetchUserPhoto = async () => {
       if (!userEmail) return;
@@ -84,7 +84,7 @@ const History: React.FC = () => {
       endDate: endDate.toISOString() 
     });
     
-    // Log the previous date range vs new date range
+    
     if (dateRangeRef.current) {
       console.log("Previous date range:", 
         new Date(dateRangeRef.current.start).toISOString(), 

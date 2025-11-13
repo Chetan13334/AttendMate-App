@@ -60,14 +60,14 @@ const CheckIn_CheckOut: React.FC = () => {
       year: "numeric",
     });
 
-  // Update current time every second
+  
   useEffect(() => {
     setCurrentTime(formatTime());
     const timer = setInterval(() => setCurrentTime(formatTime()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Load employee & attendance data
+  
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -96,7 +96,7 @@ const CheckIn_CheckOut: React.FC = () => {
     loadData();
   }, [loggedInUserEmail]);
 
-  // Real-time listener
+  
   useEffect(() => {
     if (!employeeId) return;
     const unsubscribe = listenToAttendance(today, employeeId, (data: any) => {
@@ -207,7 +207,7 @@ const CheckIn_CheckOut: React.FC = () => {
         return;
       }
 
-      // Reset alerts on success
+      
       setShowLocationAlert(false);
       setShowNoThanksAlert(false);
       pendingAction?.(inside);
@@ -247,7 +247,7 @@ const CheckIn_CheckOut: React.FC = () => {
 
   return (
     <>
-      {/* NOT CHECKED IN */}
+      
       {status === "not-checked" && (
         <IonCard
           button
@@ -274,7 +274,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED IN */}
+      
       {status === "checked-in" && (
         <IonCard
           button
@@ -304,7 +304,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CHECKED OUT */}
+      
       {status === "checked-out" && (
         <IonCard className="checkedout-card">
           <div className="checkedout-header">
@@ -321,7 +321,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-      {/* CONFIRM MODAL */}
+      
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -354,7 +354,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* CHECKING LOCATION */}
+     
       <IonModal
         isOpen={showLocationChecking}
         backdropDismiss={false}
@@ -368,7 +368,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* TURN ON LOCATION? */}
+      
       <IonModal
         isOpen={showLocationAlert}
         onDidDismiss={() => setShowLocationAlert(false)}
@@ -379,35 +379,16 @@ const CheckIn_CheckOut: React.FC = () => {
         <div className="confirm-modal-content">
           <IonIcon icon={timeOutline} className="modal-icon" />
           <h2>Turn On Location</h2>
-          <p>We need your location to verify check-in.</p>
+          <p>We need your location to verify check-in, try again...</p>
           <div className="modal-buttons">
-            <IonButton color="success" onClick={onTurnOnLocation}>
-              Turn On
-            </IonButton>
+           
             <IonButton fill="outline" color="medium" onClick={onNoThanks}>
-              No Thanks
+             OK 
             </IonButton>
           </div>
         </div>
       </IonModal>
-
-      {/* FINAL ALERT: AFTER "NO THANKS" */}
-      <IonAlert
-        isOpen={showNoThanksAlert}
-        header="Location Required"
-        message="To CHECK IN you need to turn on the location."
-        buttons={[
-          {
-            text: "OK",
-            handler: () => {
-              setShowNoThanksAlert(false);
-              setShowLocationAlert(false); // Allow retry
-            },
-          },
-        ]}
-      />
-
-      {/* SUCCESS / ERROR ALERT */}
+      
       <IonModal
         isOpen={showAlert}
         onDidDismiss={() => setShowAlert(false)}
