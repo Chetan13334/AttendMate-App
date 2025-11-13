@@ -1,5 +1,4 @@
-// src/content/CheckInCheckOut/CheckInCheckOutContent.ts
-
+// src/content/CheckInCheckOutContent.ts
 export const CheckInCheckOutContent = {
   notChecked: {
     title: "CHECK IN",
@@ -41,8 +40,7 @@ export const CheckInCheckOutContent = {
 
   alerts: {
     locationRequiredTitle: "Location Required",
-    locationRequiredMsg:
-      "We need your location to verify check-in/out. Tap below to turn it on.",
+    locationRequiredMsg: "Location is off. Please turn on location to continue.",
     locationError: "Please turn on location in settings and try again.",
     successTitle: "Success",
     failTitle: "Action Failed",

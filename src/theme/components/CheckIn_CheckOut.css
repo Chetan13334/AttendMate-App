@@ -1,6 +1,6 @@
-/* ==============================
-   Skeleton Loader
-============================== */
+/* src/theme/components/CheckIn_CheckOut.css */
+/* (kept your existing styles, added small tweaks) */
+
 .skeleton-wrapper {
   padding: 20px;
   margin: 20px;
@@ -11,9 +11,6 @@
   border-radius: 28px;
 }
 
-/* ==============================
-   Check-In Card
-============================== */
 .checkin-card {
   --background: #ffffff;
   --border-radius: 28px;
@@ -64,198 +61,34 @@
   color: #0035f4;
 }
 
-/* ==============================
-   Checked-In Card
-============================== */
-.checkedin-card {
-  --background: #ffffff;
-  --border-radius: 20px;
-  margin: 16px;
-  margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+/* checkedin / checkedout styles kept as-is */
+.checkedin-card { --background: #ffffff; --border-radius: 20px; margin: 16px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.checkedin-header { background-color: #00bcd4; border-radius: 20px 20px 0 0; padding: 24px 20px; display:flex; align-items:center; position:relative; }
+.checkedin-icon { font-size: 36px; color: #fff; margin-right: 16px; }
+.checkedin-badge { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: #fff; border-radius: 50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.checkedin-badge-icon { font-size: 38px; color: #00bcd4; }
+.checkedin-content h4 { margin: 0; font-weight: 600; color: #29c546; }
+.checkedin-content p { margin: 6px 0 0; color: #555; font-size: 14px; }
 
-.checkedin-header {
-  background-color: #00bcd4;
-  border-radius: 20px 20px 0 0;
-  padding: 24px 20px;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
+.checkedout-card { --background: #ffffff; --border-radius: 20px; margin: 16px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.checkedout-header { background-color: #3880ff; border-radius: 20px 20px 0 0; padding: 24px 20px; display:flex; align-items:center; position:relative; }
+.checkedout-icon { font-size: 36px; color: #fff; margin-right: 16px; }
+.checkedout-content h4 { margin: 0; font-weight: 600; color: #d32f2f; }
+.checkedout-content p { margin: 6px 0 0; color: #555; font-size: 14px; }
 
-.checkedin-icon {
-  font-size: 36px;
-  color: #fff;
-  margin-right: 16px;
-}
+.confirm-modal { --height: auto; --width: 90%; --max-width: 380px; --border-radius: 24px; z-index: 9999; }
+.confirm-modal-content { padding: 32px 24px; text-align: center; }
+.modal-icon { font-size: 48px; color: var(--ion-color-primary); margin-bottom: 20px; }
+.modal-buttons { display:flex; gap:12px; justify-content:center; }
 
-.checkedin-badge {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 60px;
-  height: 60px;
-  background: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.checkedin-badge-icon {
-  font-size: 38px;
-  color: #00bcd4;
-}
-
-.checkedin-content h4 {
-  margin: 0;
-  font-weight: 600;
-  color: #29c546;
-}
-
-.checkedin-content p {
-  margin: 6px 0 0;
-  color: #555;
-  font-size: 14px;
-}
-
-/* ==============================
-   Checked-Out Card
-============================== */
-.checkedout-card {
-  --background: #ffffff;
-  --border-radius: 20px;
-  margin: 16px;
-  margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.checkedout-header {
-  background-color: #3880ff;
-  border-radius: 20px 20px 0 0;
-  padding: 24px 20px;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.checkedout-icon {
-  font-size: 36px;
-  color: #fff;
-  margin-right: 16px;
-}
-
-.checkedout-content h4 {
-  margin: 0;
-  font-weight: 600;
-  color: #d32f2f;
-}
-
-.checkedout-content p {
-  margin: 6px 0 0;
-  color: #555;
-  font-size: 14px;
-}
-
-/* ==============================
-   Modal Styles
-============================== */
-.confirm-modal {
-  --height: auto;
-  --width: 90%;
-  --max-width: 380px;
-  --border-radius: 24px;
-}
-
-.confirm-modal-content {
-  padding: 32px 24px;
-  text-align: center;
-}
-
-.modal-icon {
-  font-size: 48px;
-  color: var(--ion-color-primary);
-  margin-bottom: 20px;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-/* ==============================
-   Alert Modal (Success / Warning)
-============================== */
-.alert-modal-content {
-  padding: 32px 24px;
-  text-align: center;
-}
-
-/* inner layout for alert modal */
-.alert-modal-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 30px 20px;
-}
-
-/* alert icon container (green/red circle) */
-.alert-icon-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  margin-bottom: 20px;
-}
-
-.alert-icon-container.alert-failed {
-  background-color: rgba(244, 9, 9, 0.58); /* solid dark red */
-}
-
-.alert-icon-container.alert-success {
-  background-color: #16bc5b; /* green circle for success */
-}
-
-/* alert title and message */
-.alert-modal-title {
-  font-weight: 700;
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.alert-modal-message {
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: #444;
-}
-
-/* OK button inside alert modal */
-.alert-ok-btn {
-  width: 80%;
-  max-width: 220px;
-  font-weight: 600;
-  border-radius: 10px;
-}
-
-/* ==============================
-   Utility
-============================== */
-.alert-failed-title {
-  color: #d32f2f;
-}
-
-.alert-success-title {
-  color: #16bc5b;
-}
-
-.location-spinner {
-  margin-bottom: 16px;
-}
+.alert-modal-content { padding: 32px 24px; text-align:center; }
+.alert-modal-inner { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px 20px; }
+.alert-icon-container { display:flex; justify-content:center; align-items:center; width:70px; height:70px; border-radius:50%; margin-bottom:20px; }
+.alert-icon-container.alert-failed { background-color: rgba(244,9,9,0.58); }
+.alert-icon-container.alert-success { background-color: #16bc5b; }
+.alert-modal-title { font-weight:700; font-size:20px; margin-bottom:8px; }
+.alert-modal-message { margin-bottom:20px; font-size:14px; color:#444; }
+.alert-ok-btn { width:80%; max-width:220px; font-weight:600; border-radius:10px; }
+.alert-failed-title { color:#d32f2f; }
+.alert-success-title { color:#16bc5b; }
+.location-spinner { margin-bottom:16px; }
