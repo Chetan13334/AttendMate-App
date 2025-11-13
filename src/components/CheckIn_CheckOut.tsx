@@ -332,27 +332,27 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* LOCATION ALERT: Turn On / Cancel
+      {/* LOCATION ALERT: Turn On / Cancel */}
       <IonAlert
         isOpen={showLocationAlert}
         header="Location Required"
         message="Location is off. Please turn on location to continue."
         buttons={[
+          // {
+          //   text: "Turn On Location",
+          //   cssClass: "alert-button-success",
+          //   handler: () => onTurnOnLocation(),
+          // },
           {
-            text: "Turn On Location",
-            cssClass: "alert-button-success",
-            handler: () => onTurnOnLocation(),
-          },
-          {
-            text: "Cancel",
+            text: "Okay",
             role: "cancel",
             handler: () => onNoThanks(),
           },
         ]}
-      /> */}
+      />
 
       {/* NO THANKS informational alert with OK button */}
-      <IonAlert
+      {/* <IonAlert
         isOpen={showNoThanksAlert}
         header="Location Required"
         message="To check-in you must turn on the location."
@@ -364,7 +364,7 @@ const CheckIn_CheckOut: React.FC = () => {
           },
         ]}
         onDidDismiss={() => setShowNoThanksAlert(false)}
-      />
+      /> */}
 
       {/* FINAL ALERT MODAL (success / warning) */}
       <IonModal isOpen={showAlert} onDidDismiss={() => setShowAlert(false)} backdropDismiss={false} mode="ios" className="confirm-modal">
