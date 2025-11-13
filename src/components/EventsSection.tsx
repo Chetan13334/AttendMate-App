@@ -160,10 +160,10 @@ const EventsSection: React.FC = () => {
         <div>
           {[...Array(1)].map((_, index) => (
             <div key={index} className="birthday-new-card">
-              {/* Circular Photo Skeleton */}
+             
               <Skeleton width="72px" height="72px" variant="circle" />
 
-              {/* Text Lines */}
+              
               <div style={{ marginLeft: "16px", width: "100%" }}>
                 <Skeleton width="150px" height="20px" />
                 <Skeleton
@@ -228,10 +228,10 @@ const EventsSection: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              {/* Icon Skeleton */}
+              
               <Skeleton width="40px" height="40px" borderRadius="8px" />
 
-              {/* Text Skeleton */}
+              
               <div style={{ marginLeft: "14px", width: "100%" }}>
                 <Skeleton width="150px" height="16px" />
                 <Skeleton

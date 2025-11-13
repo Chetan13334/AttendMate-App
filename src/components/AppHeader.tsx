@@ -62,18 +62,18 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
     <IonHeader>
       <IonToolbar className="app-header-toolbar">
 
-        {/* LEFT SIDE — Logo + Title */}
+        
         <div slot="start" className="header-left">
           <img src={Logo} alt="Logo" className="app-logo" />
           <h1 className="app-title">{title}</h1>
         </div>
 
-        {/* RIGHT SIDE — Avatar */}
+        
         <div
           slot="end"
           className="avatar-trigger"
           onClick={(e) => {
-            setPopoverEvent(e.nativeEvent); // Pass event for positioning
+            setPopoverEvent(e.nativeEvent); 
             setShowPopover(true);
           }}
         >
@@ -93,7 +93,7 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
 
       </IonToolbar>
 
-      {/* ========== MANUAL POPOVER (NO TRIGGER BUGS) ========== */}
+      
       <IonPopover
         isOpen={showPopover}
         event={popoverEvent}
