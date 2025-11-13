@@ -332,7 +332,7 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-      {/* LOCATION ALERT: Turn On / Cancel */}
+      {/* LOCATION ALERT: Turn On / Cancel
       <IonAlert
         isOpen={showLocationAlert}
         header="Location Required"
@@ -349,7 +349,7 @@ const CheckIn_CheckOut: React.FC = () => {
             handler: () => onNoThanks(),
           },
         ]}
-      />
+      /> */}
 
       {/* NO THANKS informational alert with OK button */}
       <IonAlert

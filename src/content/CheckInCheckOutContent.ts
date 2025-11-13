@@ -40,7 +40,7 @@ export const CheckInCheckOutContent = {
 
   alerts: {
     locationRequiredTitle: "Location Required",
-    locationRequiredMsg: "Location is off. Please turn on location to continue.",
+    // locationRequiredMsg: "Location is off. Please turn on location to continue.",
     locationError: "Please turn on location in settings and try again.",
     successTitle: "Success",
     failTitle: "Action Failed",
