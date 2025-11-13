@@ -5,7 +5,6 @@
   margin-bottom: 80px;
 }
 
-
 .birthday-card {
   border-radius: 18px;
   background-color: #fff8e1;
@@ -45,7 +44,6 @@
   color: #555;
 }
 
-
 .event-header {
   font-weight: 700;
   font-size: 17px;
@@ -53,14 +51,12 @@
   color: #000;
 }
 
-
 .event-card {
   border-radius: 18px;
   min-height: 54px;
   margin-bottom: 4px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
-
 
 .yellow-theme {
   background-color: #fff8e1;
@@ -77,7 +73,6 @@
 .blue-theme {
   background-color: #e3f2fd;
 }
-
 
 .event-icon {
   width: 36px;
@@ -109,7 +104,6 @@
   color: #fff !important;
 }
 
-
 .event-grid {
   padding: 8px 6px;
 }
@@ -132,10 +126,68 @@
   padding: 6px 10px;
 }
 
-
 .no-events {
   text-align: center;
   font-size: 14px;
   color: #777;
   margin-top: 4px;
+}
+
+/* ========================================================= */
+/* NEW Birthday Card (Screenshot-1 Style) */
+/* ========================================================= */
+
+.birthday-new-card {
+  width: 100%;
+  background: linear-gradient(135deg, #dbeafe, #fff7cd);
+  padding: 18px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Circular Photo */
+.birthday-photo-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.birthday-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Text Section */
+.birthday-text-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.birthday-big-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.birthday-name-text {
+  margin: 4px 0 0;
+  font-size: 16px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.birthday-wish-text {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #475569;
 }

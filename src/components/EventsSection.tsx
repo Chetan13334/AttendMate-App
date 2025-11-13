@@ -12,7 +12,7 @@ import { giftOutline, calendarOutline } from "ionicons/icons";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import Skeleton from "./Skeleton";
-
+import "../theme/components/EventSection.css";
 
 interface EventData {
   id: string;
@@ -29,13 +29,11 @@ interface EmployeeData {
   Photo?: string;
 }
 
-
 const EventsSection: React.FC = () => {
   const [events, setEvents] = useState<EventData[]>([]);
   const [birthdays, setBirthdays] = useState<EmployeeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [birthdayLoading, setBirthdayLoading] = useState(true);
-
 
   useEffect(() => {
     const colRef = collection(db, "Events");
@@ -68,7 +66,6 @@ const EventsSection: React.FC = () => {
     );
     return () => unsubscribe();
   }, []);
-
 
   useEffect(() => {
     const colRef = collection(db, "Employee_Details");
@@ -111,7 +108,6 @@ const EventsSection: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -128,7 +124,10 @@ const EventsSection: React.FC = () => {
 
     if (evDate < today) return false;
 
-    if (evDate.getMonth() === currentMonth && evDate.getFullYear() === currentYear)
+    if (
+      evDate.getMonth() === currentMonth &&
+      evDate.getFullYear() === currentYear
+    )
       return true;
 
     if (
@@ -146,114 +145,63 @@ const EventsSection: React.FC = () => {
       new Date(a.event_date!).getTime() - new Date(b.event_date!).getTime()
   );
 
-
   return (
     <div
       style={{
         backgroundColor: "#ffffff",
         padding: "0 14px",
         marginTop: "8px",
-        marginBottom: "0px", 
-        paddingBottom: "0px", 
-        overflow: "hidden", 
+        marginBottom: "0px",
+        paddingBottom: "0px",
+        overflow: "hidden",
       }}
     >
-      
       {birthdayLoading ? (
         <div>
-          {[...Array(2)].map((_, index) => (
-            <IonCard
-              key={index}
-              style={{
-                borderRadius: "18px",
-                backgroundColor: "#FFF8E1",
-                marginBottom: "6px",
-                boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
-              }}
-            >
-              <IonCardContent style={{ padding: "10px" }}>
-                <IonGrid>
-                  <IonRow className="ion-align-items-center">
-                    <IonCol size="2">
-                      <Skeleton width="36px" height="36px" borderRadius="8px" />
-                    </IonCol>
-                    <IonCol size="10">
-                      <Skeleton
-                        width="130px"
-                        height="14px"
-                        style={{ marginBottom: "4px" }}
-                      />
-                      <Skeleton width="160px" height="12px" />
-                    </IonCol>
-                  </IonRow>
-                </IonGrid>
-              </IonCardContent>
-            </IonCard>
+          {[...Array(1)].map((_, index) => (
+            <div key={index} className="birthday-new-card">
+              {/* Circular Photo Skeleton */}
+              <Skeleton width="72px" height="72px" variant="circle" />
+
+              {/* Text Lines */}
+              <div style={{ marginLeft: "16px", width: "100%" }}>
+                <Skeleton width="150px" height="20px" />
+                <Skeleton
+                  width="110px"
+                  height="16px"
+                  style={{ marginTop: "8px" }}
+                />
+                <Skeleton
+                  width="180px"
+                  height="14px"
+                  style={{ marginTop: "6px" }}
+                />
+              </div>
+            </div>
           ))}
         </div>
+      ) : birthdays.length === 0 ? (
+        <></>
       ) : (
         birthdays.map((person) => (
-          <IonCard
-            key={person.id}
-            style={{
-              borderRadius: "18px",
-              backgroundColor: "#FFF8E1",
-              marginBottom: "6px",
-              boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
-            }}
-          >
-            <IonCardContent style={{ padding: "10px" }}>
-              <IonGrid>
-                <IonRow className="ion-align-items-center">
-                  <IonCol size="2">
-                    <div
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        backgroundColor: "#FFCA28",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IonIcon
-                        icon={giftOutline}
-                        style={{ fontSize: "22px", color: "#fff" }}
-                      />
-                    </div>
-                  </IonCol>
-                  <IonCol size="10">
-                    <IonText>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontWeight: 700,
-                          fontSize: "15px",
-                          color: "#333",
-                        }}
-                      >
-                        🎉 Happy Birthday, {person.Name}!
-                      </h3>
-                      <p
-                        style={{
-                          margin: "2px 0 0",
-                          fontSize: "13px",
-                          color: "#555",
-                        }}
-                      >
-                        Have an amazing day 🎂
-                      </p>
-                    </IonText>
-                  </IonCol>
-                </IonRow>
-              </IonGrid>
-            </IonCardContent>
-          </IonCard>
+          <div key={person.id} className="birthday-new-card">
+            <div className="birthday-photo-box">
+              <img
+                src={person.Photo || "/assets/default-user.png"}
+                alt={person.Name}
+                className="birthday-photo-img"
+              />
+            </div>
+
+            <div className="birthday-text-box">
+              <h2 className="birthday-big-title">HAPPY BIRTHDAY</h2>
+              <p className="birthday-name-text">{person.Name}</p>
+              <p className="birthday-wish-text">Wishing You a Great Day!</p>
+            </div>
+          </div>
         ))
       )}
 
-      
       <IonText>
         <h2
           style={{
@@ -268,35 +216,31 @@ const EventsSection: React.FC = () => {
       </IonText>
 
       {loading ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          {[...Array(3)].map((_, index) => (
-            <IonCard
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[...Array(5)].map((_, index) => (
+            <div
               key={index}
               style={{
-                backgroundColor: "#E3F2FD",
+                background: "#E3F2FD",
+                padding: "14px",
                 borderRadius: "18px",
-                minHeight: "54px",
-                padding: "6px 10px",
-                marginBottom: "4px",
-                boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              <IonGrid style={{ padding: "6px 0" }}>
-                <IonRow className="ion-align-items-center">
-                  <IonCol size="2">
-                    <Skeleton width="36px" height="36px" borderRadius="8px" />
-                  </IonCol>
-                  <IonCol size="10">
-                    <Skeleton
-                      width="120px"
-                      height="14px"
-                      style={{ marginBottom: "3px" }}
-                    />
-                    <Skeleton width="90px" height="12px" />
-                  </IonCol>
-                </IonRow>
-              </IonGrid>
-            </IonCard>
+              {/* Icon Skeleton */}
+              <Skeleton width="40px" height="40px" borderRadius="8px" />
+
+              {/* Text Skeleton */}
+              <div style={{ marginLeft: "14px", width: "100%" }}>
+                <Skeleton width="150px" height="16px" />
+                <Skeleton
+                  width="100px"
+                  height="14px"
+                  style={{ marginTop: "6px" }}
+                />
+              </div>
+            </div>
           ))}
         </div>
       ) : sortedEvents.length === 0 ? (

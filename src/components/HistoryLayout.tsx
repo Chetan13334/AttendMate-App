@@ -9,6 +9,7 @@ import {
   IonModal,
   IonCard,
   IonCardContent,
+  IonSpinner,
 } from "@ionic/react";
 import {
   calendarOutline,
@@ -33,6 +34,9 @@ interface HistoryLayoutProps {
   setShowModal: (v: boolean) => void;
   setStartDate: (v: Date) => void;
   setEndDate: (v: Date) => void;
+  userPhoto?: string | null;
+  photoLoading?: boolean;
+  photoError?: boolean;
 }
 
 const HistoryLayout: React.FC<HistoryLayoutProps> = ({
@@ -48,200 +52,217 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   setShowModal,
   setStartDate,
   setEndDate,
+  userPhoto,
+  photoLoading,
+  photoError,
 }) => {
+  // Handle photo loading error
+  const handlePhotoError = () => {
+    console.log("Error loading user photo, falling back to initials");
+  };
+
   return (
     <>
       <IonHeader translucent>
         <IonToolbar />
       </IonHeader>
 
-      <IonContent fullscreen color="light">
-      
-        <div className="history-header">
-          <div className="user-section">
-            {loading ? (
-              <Skeleton width="40px" height="40px" borderRadius="50%" />
-            ) : (
-              <div className="user-avatar">{initials}</div>
-            )}
-            {loading ? (
-              <Skeleton width="140px" height="16px" />
-            ) : (
-              <IonText color="light">
-                <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
-                <p className="user-subtitle">Review your daily attendance.</p>
-              </IonText>
-            )}
+      <IonContent fullscreen color="light" className="history-content">
+        <div className="content-wrapper">
+          <div className="history-header">
+            <div className="history-header-inner">
+              <div className="user-section">
+                {loading || photoLoading ? (
+                  <Skeleton width="40px" height="40px" borderRadius="50%" />
+                ) : userPhoto && !photoError ? (
+                  <img 
+                    src={userPhoto} 
+                    alt="User" 
+                    className="user-avatar-img"
+                    onError={handlePhotoError}
+                  />
+                ) : (
+                  <div className="user-avatar">{initials}</div>
+                )}
+                {loading ? (
+                  <Skeleton width="140px" height="16px" />
+                ) : (
+                  <IonText color="light">
+                    <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
+                    <p className="user-subtitle">Review your daily attendance.</p>
+                  </IonText>
+                )}
+              </div>
+              
+              
+              <div className="today-card">
+                <div className="today-item">
+                  <IonIcon icon={logInOutline} color="primary" />
+                  <p className="today-label in">Check In</p>
+                  <h5 className="today-time in">
+                    {todayRecord?.checkIn || "Not marked"}
+                  </h5>
+                </div>
+
+                <div className="divider" />
+
+                <div className="today-item">
+                  <IonIcon icon={logOutOutline} color="danger" />
+                  <p className="today-label out">Check Out</p>
+                  <h5 className="today-time out">
+                    {todayRecord?.checkOut || "Not marked"}
+                  </h5>
+                </div>
+
+                <div className="divider" />
+
+                <div className="today-item">
+                  <IonIcon icon={timeOutline} color="medium" />
+                  <p
+                    className={`today-label ${
+                      todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
+                    }`}
+                  >
+                    {todayRecord?.checkOut === "Not marked"
+                      ? "Ongoing Duration"
+                      : "Total Duration"}
+                  </p>
+                  <h5
+                    className={`today-time ${
+                      todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
+                    }`}
+                  >
+                    {todayRecord?.duration === "N/A"
+                      ? "00h 00m"
+                      : todayRecord?.duration || "00h 00m"}
+                    {todayRecord?.checkOut === "Not marked" &&
+                      todayRecord?.checkIn !== "Not marked" && (
+                        <span className="blink-dot">•</span>
+                      )}
+                  </h5>
+                </div>
+              </div>
+            </div>
           </div>
 
-          
-          <div className="today-card">
-            <div className="today-item">
-              <IonIcon icon={logInOutline} color="primary" />
-              <p className="today-label in">Check In</p>
-              <h5 className="today-time in">
-                {todayRecord?.checkIn || "Not marked"}
-              </h5>
-            </div>
-
-            <div className="divider" />
-
-            <div className="today-item">
-              <IonIcon icon={logOutOutline} color="danger" />
-              <p className="today-label out">Check Out</p>
-              <h5 className="today-time out">
-                {todayRecord?.checkOut || "Not marked"}
-              </h5>
-            </div>
-
-            <div className="divider" />
-
-            <div className="today-item">
-              <IonIcon icon={timeOutline} color="medium" />
-              <p
-                className={`today-label ${
-                  todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
-                }`}
-              >
-                {todayRecord?.checkOut === "Not marked"
-                  ? "Ongoing Duration"
-                  : "Total Duration"}
-              </p>
-              <h5
-                className={`today-time ${
-                  todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
-                }`}
-              >
-                {todayRecord?.duration === "N/A"
-                  ? "00h 00m"
-                  : todayRecord?.duration || "00h 00m"}
-                {todayRecord?.checkOut === "Not marked" &&
-                  todayRecord?.checkIn !== "Not marked" && (
-                    <span className="blink-dot">•</span>
-                  )}
-              </h5>
-            </div>
-          </div>
-        </div>
-
-        <div className="range-container">
-          <IonButton
-            expand="block"
-            fill="solid"
-            color="light"
-            onClick={() => setShowModal(true)}
-            className="range-btn"
-          >
-            <IonIcon slot="start" icon={calendarOutline} className="range-icon" />
-            Timeline:{" "}
-            {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}{" "}
-            -{" "}
-            {endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-            <IonIcon
-              slot="end"
-              icon={chevronForwardOutline}
-              className="range-icon"
-            />
-          </IonButton>
-        </div>
-
-        
-        <div className="records-container">
-          {loading ? (
-            [...Array(3)].map((_, i) => (
-              <IonCard key={i} className="record-card">
-                <IonCardContent>
-                  <Skeleton width="60%" height="14px" />
-                  <Skeleton width="80%" height="12px" />
-                  <Skeleton width="40%" height="12px" />
-                </IonCardContent>
-              </IonCard>
-            ))
-          ) : records.length > 0 ? (
-            records.map((rec, i) => (
-              <IonCard key={i} className="record-card">
-                <IonCardContent>
-                  <h3 className="record-date">
-                    {rec.date.toLocaleDateString("en-US", {
-                      weekday: "long",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </h3>
-                  <p className="record-info">
-                    In: {rec.checkIn} | Out: {rec.checkOut}
-                  </p>
-                  <p className="record-duration">
-                    Duration: {rec.duration === "N/A" ? "00h 00m" : rec.duration}
-                  </p>
-                </IonCardContent>
-              </IonCard>
-            ))
-          ) : (
-            <div className="no-records">
-              <IonIcon icon={timeOutline} className="no-records-icon" />
-              <IonText color="medium">
-                <h3 className="no-records-text">No Records Found</h3>
-              </IonText>
-            </div>
-          )}
-        </div>
-
-        <IonModal
-          isOpen={showModal}
-          onDidDismiss={() => setShowModal(false)}
-          initialBreakpoint={0.7}
-          breakpoints={[0, 0.7, 1]}
-        >
-          <IonHeader>
-            <IonToolbar className="modal-toolbar">
-              <IonText slot="start" className="modal-title">
-                Select Date Range
-              </IonText>
-              <IonButton
+          <div className="range-container">
+            <IonButton
+              expand="block"
+              fill="solid"
+              color="light"
+              onClick={() => setShowModal(true)}
+              className="range-btn"
+            >
+              <IonIcon slot="start" icon={calendarOutline} className="range-icon" />
+              Timeline:{" "}
+              {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}{" "}
+              -{" "}
+              {endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              <IonIcon
                 slot="end"
-                fill="clear"
-                className="modal-done"
-                onClick={() => {
-                  console.log("Done button clicked, closing modal");
-                  setShowModal(false);
+                icon={chevronForwardOutline}
+                className="range-icon"
+              />
+            </IonButton>
+          </div>
+          
+          <div className="records-container">
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <IonCard key={i} className="record-card">
+                  <IonCardContent>
+                    <Skeleton width="60%" height="14px" />
+                    <Skeleton width="80%" height="12px" />
+                    <Skeleton width="40%" height="12px" />
+                  </IonCardContent>
+                </IonCard>
+              ))
+            ) : records.length > 0 ? (
+              records.map((rec, i) => (
+                <IonCard key={i} className="record-card">
+                  <IonCardContent>
+                    <h3 className="record-date">
+                      {rec.date.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </h3>
+                    <p className="record-info">
+                      In: {rec.checkIn} | Out: {rec.checkOut}
+                    </p>
+                    <p className="record-duration">
+                      Duration: {rec.duration === "N/A" ? "00h 00m" : rec.duration}
+                    </p>
+                  </IonCardContent>
+                </IonCard>
+              ))
+            ) : (
+              <div className="no-records">
+                <IonIcon icon={timeOutline} className="no-records-icon" />
+                <IonText color="medium">
+                  <h3 className="no-records-text">No Records Found</h3>
+                </IonText>
+              </div>
+            )}
+          </div>
+
+          <IonModal
+            isOpen={showModal}
+            onDidDismiss={() => setShowModal(false)}
+            initialBreakpoint={0.7}
+            breakpoints={[0, 0.7, 1]}
+          >
+            <IonHeader>
+              <IonToolbar className="modal-toolbar">
+                <IonText slot="start" className="modal-title">
+                  Select Date Range
+                </IonText>
+                <IonButton
+                  slot="end"
+                  fill="clear"
+                  className="modal-done"
+                  onClick={() => {
+                    console.log("Done button clicked, closing modal");
+                    setShowModal(false);
+                  }}
+                >
+                  Done
+                </IonButton>
+              </IonToolbar>
+            </IonHeader>
+
+            <IonContent className="ion-padding">
+              <p className="modal-label">Start Date</p>
+              <input
+                type="date"
+                value={startDate.toISOString().split("T")[0]}
+                onChange={(e) => {
+                  const newDate = new Date(e.target.value);
+                  newDate.setHours(0, 0, 0, 0);
+                  console.log("Setting start date to:", newDate.toISOString());
+                  console.log("Start date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
+                  setStartDate(newDate);
                 }}
-              >
-                Done
-              </IonButton>
-            </IonToolbar>
-          </IonHeader>
+                max={new Date().toISOString().split("T")[0]}
+              />
 
-          <IonContent className="ion-padding">
-            <p className="modal-label">Start Date</p>
-            <input
-              type="date"
-              value={startDate.toISOString().split("T")[0]}
-              onChange={(e) => {
-                const newDate = new Date(e.target.value);
-                newDate.setHours(0, 0, 0, 0);
-                console.log("Setting start date to:", newDate.toISOString());
-                console.log("Start date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
-                setStartDate(newDate);
-              }}
-              max={new Date().toISOString().split("T")[0]}
-            />
-
-            <p className="modal-label end">End Date</p>
-            <input
-              type="date"
-              value={endDate.toISOString().split("T")[0]}
-              onChange={(e) => {
-                const newDate = new Date(e.target.value);
-                newDate.setHours(23, 59, 59, 999);
-                console.log("Setting end date to:", newDate.toISOString());
-                console.log("End date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
-                setEndDate(newDate);
-              }}
-              max={new Date().toISOString().split("T")[0]}
-            />
-          </IonContent>
-        </IonModal>
+              <p className="modal-label end">End Date</p>
+              <input
+                type="date"
+                value={endDate.toISOString().split("T")[0]}
+                onChange={(e) => {
+                  const newDate = new Date(e.target.value);
+                  newDate.setHours(23, 59, 59, 999);
+                  console.log("Setting end date to:", newDate.toISOString());
+                  console.log("End date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
+                  setEndDate(newDate);
+                }}
+                max={new Date().toISOString().split("T")[0]}
+              />
+            </IonContent>
+          </IonModal>
+        </div>
       </IonContent>
     </>
   );
