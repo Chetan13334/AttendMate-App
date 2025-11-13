@@ -35,23 +35,16 @@ const App: React.FC = () => {
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userEmail");
-    setIsLoggedIn(false);
-  };
-
   if (isLoggedIn === null) {
     return (
       <IonApp>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             height: "100vh",
-            backgroundColor: "#f4f5f8",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            background: "#f4f5f8",
           }}
         >
           <IonSpinner name="crescent" />
@@ -69,19 +62,23 @@ const App: React.FC = () => {
           </Route>
 
           <Route exact path="/login">
-            {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
+            {isLoggedIn ? (
+              <Redirect to="/home" />
+            ) : (
+              <Login onLogin={handleLogin} />
+            )}
           </Route>
 
           <Route path="/home">
-            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
           </Route>
 
           <Route path="/profile">
-            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
           </Route>
 
           <Route path="/history">
-            {isLoggedIn ? <HomeTabs onLogout={handleLogout} /> : <Redirect to="/login" />}
+            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

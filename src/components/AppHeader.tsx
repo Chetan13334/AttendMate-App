@@ -1,27 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IonHeader,
   IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonIcon,
   IonPopover,
   IonList,
   IonItem,
+  IonSpinner,
+  IonIcon
 } from "@ionic/react";
+
 import { personCircleOutline } from "ionicons/icons";
+import { db } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+
 import Logo from "../assets/main_logo.png";
 import ProfileIcon from "../assets/user.png";
 import LogoutIcon from "../assets/logout.png";
 
-interface AppHeaderProps {
-  title?: string;
-}
+import "../components/AppHeader.css";
 
-const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
+const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [loadingPhoto, setLoadingPhoto] = useState(true);
+  const [photoError, setPhotoError] = useState(false);
+
   const [showPopover, setShowPopover] = useState(false);
-  const [popoverEvent, setPopoverEvent] = useState<any>();
+  const [popoverEvent, setPopoverEvent] = useState<any>(null);
+
+  const userEmail = localStorage.getItem("userEmail");
+
+  useEffect(() => {
+    const fetchPhoto = async () => {
+      if (!userEmail) return;
+      try {
+        const q = query(
+          collection(db, "Employee_Details"),
+          where("Email", "==", userEmail)
+        );
+        const snap = await getDocs(q);
+
+        if (!snap.empty && snap.docs[0].data().Photo) {
+          setPhotoUrl(snap.docs[0].data().Photo as string);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingPhoto(false);
+      }
+    };
+
+    fetchPhoto();
+  }, [userEmail]);
 
   const logout = () => {
     sessionStorage.clear();
@@ -31,102 +60,76 @@ const AppHeader: React.FC<AppHeaderProps> = ({ title = "AttendMate" }) => {
 
   return (
     <IonHeader>
-      <IonToolbar>
+      <IonToolbar className="app-header-toolbar">
 
-        <IonButtons slot="start">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <img
-              src={Logo}
-              alt="AttendMate"
-              height={26}
-              width={26}
-              style={{
-                marginRight: "8px",
-                borderRadius: "6px",
-                marginLeft: "9px",
-              }}
-            />
+        {/* LEFT SIDE — Logo + Title */}
+        <div slot="start" className="header-left">
+          <img src={Logo} alt="Logo" className="app-logo" />
+          <h1 className="app-title">{title}</h1>
+        </div>
 
-            <IonTitle
-              style={{
-                fontWeight: 700,
-                fontSize: "1.2rem",
-                color: "#222",
-                padding: 0,
-                margin: 0,
-                textAlign: "left",
-              }}
-            >
-              {title}
-            </IonTitle>
-          </div>
-        </IonButtons>
-
-        <IonButtons slot="end">
-          <IonButton
-            onClick={(e) => {
-              setPopoverEvent(e.nativeEvent);
-              setShowPopover(true);
-            }}
-          >
-            <IonIcon
-              icon={personCircleOutline}
-              style={{
-                fontSize: "27px",
-                color: "#555",
-              }}
-            />
-          </IonButton>
-        </IonButtons>
-
-        <IonPopover
-          event={popoverEvent}
-          isOpen={showPopover}
-          onDidDismiss={() => setShowPopover(false)}
-          style={{
-            "--min-width": "150px",
-            "--max-width": "150px",
-            borderRadius: "10px",
+        {/* RIGHT SIDE — Avatar */}
+        <div
+          slot="end"
+          className="avatar-trigger"
+          onClick={(e) => {
+            setPopoverEvent(e.nativeEvent); // Pass event for positioning
+            setShowPopover(true);
           }}
         >
-          <IonList lines="none" style={{ padding: 0, margin: 0 }}>
-            <IonItem
-              button
-              routerLink="/profile"
-              onClick={() => setShowPopover(false)}
-              style={{ fontSize: "0.8rem", height: "40px" }}
-              detail={false}
-            >
-              <img
-                src={ProfileIcon}
-                alt="Profile"
-                style={{ width: "16px", height: "16px", marginRight: "10px" }}
-              />
-              View Profile
-            </IonItem>
-
-            <IonItem
-              button
-              onClick={logout}
-              style={{ fontSize: "0.8rem", height: "40px" }}
-              detail={false}
-            >
-              <img
-                src={LogoutIcon}
-                alt="Logout"
-                style={{ width: "16px", height: "16px", marginRight: "10px" }}
-              />
-              Logout
-            </IonItem>
-          </IonList>
-        </IonPopover>
+          {loadingPhoto ? (
+            <IonSpinner name="dots" color="medium" className="avatar-size" />
+          ) : photoUrl && !photoError ? (
+            <img
+              src={photoUrl}
+              alt="Profile"
+              className="avatar-size"
+              onError={() => setPhotoError(true)}
+            />
+          ) : (
+            <IonIcon icon={personCircleOutline} className="avatar-size" />
+          )}
+        </div>
 
       </IonToolbar>
+
+      {/* ========== MANUAL POPOVER (NO TRIGGER BUGS) ========== */}
+      <IonPopover
+        isOpen={showPopover}
+        event={popoverEvent}
+        onDidDismiss={() => setShowPopover(false)}
+        backdropDismiss={true}
+        showBackdrop={true}
+        side="bottom"
+        alignment="end"
+        className="profile-popover"
+      >
+        <IonList lines="none">
+
+          <IonItem
+            button
+            routerLink="/profile"
+            detail={false}
+            onClick={() => setShowPopover(false)}
+          >
+            <img src={ProfileIcon} className="menu-icon" />
+            View Profile
+          </IonItem>
+
+          <IonItem
+            button
+            detail={false}
+            onClick={() => {
+              setShowPopover(false);
+              logout();
+            }}
+          >
+            <img src={LogoutIcon} className="menu-icon" />
+            Logout
+          </IonItem>
+
+        </IonList>
+      </IonPopover>
     </IonHeader>
   );
 };

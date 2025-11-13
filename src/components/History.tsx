@@ -8,6 +8,9 @@ import {
   fetchPastRecords,
   subscribeToTodayRecord,
 } from "../Services/HistoryService";
+import { db } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import AppHeader from "../components/AppHeader";
 
 const History: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
@@ -15,6 +18,9 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(true);
+  const [photoError, setPhotoError] = useState(false);
   const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dateRangeRef = useRef<{start: number, end: number} | null>(null);
 
@@ -35,6 +41,29 @@ const History: React.FC = () => {
     console.log("Initial end date:", date.toISOString());
     return date;
   });
+
+  // Fetch user photo
+  useEffect(() => {
+    const fetchUserPhoto = async () => {
+      if (!userEmail) return;
+      
+      try {
+        setPhotoLoading(true);
+        const q = query(collection(db, "Employee_Details"), where("Email", "==", userEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty && snap.docs[0].data().Photo) {
+          setUserPhoto(snap.docs[0].data().Photo as string);
+        }
+      } catch (e) {
+        console.error("Error fetching user photo:", e);
+        setPhotoError(true);
+      } finally {
+        setPhotoLoading(false);
+      }
+    };
+    
+    fetchUserPhoto();
+  }, [userEmail]);
 
   useEffect(() => {
     if (!userEmail) return;
@@ -310,6 +339,9 @@ const History: React.FC = () => {
         setShowModal={setShowModal}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
+        userPhoto={userPhoto}
+        photoLoading={photoLoading}
+        photoError={photoError}
       />
     </IonPage>
   );

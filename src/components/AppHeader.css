@@ -1,66 +1,56 @@
 .app-header-toolbar {
+  --background: #fff;
+  --border-width: 0 0 1px 0;
+  --border-color: #eee;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  height: 56px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 8px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 
 .app-logo {
-  height: 28px;
   width: 28px;
+  height: 28px;
   border-radius: 8px;
-  margin-right: 8px;
 }
 
 .app-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: #222;
+  margin: 0;
 }
 
-.header-right {
+.avatar-trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.icon-btn {
-  margin: 0;
-  --padding-start: 4px;
-  --padding-end: 4px;
-}
-
-.header-icon {
-  font-size: 22px;
-  color: #333;
-}
-
-.profile-btn {
-  margin: 0 4px;
-  --padding-start: 4px;
-  --padding-end: 4px;
-}
-
-.profile-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+.avatar-size {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
 }
 
-@media (max-width: 480px) {
-  .app-title {
-    font-size: 16px;
-  }
-  .header-icon {
-    font-size: 20px;
-  }
-  .profile-img {
-    width: 28px;
-    height: 28px;
-  }
+.profile-popover {
+  --min-width: 160px;
+}
+
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
 }

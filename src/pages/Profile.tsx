@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonIcon,
-  IonAlert,
-  IonSpinner,
-} from "@ionic/react";
+import { IonPage, IonContent, IonIcon, IonAlert } from "@ionic/react";
 import {
   pencilOutline,
   settingsOutline,
@@ -29,25 +20,22 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
 
   const userEmail = localStorage.getItem("userEmail");
 
   if (!userEmail) {
-  return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar color="light">
-          <IonTitle>Profile</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent>
-        <div className="centered">
-          <p>Not logged in. Redirecting...</p>
-        </div>
-      </IonContent>
-    </IonPage>
-  );
-}
+    return (
+      <IonPage>
+        <AppHeader title="Profile" />
+        <IonContent>
+          <div className="centered">
+            <p>Not logged in. Redirecting...</p>
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -69,6 +57,11 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
     };
     fetchUserDetails();
   }, [userEmail]);
+
+  // Function to handle photo loading errors
+  const handlePhotoError = () => {
+    setPhotoError(true);
+  };
 
   return (
     <IonPage>
@@ -160,9 +153,23 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                 justifyContent: "center",
                 fontWeight: 700,
                 boxShadow: "0 6px 14px rgba(0, 123, 255, 0.25)",
+                overflow: "hidden",
               }}
             >
-              {userData?.Name ? userData.Name.charAt(0).toUpperCase() : "U"}
+              {userData?.Photo && !photoError ? (
+                <img
+                  src={userData.Photo}
+                  alt="Profile"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                  onError={handlePhotoError}
+                />
+              ) : (
+                <span>{userData?.Name ? userData.Name.charAt(0).toUpperCase() : "U"}</span>
+              )}
             </div>
 
        
