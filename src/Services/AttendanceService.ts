@@ -1,4 +1,4 @@
-
+// src/services/AttendanceService.ts
 import {
   setDoc,
   query,
@@ -9,7 +9,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { DB } from "../config/databaseConfig";
-
 
 export const fetchEmployeeId = async (email: string) => {
   const q = query(DB.collections.Employee_Details, where("Email", "==", email));
