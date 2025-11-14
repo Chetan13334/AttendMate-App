@@ -1,16 +1,15 @@
 import React from "react";
 import {
-  IonHeader,
   IonToolbar,
   IonContent,
-  IonButton,
   IonText,
   IonIcon,
   IonModal,
   IonCard,
   IonCardContent,
-  IonSpinner,
+  IonButton,
 } from "@ionic/react";
+
 import {
   calendarOutline,
   logInOutline,
@@ -18,6 +17,7 @@ import {
   timeOutline,
   chevronForwardOutline,
 } from "ionicons/icons";
+
 import Skeleton from "./Skeleton";
 import "../theme/components/HistoryLayout.css";
 
@@ -56,45 +56,47 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   photoLoading,
   photoError,
 }) => {
-  // Handle photo loading error
   const handlePhotoError = () => {
-    console.log("Error loading user photo, falling back to initials");
+    console.log("Error loading user photo, fallback to initials");
   };
 
   return (
     <>
-      <IonHeader translucent>
-        <IonToolbar />
-      </IonHeader>
+      <IonToolbar />
 
-      <IonContent fullscreen color="light" className="history-content">
+      <IonContent fullscreen color="white" className="history-content">
         <div className="content-wrapper">
+
+          {/* ---------------- HEADER ---------------- */}
           <div className="history-header">
             <div className="history-header-inner">
               <div className="user-section">
                 {loading || photoLoading ? (
                   <Skeleton width="40px" height="40px" borderRadius="50%" />
                 ) : userPhoto && !photoError ? (
-                  <img 
-                    src={userPhoto} 
-                    alt="User" 
+                  <img
+                    src={userPhoto}
+                    alt="User"
                     className="user-avatar-img"
                     onError={handlePhotoError}
                   />
                 ) : (
                   <div className="user-avatar">{initials}</div>
                 )}
+
                 {loading ? (
                   <Skeleton width="140px" height="16px" />
                 ) : (
-                  <IonText color="light">
-                    <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
+                  <IonText>
+                    <h2 className="user-greeting">
+                      Hello, {userName.split(" ")[0]}
+                    </h2>
                     <p className="user-subtitle">Review your daily attendance.</p>
                   </IonText>
                 )}
               </div>
-              
-              
+
+              {/* ---------------- TODAY CARD ---------------- */}
               <div className="today-card">
                 <div className="today-item">
                   <IonIcon icon={logInOutline} color="primary" />
@@ -118,54 +120,39 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
                 <div className="today-item">
                   <IonIcon icon={timeOutline} color="medium" />
-                  <p
-                    className={`today-label ${
-                      todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
-                    }`}
-                  >
-                    {todayRecord?.checkOut === "Not marked"
-                      ? "Ongoing Duration"
-                      : "Total Duration"}
-                  </p>
-                  <h5
-                    className={`today-time ${
-                      todayRecord?.checkOut === "Not marked" ? "ongoing" : "total"
-                    }`}
-                  >
+                  <p className="today-label total">Duration</p>
+                  <h5 className="today-time total">
                     {todayRecord?.duration === "N/A"
                       ? "00h 00m"
                       : todayRecord?.duration || "00h 00m"}
-                    {todayRecord?.checkOut === "Not marked" &&
-                      todayRecord?.checkIn !== "Not marked" && (
-                        <span className="blink-dot">•</span>
-                      )}
                   </h5>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* ---------------- RANGE BUTTON ----------------
           <div className="range-container">
-            <IonButton
-              expand="block"
-              fill="solid"
-              color="light"
-              onClick={() => setShowModal(true)}
-              className="range-btn"
-            >
-              <IonIcon slot="start" icon={calendarOutline} className="range-icon" />
-              Timeline:{" "}
-              {startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}{" "}
-              -{" "}
-              {endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-              <IonIcon
-                slot="end"
-                icon={chevronForwardOutline}
-                className="range-icon"
-              />
-            </IonButton>
-          </div>
-          
+            <button className="modern-range-btn" onClick={() => setShowModal(true)}>
+              <IonIcon icon={calendarOutline} className="range-icon" />
+
+              <span className="range-text">
+                {startDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}{" "}
+                -{" "}
+                {endDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+
+              <IonIcon icon={chevronForwardOutline} className="range-icon" />
+            </button>
+          </div> */}
+
+          {/* ---------------- RECORD LIST ---------------- */}
           <div className="records-container">
             {loading ? (
               [...Array(3)].map((_, i) => (
@@ -207,60 +194,24 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             )}
           </div>
 
+          {/* ---------------- MODAL (NO DATE PICKER) ---------------- */}
           <IonModal
             isOpen={showModal}
             onDidDismiss={() => setShowModal(false)}
-            initialBreakpoint={0.7}
-            breakpoints={[0, 0.7, 1]}
+            initialBreakpoint={0.35}
+            breakpoints={[0, 0.35]}
+            className="modern-modal"
           >
-            <IonHeader>
-              <IonToolbar className="modal-toolbar">
-                <IonText slot="start" className="modal-title">
-                  Select Date Range
-                </IonText>
-                <IonButton
-                  slot="end"
-                  fill="clear"
-                  className="modal-done"
-                  onClick={() => {
-                    console.log("Done button clicked, closing modal");
-                    setShowModal(false);
-                  }}
-                >
-                  Done
-                </IonButton>
-              </IonToolbar>
-            </IonHeader>
+            <div className="modal-header">
+              <h2>Select Date Range</h2>
+              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+                Done
+              </button>
+            </div>
 
-            <IonContent className="ion-padding">
-              <p className="modal-label">Start Date</p>
-              <input
-                type="date"
-                value={startDate.toISOString().split("T")[0]}
-                onChange={(e) => {
-                  const newDate = new Date(e.target.value);
-                  newDate.setHours(0, 0, 0, 0);
-                  console.log("Setting start date to:", newDate.toISOString());
-                  console.log("Start date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
-                  setStartDate(newDate);
-                }}
-                max={new Date().toISOString().split("T")[0]}
-              />
-
-              <p className="modal-label end">End Date</p>
-              <input
-                type="date"
-                value={endDate.toISOString().split("T")[0]}
-                onChange={(e) => {
-                  const newDate = new Date(e.target.value);
-                  newDate.setHours(23, 59, 59, 999);
-                  console.log("Setting end date to:", newDate.toISOString());
-                  console.log("End date values - Year:", newDate.getFullYear(), "Month:", newDate.getMonth(), "Date:", newDate.getDate());
-                  setEndDate(newDate);
-                }}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </IonContent>
+            <div className="modal-body-no-picker">
+              <p className="no-picker-text">Date picker removed.</p>
+            </div>
           </IonModal>
         </div>
       </IonContent>

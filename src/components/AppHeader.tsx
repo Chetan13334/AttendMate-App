@@ -59,7 +59,10 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
   };
 
   return (
-    <IonHeader>
+
+   
+     
+     
       <IonToolbar className="app-header-toolbar">
 
         
@@ -91,7 +94,7 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
           )}
         </div>
 
-      </IonToolbar>
+     
 
       
       <IonPopover
@@ -130,7 +133,9 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
 
         </IonList>
       </IonPopover>
-    </IonHeader>
+     
+ </IonToolbar>
+    
   );
 };
 

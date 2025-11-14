@@ -5,20 +5,26 @@
   --padding-start: 8px;
   --padding-end: 8px;
   height: 56px;
+
   display: flex;
   align-items: center;
+  justify-content: space-between;  /* FIX: prevent items from colliding */
+  box-sizing: border-box;
 }
 
+/* LEFT SIDE (LOGO + TITLE) */
 .header-left {
   display: flex;
   align-items: center;
   gap: 6px;
+  overflow: hidden; /* FIX: title will not push layout */
 }
 
 .app-logo {
   width: 28px;
   height: 28px;
   border-radius: 8px;
+  object-fit: contain; /* FIX for wide logos */
 }
 
 .app-title {
@@ -26,17 +32,26 @@
   font-weight: bold;
   color: #222;
   margin: 0;
+
+  overflow: hidden;     /* FIX: no overflow text */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;     /* Adjusts title width on mobile */
 }
 
+/* RIGHT SIDE AVATAR */
 .avatar-trigger {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
+
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+
+  flex-shrink: 0;  /* FIX: avatar won't shrink on mobile */
 }
 
 .avatar-size {
@@ -49,8 +64,53 @@
   --min-width: 160px;
 }
 
+/* MENU ICONS */
 .menu-icon {
   width: 18px;
   height: 18px;
   margin-right: 10px;
+}
+
+/* ---------------- MOBILE FIXES ---------------- */
+@media (max-width: 480px) {
+
+  .app-header-toolbar {
+    height: 52px;
+    --padding-start: 6px;
+    --padding-end: 6px;
+  }
+
+  .app-logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .app-title {
+    font-size: 18px;
+    max-width: 110px; /* prevent overlap on small screens */
+  }
+
+  .avatar-trigger {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ---------- VERY SMALL PHONES (iPhone SE 320px) ---------- */
+@media (max-width: 360px) {
+
+  .app-title {
+    font-size: 16px;
+    max-width: 90px;
+  }
+
+  .app-logo {
+    width: 24px;
+    height: 24px;
+  }
+
+  .avatar-trigger {
+    width: 34px;
+    height: 34px;
+  }
 }

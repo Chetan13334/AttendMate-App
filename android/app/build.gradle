@@ -1,6 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    buildFeatures {
+        viewBinding true
+    }
     namespace "com.attendmate.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -43,6 +46,7 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 try {
     def servicesJSON = file('google-services.json')
