@@ -1,3 +1,4 @@
+/* ---------------- HEADER TOOLBAR ---------------- */
 .app-header-toolbar {
   --background: #fff;
   --border-width: 0 0 1px 0;
@@ -8,23 +9,23 @@
 
   display: flex;
   align-items: center;
-  justify-content: space-between;  /* FIX: prevent items from colliding */
+  justify-content: space-between;
   box-sizing: border-box;
 }
 
-/* LEFT SIDE (LOGO + TITLE) */
+/* LEFT SIDE */
 .header-left {
   display: flex;
   align-items: center;
   gap: 6px;
-  overflow: hidden; /* FIX: title will not push layout */
+  overflow: hidden;
 }
 
 .app-logo {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  object-fit: contain; /* FIX for wide logos */
+  object-fit: contain;
 }
 
 .app-title {
@@ -32,11 +33,10 @@
   font-weight: bold;
   color: #222;
   margin: 0;
-
-  overflow: hidden;     /* FIX: no overflow text */
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 150px;     /* Adjusts title width on mobile */
+  max-width: 150px;
 }
 
 /* RIGHT SIDE AVATAR */
@@ -51,24 +51,56 @@
   justify-content: center;
   cursor: pointer;
 
-  flex-shrink: 0;  /* FIX: avatar won't shrink on mobile */
+  flex-shrink: 0;
 }
 
 .avatar-size {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
+/* ----------------------------------------------
+   SMALL & RESPONSIVE PROFILE POPOVER (ONLY CHANGE)
+---------------------------------------------- */
+
 .profile-popover {
-  --min-width: 160px;
+  --width: 150px !important;
+  --min-width: 140px !important;
+  --max-width: 180px !important;
+
+  --background: #ffffff !important;
+
+  border-radius: 14px !important;
+  padding: 6px 0 !important;
 }
 
-/* MENU ICONS */
+/* Popover items */
+.profile-popover ion-item {
+  --padding-start: 10px !important;
+  --padding-end: 5px !important;
+  --min-height: 38px !important;
+  font-size: 14px !important;
+}
+
+/* menu icons */
 .menu-icon {
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+/* Mobile responsive sizes */
+@media (max-width: 480px) {
+  .profile-popover {
+    --width: 135px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-popover {
+    --width: 120px !important;
+  }
 }
 
 /* ---------------- MOBILE FIXES ---------------- */
@@ -87,7 +119,7 @@
 
   .app-title {
     font-size: 18px;
-    max-width: 110px; /* prevent overlap on small screens */
+    max-width: 110px;
   }
 
   .avatar-trigger {
@@ -96,7 +128,7 @@
   }
 }
 
-/* ---------- VERY SMALL PHONES (iPhone SE 320px) ---------- */
+/* iPhone SE / very small */
 @media (max-width: 360px) {
 
   .app-title {

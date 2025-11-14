@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  IonHeader,
   IonToolbar,
   IonPopover,
   IonList,
@@ -59,44 +58,38 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
   };
 
   return (
+    <IonToolbar className="app-header-toolbar">
 
-   
-     
-     
-      <IonToolbar className="app-header-toolbar">
+      {/* LEFT SIDE */}
+      <div slot="start" className="header-left">
+        <img src={Logo} alt="Logo" className="app-logo" />
+        <h1 className="app-title">{title}</h1>
+      </div>
 
-        
-        <div slot="start" className="header-left">
-          <img src={Logo} alt="Logo" className="app-logo" />
-          <h1 className="app-title">{title}</h1>
-        </div>
+      {/* AVATAR */}
+      <div
+        slot="end"
+        className="avatar-trigger"
+        onClick={(e) => {
+          setPopoverEvent(e.nativeEvent);
+          setShowPopover(true);
+        }}
+      >
+        {loadingPhoto ? (
+          <IonSpinner name="dots" color="medium" className="avatar-size" />
+        ) : photoUrl && !photoError ? (
+          <img
+            src={photoUrl}
+            alt="Profile"
+            className="avatar-size"
+            onError={() => setPhotoError(true)}
+          />
+        ) : (
+          <IonIcon icon={personCircleOutline} className="avatar-size" />
+        )}
+      </div>
 
-        
-        <div
-          slot="end"
-          className="avatar-trigger"
-          onClick={(e) => {
-            setPopoverEvent(e.nativeEvent); 
-            setShowPopover(true);
-          }}
-        >
-          {loadingPhoto ? (
-            <IonSpinner name="dots" color="medium" className="avatar-size" />
-          ) : photoUrl && !photoError ? (
-            <img
-              src={photoUrl}
-              alt="Profile"
-              className="avatar-size"
-              onError={() => setPhotoError(true)}
-            />
-          ) : (
-            <IonIcon icon={personCircleOutline} className="avatar-size" />
-          )}
-        </div>
-
-     
-
-      
+      {/* SMALL RESPONSIVE POPOVER */}
       <IonPopover
         isOpen={showPopover}
         event={popoverEvent}
@@ -106,6 +99,8 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
         side="bottom"
         alignment="end"
         className="profile-popover"
+        size="auto"
+        arrow={false}
       >
         <IonList lines="none">
 
@@ -133,9 +128,8 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
 
         </IonList>
       </IonPopover>
-     
- </IonToolbar>
-    
+
+    </IonToolbar>
   );
 };
 

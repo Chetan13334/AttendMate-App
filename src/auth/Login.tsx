@@ -35,19 +35,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const passwordRef = useRef(password);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
+  // NEW FUNCTION (Fix mobile keyboard overlap)
+  const scrollUpForPassword = () => {
+    setTimeout(() => {
+      contentRef.current?.scrollToPoint(0, 220, 300); 
+    }, 100);
+  };
+
   useEffect(() => {
     const handleKeyboardShow = () => {
       setTimeout(() => {
-        if (contentRef.current) {
-          contentRef.current.scrollToPoint(0, 100, 300);
-        }
+        contentRef.current?.scrollToPoint(0, 100, 300);
       }, 100);
     };
 
     const handleKeyboardHide = () => {
-      if (contentRef.current) {
-        contentRef.current.scrollToTop(300);
-      }
+      contentRef.current?.scrollToTop(300);
     };
 
     window.addEventListener("keyboardWillShow", handleKeyboardShow);
@@ -130,11 +133,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 setEmail(e.target.value);
                 emailRef.current = e.target.value;
               }}
-              onFocus={() => {
-                setTimeout(() => {
-                  contentRef.current?.scrollToPoint(0, 100, 300);
-                }, 300);
-              }}
             />
           </div>
 
@@ -150,11 +148,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 setPassword(e.target.value);
                 passwordRef.current = e.target.value;
               }}
-              onFocus={() => {
-                setTimeout(() => {
-                  contentRef.current?.scrollToPoint(0, 150, 300);
-                }, 300);
-              }}
+              onFocus={scrollUpForPassword}  // ← NEW FIX HERE
             />
             <IonIcon
               icon={showPassword ? eyeOffOutline : eyeOutline}

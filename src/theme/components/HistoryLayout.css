@@ -1,103 +1,31 @@
-/* PUSH CONTENT DOWN FROM APPHEADER */
+/* ------------------------------------------------------- */
+/* SMOOTH SCROLLING */
+/* ------------------------------------------------------- */
 .history-content {
-  --offset-top: 0px !important;
+  scroll-behavior: smooth;
 }
 
-.content-wrapper {
-  padding: 12px 16px 16px;   /* ← 12px TOP GAP */
-  background: transparent;
-}
-
-/* PREVENT PHOTO OVERLAP */
-.user-avatar,
-.user-avatar-img {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 10px;
-  flex-shrink: 0;
-  border: 2.5px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-/* ENSURE HEADER DOESN'T OVERFLOW */
-.history-header {
-  margin-top: 0 !important;
-  position: relative;
-  z-index: 1;
-}
-
-/* FULL WIDTH BLUE HEADER — NO SIDE GAPS */
-.history-header {
-  background-color: var(--theme-light-blue);
-  padding: 12px 0 10px;           /* ← 0 left/right, 12px top */
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-  margin: 0 !important;
-  position: relative;
-  z-index: 1;
-  width: 100vw;                  /* ← FULL WIDTH */
-  margin-left: calc(-50vw + 50%); /* ← CENTER + FULL BLEED */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* CONTENT INSIDE BLUE HEADER — ADD HORIZONTAL PADDING */
+/* ------------------------------------------------------- */
+/* TODAY CARD (MODERN) */
+/* ------------------------------------------------------- */
 .history-header-inner {
-  padding: 0 16px;
-}
-
-:root {
-  --theme-primary: #0288d1;
-  --theme-light-blue: #4fc3f7;
-  --theme-danger: #e53935;
-  --theme-text-dark: #01579b;
-  --theme-success: #00bfa5;
-  --theme-bg-light: #f5f7fa;
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: white;
-  color: var(--theme-primary);
-  font-weight: bold;
-  font-size: 17px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-}
-
-.user-greeting {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.user-subtitle {
-  margin: 0;
-  font-size: 13px;
-  opacity: 0.9;
-  color: #e1f5fe;
+  background-color: #5099ecf5;
+  height: 10rem;
+  margin-left: 9px;
+  margin-right: 9px;
+  border-radius: 7px;
 }
 
 .today-card {
-  background: white;
+  background: rgb(244, 245, 246);
   border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  width: 92%;
+  margin-left: 12px;
+  padding: 7px 0px;
+  margin-bottom: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -119,10 +47,6 @@
   color: var(--theme-danger);
 }
 
-.today-label.ongoing {
-  color: var(--theme-success);
-}
-
 .today-label.total {
   color: var(--theme-primary);
 }
@@ -130,24 +54,8 @@
 .today-time {
   margin: 0;
   font-size: 15px;
-}
-
-.today-time.in {
-  color: var(--theme-text-dark);
-}
-
-.today-time.out {
-  color: #c62828;
-}
-
-.today-time.ongoing {
-  color: var(--theme-success);
-  font-weight: 700;
-}
-
-.today-time.total {
-  color: var(--theme-text-dark);
   font-weight: 600;
+  color: var(--theme-text-dark);
 }
 
 .divider {
@@ -156,244 +64,228 @@
   background: #dcdcdc;
 }
 
-.blink-dot {
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 10px;
-  color: var(--theme-success);
-  animation: blink 1s infinite;
+/* Duration Box */
+.today-duration-box {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: #eef2ff;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-@keyframes blink {
-  0% { opacity: 0; }
-  50% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.range-container {
-  background: white;
-  padding: 10px 0;
-}
-
-.range-btn {
-  height: 48px;
-  border-radius: 12px;
+.duration-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4f46e5;
   font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  --color: var(--theme-primary);
-  margin: 0 16px;
 }
 
-.range-icon {
-  color: var(--theme-primary);
+.duration-icon {
+  font-size: 22px;
+  color: #4f46e5;
 }
 
-/* .records-container {
-  background: var(--theme-bg-light);
-  padding: 8px 0 16px;
+.duration-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #4f46e5;
 }
 
-.record-card {
-  border-radius: 12px;
-  background: #ffffff;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
-  margin: 0 16px 10px;
-} */
+/* ------------------------------------------------------- */
+/* DATE RANGE BUTTON */
+/* ------------------------------------------------------- */
 
-.record-row {
+.date-range-btn {
+  width: 82%;
+  margin-top: 8px;
+  margin-left: 26px;
+  background: #fff;
+  border: 1px solid #e4e4e4;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.range-btn-icon {
+  font-size: 20px;
+  color: #444;
+}
+
+/* ------------------------------------------------------- */
+/* RECORD CARDS (MODERN) */
+/* ------------------------------------------------------- */
+
+.record-modern-card {
+  border-radius: 20px !important;
+  border: 1px solid #e8e8e8 !important;
+  transition: 0.2s ease;
+}
+
+.record-modern-card:hover {
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.15);
+  border-color: #c7d2fe !important;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.record-date-modern {
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.record-duration-pill {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.record-divider {
+  border-top: 1px dashed #d8d8d8;
+  margin: 10px 0;
+}
+
+.record-row-modern {
   display: flex;
   justify-content: space-between;
 }
 
-/* .record-date {
-  margin: 0;
-  font-size: 15px;
+.rec-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rec-label {
   font-weight: 600;
-  color: var(--theme-primary);
-} */
-
-.record-info {
-  font-size: 13px;
-  margin: 4px 0;
+  font-size: 14px;
 }
 
-.record-duration {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--theme-text-dark);
+.rec-value {
+  font-weight: 700;
+  font-size: 14px;
 }
 
-.record-icon {
-  font-size: 20px;
+.rec-icon.in-color {
+  color: #4f46e5; /* Blue color for check-in */
 }
 
-.no-records {
+.rec-icon.out-color {
+  color: #ef4444; /* Red color for check-out */
+}
+
+/* ------------------------------------------------------- */
+/* NO RECORDS */
+/* ------------------------------------------------------- */
+
+.no-records-modern {
   text-align: center;
-  padding: 40px 0;
+  padding: 30px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.05);
 }
 
-.no-records-icon {
-  font-size: 46px;
+.no-records-modern-icon {
+  font-size: 36px;
   color: #ccc;
+  margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------- */
+/* MODAL */
+/* ------------------------------------------------------- */
+
+.popup-container {
+  padding: 18px;
+}
+
+.popup-body {
+  margin-top: 10px;
+}
+
+/* Fields */
+.popup-field {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.popup-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+.popup-date-input {
+  padding: 12px;
+  border: 1px solid #dadada;
+  background: #fafafa;
+  border-radius: 14px;
+  font-size: 15px;
+  color: #222;
+}
+
+/* Done Button */
+.popup-done-btn {
+  --background: #4f46e5;
+  height: 46px;
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+.user-avatar,
+.user-avatar-img {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  flex-shrink: 0;
+
+  /* Purple-light gradient ring */
+  border: 2px solid #e0dafe !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
   margin-bottom: 16px;
 }
 
-.no-records-text {
-  font-weight: 600;
-}
-
-.modal-toolbar {
-  background-color: var(--theme-primary);
-  color: white;
-}
-
-.modal-title {
-  padding: 12px;
-  font-weight: 600;
-  color: white;
-}
-
-.modal-done {
-  color: white !important;
-  font-weight: 600;
-}
-
-.modal-label {
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
-.modal-label.end {
-  margin-top: 20px;
-}
-
-input[type="date"] {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #dcdcdc;
-  border-radius: 10px;
-  height: 48px;
-  width: 100%;
-  font-size: 15px;
-  padding: 0 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.2s ease-in-out;
-  margin: 0 16px;
-}
-
-input[type="date"]:focus {
-  border-color: var(--theme-light-blue);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.15);
-}
-
-
-
-.records-container {
-  width: 100%;
-  margin-top: 15px;
-  overflow-x: hidden;
-}
-
-.record-card {
-  width: 100%;
-  margin: 10px 0;
-  box-sizing: border-box;
-}
-
-.record-date {
-  font-size: 15px;
-  font-weight: 600;
-  white-space: normal;
-}
-
-
-
-/* ------------------- MODERN RANGE BUTTON ------------------- */
-.modern-range-btn {
-  width: 100%;
-  padding: 12px 18px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  font-size: 15px;
-  font-weight: 600;
-  color: #222;
-  cursor: pointer;
-
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: all 0.25s ease;
-}
-
-.modern-range-btn:hover {
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.range-icon {
-  font-size: 20px;
-}
-
-.range-text {
-  flex: 1;
-  text-align: center;
-}
-
-
-/* ------------------- MODERN MODAL ------------------- */
-.modern-modal {
-  --border-radius: 22px;
-}
-
-.modal-header {
-  padding: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+.user-greeting {
   margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin-top: 13px;
+  margin-left: 8.5%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.modal-close-btn {
-  background: #4b7bec;
-  color: #fff;
-  border: none;
-  padding: 6px 14px;
-  font-size: 14px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-label {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
-  color: #555;
-}
-
-.modal-body input[type="date"] {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  margin-bottom: 18px;
-  background: #f9f9f9;
+.user-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #0a0909;
+  margin-left: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }

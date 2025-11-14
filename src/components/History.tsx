@@ -6,11 +6,47 @@ import {
   getDuration,
   fetchEmployeeId,
   fetchPastRecords,
-  subscribeToTodayRecord,
 } from "../Services/HistoryService";
 import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import AppHeader from "../components/AppHeader";
+import { collection, query, where, getDocs, getDoc, onSnapshot } from "firebase/firestore";
+import { DB } from "../config/databaseConfig";
+
+/* ---------------------------------------------------
+   NEW FUNCTION: Load today's record instantly ONCE
+---------------------------------------------------- */
+const fetchTodayRecordOnce = async (employeeId: string) => {
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const snap = await getDoc(DB.employeeRecord(todayKey, employeeId));
+
+  if (!snap.exists()) {
+    return {
+      date: today,
+      checkIn: "Not marked",
+      checkOut: "Not marked",
+      duration: "N/A",
+    };
+  }
+
+  const data = snap.data();
+  const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
+  const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
+
+  return {
+    date: today,
+    checkIn: checkIn
+      ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "Not marked",
+    checkOut: checkOut
+      ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "Not marked",
+    duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+  };
+};
 
 const History: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
@@ -18,35 +54,36 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [photoLoading, setPhotoLoading] = useState(true);
   const [photoError, setPhotoError] = useState(false);
-  const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const dateRangeRef = useRef<{start: number, end: number} | null>(null);
 
+  const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const userEmail = localStorage.getItem("userEmail");
+
   const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee";
   const initials = getInitials(userName);
 
   const [startDate, setStartDate] = useState<Date>(() => {
-    const date = new Date();
-    date.setDate(date.getDate() - 6);
-    date.setHours(0, 0, 0, 0);
-    console.log("Initial start date:", date.toISOString());
-    return date;
-  });
-  const [endDate, setEndDate] = useState<Date>(() => {
-    const date = new Date();
-    date.setHours(23, 59, 59, 999);
-    console.log("Initial end date:", date.toISOString());
-    return date;
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    d.setHours(0, 0, 0, 0);
+    return d;
   });
 
-  
+  const [endDate, setEndDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  /* -------------------------------------------
+     FETCH USER PHOTO
+  ------------------------------------------- */
   useEffect(() => {
     const fetchUserPhoto = async () => {
       if (!userEmail) return;
-      
       try {
         setPhotoLoading(true);
         const q = query(collection(db, "Employee_Details"), where("Email", "==", userEmail));
@@ -54,265 +91,171 @@ const History: React.FC = () => {
         if (!snap.empty && snap.docs[0].data().Photo) {
           setUserPhoto(snap.docs[0].data().Photo as string);
         }
-      } catch (e) {
-        console.error("Error fetching user photo:", e);
+      } catch {
         setPhotoError(true);
       } finally {
         setPhotoLoading(false);
       }
     };
-    
     fetchUserPhoto();
   }, [userEmail]);
 
+  /* -------------------------------------------
+     FETCH EMPLOYEE ID
+  ------------------------------------------- */
   useEffect(() => {
     if (!userEmail) return;
+
     const loadEmployeeId = async () => {
       const id = await fetchEmployeeId(userEmail);
       if (id) setEmployeeId(id);
     };
+
     loadEmployeeId();
   }, [userEmail]);
 
-
+  /* ----------------------------------------------------------
+     MAIN LOGIC: LOAD (Today + Past Records) TOGETHER FAST
+  ----------------------------------------------------------- */
   useEffect(() => {
     if (!employeeId) return;
     setLoading(true);
-    console.log(" useEffect triggered with:", { 
-      employeeId, 
-      startDate: startDate.toISOString(), 
-      endDate: endDate.toISOString() 
-    });
-    
-    
-    if (dateRangeRef.current) {
-      console.log("Previous date range:", 
-        new Date(dateRangeRef.current.start).toISOString(), 
-        "to", 
-        new Date(dateRangeRef.current.end).toISOString());
-      
-      // Check if we're narrowing the range
-      const prevStart = new Date(dateRangeRef.current.start);
-      const prevEnd = new Date(dateRangeRef.current.end);
-      const newStart = new Date(startDate);
-      const newEnd = new Date(endDate);
-      
-      prevStart.setHours(0, 0, 0, 0);
-      prevEnd.setHours(0, 0, 0, 0);
-      newStart.setHours(0, 0, 0, 0);
-      newEnd.setHours(0, 0, 0, 0);
-      
-      const isNarrowing = (newStart > prevStart) || (newEnd < prevEnd);
-      console.log("Is narrowing range:", isNarrowing);
-      if (isNarrowing) {
-        console.log("Range is being narrowed - should clear previous records");
-      }
-    }
-    dateRangeRef.current = {start: startDate.getTime(), end: endDate.getTime()};
-    console.log("Stored new date range in ref");
 
-    const today = new Date();
-    const unsub = subscribeToTodayRecord(
-      employeeId,
-      ({ checkIn, checkOut }) => {
-        if (liveTimerRef.current) clearInterval(liveTimerRef.current);
-
-        if (checkIn && !checkOut) {
-          const updateLiveDuration = () => {
-            const now = new Date();
-            const liveDuration = getDuration(checkIn, now);
-            const liveRecord = {
-              date: today,
-              checkIn: checkIn.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              checkOut: "Not marked",
-              duration: liveDuration,
-            };
-            setTodayRecord(liveRecord);
-            setRecords((prev) => {
-              const others = prev.filter((r) => {
-                const recordDate = new Date(r.date);
-                recordDate.setHours(0, 0, 0, 0);
-                const todayDate = new Date(today);
-                todayDate.setHours(0, 0, 0, 0);
-                return recordDate.getTime() !== todayDate.getTime();
-              });
-              return [liveRecord, ...others].sort(
-                (a, b) => b.date.getTime() - a.date.getTime()
-              );
-            });
-          };
-          updateLiveDuration();
-          liveTimerRef.current = setInterval(updateLiveDuration, 5000);
-        } else if (checkIn && checkOut) {
-          const finalRecord = {
-            date: today,
-            checkIn: checkIn.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            checkOut: checkOut.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            duration: getDuration(checkIn, checkOut),
-          };
-          setTodayRecord(finalRecord);
-          setRecords((prev) => {
-            const others = prev.filter((r) => {
-              const recordDate = new Date(r.date);
-              recordDate.setHours(0, 0, 0, 0);
-              const todayDate = new Date(today);
-              todayDate.setHours(0, 0, 0, 0);
-              return recordDate.getTime() !== todayDate.getTime();
-            });
-            return [finalRecord, ...others].sort(
-              (a, b) => b.date.getTime() - a.date.getTime()
-            );
-          });
-        } else {
-          const emptyRecord = {
-            date: today,
-            checkIn: "Not marked",
-            checkOut: "Not marked",
-            duration: "N/A",
-          };
-          setTodayRecord(emptyRecord);
-          setRecords((prev) => {
-            const others = prev.filter((r) => {
-              const recordDate = new Date(r.date);
-              recordDate.setHours(0, 0, 0, 0);
-              const todayDate = new Date(today);
-              todayDate.setHours(0, 0, 0, 0);
-              return recordDate.getTime() !== todayDate.getTime();
-            });
-            return [emptyRecord, ...others].sort(
-              (a, b) => b.date.getTime() - a.date.getTime()
-            );
-          });
-        }
-      },
-      () => {
-        setTodayRecord(null);
-        setRecords((prev) =>
-          prev.filter((r) => {
-            const recordDate = new Date(r.date);
-            recordDate.setHours(0, 0, 0, 0);
-            const todayDate = new Date();
-            todayDate.setHours(0, 0, 0, 0);
-            return recordDate.getTime() !== todayDate.getTime();
-          })
-        );
-      }
-    );
-
-    /* Fetch past records every time date range changes */
-    const loadPastRecords = async () => {
+    const loadAllRecords = async () => {
       try {
-        const today = new Date();
-        let start = new Date(startDate);
-        let end = new Date(endDate);
-        if (start > end) [start, end] = [end, start];
-      
-        console.log("Date range in History component:", start.toISOString(), "to", end.toISOString());
-        console.log("Start time:", start.getTime(), "End time:", end.getTime());
-      
-        // Ensure start and end are properly normalized
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
-        
-        console.log("Normalized date range:", start.toISOString(), "to", end.toISOString());
-        console.log("Normalized start time:", start.getTime(), "Normalized end time:", end.getTime());
-        console.log("Normalized start values - Year:", start.getFullYear(), "Month:", start.getMonth(), "Date:", start.getDate());
-        console.log("Normalized end values - Year:", end.getFullYear(), "Month:", end.getMonth(), "Date:", end.getDate());
-      
-        const pastRecords = await fetchPastRecords(employeeId, start, end);
-      
-        console.log("Received past records:", pastRecords.length);
-        pastRecords.forEach((record, index) => {
-          console.log(`Past Record ${index}:`, record.date.toISOString());
-        });
-      
-        // Filter out today's record from past records since it's handled separately
+        // 1️⃣ Load today's record immediately (no listener delay)
+        const todayData = await fetchTodayRecordOnce(employeeId);
+        // Only update todayRecord if we don't have a real-time listener update
+        // setTodayRecord(todayData);
+
+        // 2️⃣ Load past records
+        const pastRecords = await fetchPastRecords(employeeId, startDate, endDate);
+
+        // remove today's record from past
         const filteredPast = pastRecords.filter((rec) => {
-          const recordDate = new Date(rec.date);
-          recordDate.setHours(0, 0, 0, 0);
-          const todayDate = new Date(today);
-          todayDate.setHours(0, 0, 0, 0);
-          const shouldInclude = recordDate.getTime() !== todayDate.getTime();
-          console.log("Filtering record:", recordDate.toISOString(), "Today:", todayDate.toISOString(), "Include:", shouldInclude);
-          console.log("Record time:", recordDate.getTime(), "Today time:", todayDate.getTime());
-          return shouldInclude;
+          const d1 = new Date(rec.date);
+          const d2 = new Date(todayData.date);
+          d1.setHours(0, 0, 0, 0);
+          d2.setHours(0, 0, 0, 0);
+          return d1.getTime() !== d2.getTime();
         });
 
-        console.log("Filtered past records:", filteredPast.length);
+        // 3️⃣ Merge today + past instantly
+        const merged = [todayData, ...filteredPast].sort(
+          (a, b) => b.date.getTime() - a.date.getTime()
+        );
 
-        // Update records state with filtered past records
-        setRecords((prev) => {
-          console.log("Previous records count:", prev.length);
-          prev.forEach((record, index) => {
-            console.log(`Previous Record ${index}:`, record.date.toISOString());
+        // Update records but keep the real-time today record if it exists
+        setRecords(prevRecords => {
+          // Keep the real-time today record if it exists
+          const todayRecordExists = prevRecords.find(rec => {
+            const recDate = new Date(rec.date);
+            recDate.setHours(0, 0, 0, 0);
+            const todayDate = new Date(todayData.date);
+            todayDate.setHours(0, 0, 0, 0);
+            return recDate.getTime() === todayDate.getTime();
           });
           
-          // When narrowing date range, we should completely replace past records
-          // not try to merge with previous ones
-          const combined = todayRecord
-            ? [todayRecord, ...filteredPast]
-            : [...filteredPast];
-            
-          console.log("Setting records with:", combined.length, "records");
-          combined.forEach((record, index) => {
-            console.log(`Combined Record ${index}:`, record.date.toISOString());
-          });
-          
-          // Additional logging to see what dates we're actually setting
-          console.log("=== RECORDS BEING SET ===");
-          combined.forEach((record, index) => {
-            const recordDate = new Date(record.date);
-            recordDate.setHours(0, 0, 0, 0);
-            console.log(`Final Record ${index}:`, recordDate.toISOString(), "Date:", recordDate.getDate());
-          });
-          
-          // Check if any records are outside the expected range
-          console.log("=== RANGE VALIDATION ===");
-          const expectedStart = new Date(start);
-          expectedStart.setHours(0, 0, 0, 0);
-          const expectedEnd = new Date(end);
-          expectedEnd.setHours(0, 0, 0, 0);
-          
-          console.log("Expected date range:", expectedStart.toISOString(), "to", expectedEnd.toISOString());
-          
-          combined.forEach((record, index) => {
-            const recordDate = new Date(record.date);
-            recordDate.setHours(0, 0, 0, 0);
-            
-            const recordDateObj = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
-            const expectedStartObj = new Date(expectedStart.getFullYear(), expectedStart.getMonth(), expectedStart.getDate());
-            const expectedEndObj = new Date(expectedEnd.getFullYear(), expectedEnd.getMonth(), expectedEnd.getDate());
-            
-            const inRange = recordDateObj >= expectedStartObj && recordDateObj <= expectedEndObj;
-            console.log(`Record ${index} (${recordDate.toISOString()}) in expected range: ${inRange}`);
-            if (!inRange) {
-              console.log(`  OUT OF RANGE: Record date ${recordDateObj.toISOString()} not in ${expectedStartObj.toISOString()} to ${expectedEndObj.toISOString()}`);
-            }
-          });
-          
-          return combined.sort((a, b) => b.date.getTime() - a.date.getTime());
+          if (todayRecordExists) {
+            return [todayRecordExists, ...filteredPast].sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+          } else {
+            return merged;
+          }
         });
       } catch (err) {
-        console.error("Error loading past records:", err);
+        console.error("Load error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPastRecords();
+    loadAllRecords();
+
+    /* Live listener AFTER initial load */
+    // Set up a listener for today's record specifically
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(today.getDate()).padStart(2, "0")}`;
+    
+    // Set up a listener for today's record specifically
+    const unsubscribeToday = onSnapshot(DB.employeeRecord(todayKey, employeeId), (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
+        const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
+        
+        const updatedTodayRecord = {
+          date: today,
+          checkIn: checkIn
+            ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Not marked",
+          checkOut: checkOut
+            ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Not marked",
+          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+        };
+        
+        setTodayRecord(updatedTodayRecord);
+        
+        // Update the records array with the new today record
+        setRecords(prevRecords => {
+          // Remove the old today record if it exists
+          const filteredRecords = prevRecords.filter(rec => {
+            const recDate = new Date(rec.date);
+            recDate.setHours(0, 0, 0, 0);
+            const todayDate = new Date(today);
+            todayDate.setHours(0, 0, 0, 0);
+            return recDate.getTime() !== todayDate.getTime();
+          });
+          
+          // Add the updated today record
+          return [updatedTodayRecord, ...filteredRecords].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+        });
+      } else {
+        // If document doesn't exist, update with default values
+        const defaultTodayRecord = {
+          date: today,
+          checkIn: "Not marked",
+          checkOut: "Not marked",
+          duration: "N/A",
+        };
+        
+        setTodayRecord(defaultTodayRecord);
+        
+        // Update the records array with the default today record
+        setRecords(prevRecords => {
+          // Remove the old today record if it exists
+          const filteredRecords = prevRecords.filter(rec => {
+            const recDate = new Date(rec.date);
+            recDate.setHours(0, 0, 0, 0);
+            const todayDate = new Date(today);
+            todayDate.setHours(0, 0, 0, 0);
+            return recDate.getTime() !== todayDate.getTime();
+          });
+          
+          // Add the default today record
+          return [defaultTodayRecord, ...filteredRecords].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+        });
+      }
+    });
+
+    // For simplicity, we'll reload past records periodically
+    // A more sophisticated approach would be to listen to all relevant documents
+    const intervalId = setInterval(() => {
+      loadAllRecords();
+    }, 30000); // Refresh every 30 seconds
 
     return () => {
-      unsub();
-      if (liveTimerRef.current) clearInterval(liveTimerRef.current);
+      unsubscribeToday();
+      clearInterval(intervalId);
     };
   }, [employeeId, startDate.getTime(), endDate.getTime()]);
 
