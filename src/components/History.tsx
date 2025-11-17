@@ -56,6 +56,7 @@ const History: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [employeeName, setEmployeeName] = useState<string>("Employee");
   const [photoLoading, setPhotoLoading] = useState(true);
   const [photoError, setPhotoError] = useState(false);
 
@@ -63,7 +64,7 @@ const History: React.FC = () => {
   const userEmail = localStorage.getItem("userEmail");
 
   const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee";
-  const initials = getInitials(userName);
+  const initials = getInitials(employeeName);
 
   const [startDate, setStartDate] = useState<Date>(() => {
     const d = new Date();
@@ -79,17 +80,23 @@ const History: React.FC = () => {
   });
 
   /* -------------------------------------------
-     FETCH USER PHOTO
+     FETCH USER PHOTO AND NAME
   ------------------------------------------- */
   useEffect(() => {
-    const fetchUserPhoto = async () => {
+    const fetchUserPhotoAndName = async () => {
       if (!userEmail) return;
       try {
         setPhotoLoading(true);
         const q = query(collection(db, "Employee_Details"), where("Email", "==", userEmail));
         const snap = await getDocs(q);
-        if (!snap.empty && snap.docs[0].data().Photo) {
-          setUserPhoto(snap.docs[0].data().Photo as string);
+        if (!snap.empty) {
+          const employeeData = snap.docs[0].data();
+          if (employeeData.Photo) {
+            setUserPhoto(employeeData.Photo as string);
+          }
+          if (employeeData.Name) {
+            setEmployeeName(employeeData.Name as string);
+          }
         }
       } catch {
         setPhotoError(true);
@@ -97,7 +104,7 @@ const History: React.FC = () => {
         setPhotoLoading(false);
       }
     };
-    fetchUserPhoto();
+    fetchUserPhotoAndName();
   }, [userEmail]);
 
   /* -------------------------------------------
@@ -271,7 +278,7 @@ const History: React.FC = () => {
     <IonPage>
       <HistoryLayout
         initials={initials}
-        userName={userName}
+        userName={employeeName}
         todayRecord={todayRecord}
         rangeLabel={rangeLabel}
         loading={loading}

@@ -137,7 +137,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             {loading ? (
               // Show skeleton loaders when loading
               <>
-                {[...Array(3)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <IonCard key={i} className="record-modern-card">
                     <IonCardContent>
                       <div className="record-header">
