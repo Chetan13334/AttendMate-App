@@ -19,6 +19,7 @@ import {
 } from "ionicons/icons";
 
 import Skeleton from "./Skeleton";
+import Header from "../components/AppHeader";
 import "../theme/components/HistoryLayout.css";
 
 interface HistoryLayoutProps {
@@ -37,6 +38,7 @@ interface HistoryLayoutProps {
   userPhoto?: string | null;
   photoLoading?: boolean;
   photoError?: boolean;
+  liveDuration?: string; // Add liveDuration property
 }
 
 const HistoryLayout: React.FC<HistoryLayoutProps> = ({
@@ -55,16 +57,18 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   userPhoto,
   photoLoading,
   photoError,
+  liveDuration = "00h 00m", // Default value for liveDuration
 }) => {
   const handlePhotoError = () => console.log("User photo failed");
 
   return (
     <>
-      <IonToolbar />
+     
 
-      <IonContent fullscreen color="white" className="history-content" scrollEvents={true}>
+      <IonContent color="white" className="history-content" scrollEvents={true}>
+
         <div className="content-wrapper">
-
+          <Header />
           {/* HEADER */}
           <div className="history-header">
             <div className="history-header-inner">
@@ -108,13 +112,19 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   <IonIcon icon={timeOutline} color="medium" />
                   <p className="today-label total">Duration</p>
                   <h5 className="today-time total">
-                    {todayRecord?.duration === "N/A"
-                      ? "00h 00m"
-                      : todayRecord?.duration || "00h 00m"}
+                    {todayRecord?.checkInTime && !todayRecord?.checkOutTime ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="blinking-dot"></div>
+                        {liveDuration}
+                      </div>
+                    ) : todayRecord?.duration === "N/A" ? (
+                      "00h 00m"
+                    ) : (
+                      todayRecord?.duration || "00h 00m"
+                    )}
                   </h5>
                 </div>
               </div>
-
 
 
 

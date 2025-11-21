@@ -9,7 +9,7 @@ import {
 } from "ionicons/icons";
 import { db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import AppHeader from "../components/AppHeader";
+import Header from "../components/AppHeader";
 import Skeleton from "../components/Skeleton";
 
 interface ProfileProps {
@@ -27,7 +27,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
   if (!userEmail) {
     return (
       <IonPage>
-        <AppHeader title="Profile" />
+        
         <IonContent>
           <div className="centered">
             <p>Not logged in. Redirecting...</p>
@@ -75,7 +75,7 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
 
   return (
     <IonPage>
-      <AppHeader title="Profile" />
+      <Header />
 
       <IonContent style={{ "--background": "#ffffff" }}>
         {loading ? (

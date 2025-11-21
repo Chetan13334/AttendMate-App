@@ -4,11 +4,11 @@ import {
   IonRouterOutlet,
 } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
-
+import Header from "../components/AppHeader";
 import Homepage from "../pages/Home";
 import History from "../components/History";
 import Profile from "../pages/Profile";
-import AppHeader from "../components/AppHeader";
+
 import BottomTabs from "../components/BottomTabs";
 
 interface TabsProps {
@@ -18,8 +18,8 @@ interface TabsProps {
 const Routing: React.FC<TabsProps> = ({ onLogout }) => {
   return (
     <IonTabs>
-      <AppHeader />
 
+      
       <IonRouterOutlet>
         <Route exact path="/home" component={Homepage} />
         <Route exact path="/history" component={History} />
@@ -31,7 +31,7 @@ const Routing: React.FC<TabsProps> = ({ onLogout }) => {
         </Route>
       </IonRouterOutlet>
 
-     
+
       <BottomTabs />
     </IonTabs>
   );

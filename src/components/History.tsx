@@ -29,6 +29,8 @@ const fetchTodayRecordOnce = async (employeeId: string) => {
       checkIn: "Not marked",
       checkOut: "Not marked",
       duration: "N/A",
+      checkInTime: null,
+      checkOutTime: null,
     };
   }
 
@@ -45,6 +47,8 @@ const fetchTodayRecordOnce = async (employeeId: string) => {
       ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : "Not marked",
     duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+    checkInTime: checkIn,
+    checkOutTime: checkOut,
   };
 };
 
@@ -54,6 +58,7 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [liveDuration, setLiveDuration] = useState<string>("00h 00m"); // New state for live duration
 
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [employeeName, setEmployeeName] = useState<string>("Employee");
@@ -121,6 +126,58 @@ const History: React.FC = () => {
     loadEmployeeId();
   }, [userEmail]);
 
+  /* -------------------------------------------
+     LIVE DURATION CALCULATION
+  ------------------------------------------- */
+  useEffect(() => {
+    // Clear any existing timer
+    if (liveTimerRef.current) {
+      clearInterval(liveTimerRef.current);
+      liveTimerRef.current = null;
+    }
+
+    // Log for debugging
+    console.log("Today Record:", todayRecord);
+    
+    // Only start timer if we have a check-in time but no check-out time
+    if (todayRecord?.checkInTime && !todayRecord?.checkOutTime) {
+      console.log("Starting live duration timer");
+      const updateLiveDuration = () => {
+        const now = new Date();
+        const checkInTime = new Date(todayRecord.checkInTime);
+        const diffMs = now.getTime() - checkInTime.getTime();
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const seconds = Math.floor((diffMs % 60000) / 1000);
+        const formattedDuration = `${hrs.toString().padStart(2, '0')}h ${mins.toString().padStart(2, '0')}m`;
+        console.log("Live duration:", formattedDuration);
+        setLiveDuration(formattedDuration);
+      };
+
+      // Initial update
+      updateLiveDuration();
+      
+      // Update every second for real-time counting
+      liveTimerRef.current = setInterval(updateLiveDuration, 1000);
+    } else {
+      // If not actively tracking, show the stored duration or default
+      console.log("Not tracking live duration");
+      if (todayRecord?.duration && todayRecord?.duration !== "N/A") {
+        setLiveDuration(todayRecord.duration);
+      } else {
+        setLiveDuration("00h 00m");
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (liveTimerRef.current) {
+        clearInterval(liveTimerRef.current);
+        liveTimerRef.current = null;
+      }
+    };
+  }, [todayRecord]);
+
   /* ----------------------------------------------------------
      MAIN LOGIC: LOAD (Today + Past Records) TOGETHER FAST
   ----------------------------------------------------------- */
@@ -132,8 +189,7 @@ const History: React.FC = () => {
       try {
         // 1️⃣ Load today's record immediately (no listener delay)
         const todayData = await fetchTodayRecordOnce(employeeId);
-        // Only update todayRecord if we don't have a real-time listener update
-        // setTodayRecord(todayData);
+        setTodayRecord(todayData);
 
         // 2️⃣ Load past records
         const pastRecords = await fetchPastRecords(employeeId, startDate, endDate);
@@ -152,25 +208,7 @@ const History: React.FC = () => {
           (a, b) => b.date.getTime() - a.date.getTime()
         );
 
-        // Update records but keep the real-time today record if it exists
-        setRecords(prevRecords => {
-          // Keep the real-time today record if it exists
-          const todayRecordExists = prevRecords.find(rec => {
-            const recDate = new Date(rec.date);
-            recDate.setHours(0, 0, 0, 0);
-            const todayDate = new Date(todayData.date);
-            todayDate.setHours(0, 0, 0, 0);
-            return recDate.getTime() === todayDate.getTime();
-          });
-          
-          if (todayRecordExists) {
-            return [todayRecordExists, ...filteredPast].sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
-          } else {
-            return merged;
-          }
-        });
+        setRecords(merged);
       } catch (err) {
         console.error("Load error:", err);
       } finally {
@@ -204,26 +242,11 @@ const History: React.FC = () => {
             ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "Not marked",
           duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
         };
         
         setTodayRecord(updatedTodayRecord);
-        
-        // Update the records array with the new today record
-        setRecords(prevRecords => {
-          // Remove the old today record if it exists
-          const filteredRecords = prevRecords.filter(rec => {
-            const recDate = new Date(rec.date);
-            recDate.setHours(0, 0, 0, 0);
-            const todayDate = new Date(today);
-            todayDate.setHours(0, 0, 0, 0);
-            return recDate.getTime() !== todayDate.getTime();
-          });
-          
-          // Add the updated today record
-          return [updatedTodayRecord, ...filteredRecords].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-        });
       } else {
         // If document doesn't exist, update with default values
         const defaultTodayRecord = {
@@ -231,26 +254,11 @@ const History: React.FC = () => {
           checkIn: "Not marked",
           checkOut: "Not marked",
           duration: "N/A",
+          checkInTime: null,
+          checkOutTime: null,
         };
         
         setTodayRecord(defaultTodayRecord);
-        
-        // Update the records array with the default today record
-        setRecords(prevRecords => {
-          // Remove the old today record if it exists
-          const filteredRecords = prevRecords.filter(rec => {
-            const recDate = new Date(rec.date);
-            recDate.setHours(0, 0, 0, 0);
-            const todayDate = new Date(today);
-            todayDate.setHours(0, 0, 0, 0);
-            return recDate.getTime() !== todayDate.getTime();
-          });
-          
-          // Add the default today record
-          return [defaultTodayRecord, ...filteredRecords].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-        });
       }
     });
 
@@ -263,6 +271,10 @@ const History: React.FC = () => {
     return () => {
       unsubscribeToday();
       clearInterval(intervalId);
+      // Clear live timer on unmount
+      if (liveTimerRef.current) {
+        clearInterval(liveTimerRef.current);
+      }
     };
   }, [employeeId, startDate.getTime(), endDate.getTime()]);
 
@@ -292,6 +304,7 @@ const History: React.FC = () => {
         userPhoto={userPhoto}
         photoLoading={photoLoading}
         photoError={photoError}
+        liveDuration={liveDuration} // Pass live duration to layout
       />
     </IonPage>
   );

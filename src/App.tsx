@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { IonApp, IonSpinner, setupIonicReact } from "@ionic/react";
+import {
+  IonApp,
+  IonSpinner,
+  setupIonicReact,
+} from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { IonRouterOutlet } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
+
+// Capacitor plugins
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { Device } from "@capacitor/device";
 
 import Login from "./auth/Login";
 import HomeTabs from "./routes/Routing";
@@ -21,9 +29,47 @@ import "./theme/variables.css";
 
 setupIonicReact();
 
+/* THIS IS THE MAGIC FUNCTION - PERFECT INVERTED NOTCH */
+const updateStatusBarForInvertedCutout = async () => {
+  try {
+    const info = await Device.getInfo();
+    if (info.platform !== "android" && info.platform !== "ios") return;
+
+    const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (isDarkMode) {
+      // Dark mode → White notch + Black icons
+      await StatusBar.setBackgroundColor({ color: "#ffffff" });
+      await StatusBar.setStyle({ style: Style.Dark });        // Black text/icons
+    } else {
+      // Light mode → Black notch + White icons
+      await StatusBar.setBackgroundColor({ color: "#000000" });
+      await StatusBar.setStyle({ style: Style.Light });       // White text/icons
+    }
+
+    // Make status bar overlay so our color fills the notch
+    await StatusBar.setOverlaysWebView({ overlay: true });
+  } catch (error) {
+    console.log("Status bar update failed:", error);
+  }
+};
+
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
+  // Apply inverted notch effect + listen for system theme changes
+  useEffect(() => {
+    updateStatusBarForInvertedCutout();
+
+    const listener = window.matchMedia("(prefers-color-scheme: dark)");
+    listener.addEventListener("change", updateStatusBarForInvertedCutout);
+
+    return () => {
+      listener.removeEventListener("change", updateStatusBarForInvertedCutout);
+    };
+  }, []);
+
+  // Check login state
   useEffect(() => {
     const saved = localStorage.getItem("isLoggedIn");
     setIsLoggedIn(saved === "true");
@@ -62,11 +108,7 @@ const App: React.FC = () => {
           </Route>
 
           <Route exact path="/login">
-            {isLoggedIn ? (
-              <Redirect to="/home" />
-            ) : (
-              <Login onLogin={handleLogin} />
-            )}
+            {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
           </Route>
 
           <Route path="/home">

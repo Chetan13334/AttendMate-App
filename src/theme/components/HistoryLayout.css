@@ -94,8 +94,25 @@
   color: #4f46e5;
 }
 
+/* Blinking dot animation for live duration */
+.blinking-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  margin-right: 5px;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
 /* ------------------------------------------------------- */
-/* DATE RANGE BUTTON */
+/* DATE RANGE BUTTON -----------------------------------------------*/
 /* ------------------------------------------------------- */
 
 .date-range-btn {

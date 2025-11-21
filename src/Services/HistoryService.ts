@@ -132,6 +132,8 @@ export const fetchPastRecords = async (
             ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "Not marked",
           duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+          checkInTime: checkIn, // Add checkInTime
+          checkOutTime: checkOut, // Add checkOutTime
         });
       } else {
         console.log(`  No record found for dateKey:`, dateKey);

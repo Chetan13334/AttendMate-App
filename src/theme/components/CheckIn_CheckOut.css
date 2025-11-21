@@ -12,7 +12,7 @@
 }
 
 .checkin-card {
-  --background: #ffffff;
+  --background: white;
   --border-radius: 28px;
   margin: 20px;
   margin-top: 10px;
@@ -62,7 +62,7 @@
 }
 
 /* checkedin / checkedout styles kept as-is */
-.checkedin-card { --background: #ffffff; --border-radius: 20px; margin: 16px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.checkedin-card { --background: #ffffff; --border-radius: 20px; margin: 16px; margin-top: 5%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
 .checkedin-header { background-color: #00bcd4; border-radius: 20px 20px 0 0; padding: 24px 20px; display:flex; align-items:center; position:relative; }
 .checkedin-icon { font-size: 36px; color: #fff; margin-right: 16px; }
 .checkedin-badge { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: #fff; border-radius: 50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -92,3 +92,67 @@
 .alert-failed-title { color:#d32f2f; }
 .alert-success-title { color:#16bc5b; }
 .location-spinner { margin-bottom:16px; }
+
+/* Blinking dot animation for live duration */
+.blinking-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #4CAF50;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 480px) {
+  .checkin-card {
+    margin-top: 3px;
+  }
+  
+  .checkedin-card {
+    margin-top: 3px;
+  }
+  
+  .checkedout-card {
+    margin-top: 3px;
+  }
+  
+  .checkin-header {
+    padding: 40px 20px 30px;
+  }
+  
+  .checkin-circle-outer {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .checkin-circle-inner {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* iPhone SE / very small screens */
+@media (max-width: 360px) {
+  .checkin-card {
+    margin: 15px 15px 5px;
+  }
+  
+  .checkedin-card {
+    margin: 15px 15px 5px;
+  }
+  
+  .checkedout-card {
+    margin: 15px 15px 5px;
+  }
+  
+  .checkin-header {
+    padding: 30px 15px 20px;
+  }
+}

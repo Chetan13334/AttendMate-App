@@ -1,28 +1,92 @@
+/* =============== HIDE NOTCH / DYNAMIC ISLAND ON ALL DEVICES =============== */
+
+/* Force full edge-to-edge layout */
+html,
+body,
+#root,
+ion-app,
+.ion-page,
+ion-content {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Extend background under notch */
+ion-header {
+  position: relative;
+}
+
+/* This magic pseudo-element fills the notch area with header color */
+ion-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--ion-toolbar-background, #ffffff);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Make first toolbar pad correctly and extend under notch */
+ion-toolbar:first-child {
+  --padding-top: env(safe-area-inset-top) !important;
+  --padding-top: constant(safe-area-inset-top) !important;
+  padding-top: env(safe-area-inset-top) !important;
+  padding-top: constant(safe-area-inset-top) !important;
+}
+
+/* Ensure content doesn't get hidden under notch */
+ion-content {
+  --offset-top: 0px !important;
+  --padding-top: 0 !important;
+}
+
+/* Your existing styles (cleaned up and improved) */
 :root {
   --ion-background-color: #ffffff !important;
   --ion-text-color: #000000 !important;
-
   --ion-toolbar-background: #ffffff !important;
   --ion-toolbar-color: #000000 !important;
-
   --ion-tab-bar-background: #ffffff !important;
   --ion-tab-bar-color: #666666 !important;
   --ion-tab-bar-color-selected: #387ef5 !important;
 }
 
 ion-content,
-ion-page,
+.ion-page,
 ion-header,
 ion-footer,
 ion-tab-bar {
   --background: #ffffff !important;
   background: #ffffff !important;
   --color: #000000 !important;
+  color: #000000 !important;
 }
 
+/* Force light mode only (you already wanted this) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --ion-background-color: #ffffff !important;
+    /* --ion-background-color: #ffffff !important; */
     --ion-text-color: #000000 !important;
   }
 }
+
+/* Basic body reset */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--ion-background-color);
+}
+
+/* Test classes (keep if you use them) */
+.test-red { color: red; }
+.test-blue { color: blue; }
+.test-green { color: green; }

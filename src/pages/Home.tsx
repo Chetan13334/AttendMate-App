@@ -19,7 +19,7 @@ const Home: React.FC = () => {
           "--padding-bottom": "0px",
           "--keyboard-offset": "0px",
           overscrollBehavior: "none",
-          paddingBottom: "3px", 
+          paddingBottom: "0px", 
           marginBottom: "0px",
         }}
       >
@@ -30,7 +30,7 @@ const Home: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-start",
-            padding: "var(--ion-safe-area-top, 10px) 0 15px",
+            padding: "var(--ion-safe-area-top, 3px) 0 10px",
           }}
         >
           <CheckIn_CheckOut_Card />

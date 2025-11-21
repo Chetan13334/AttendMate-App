@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@awesome-cordova-plugins/diagnostic": "^8.1.0",
+    "@capacitor-community/safe-area": "^7.0.0-beta.4",
     "@capacitor/android": "7.4.4",
     "@capacitor/app": "^7.1.0",
     "@capacitor/app-launcher": "^7.0.2",
