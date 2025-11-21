@@ -87,6 +87,14 @@ body {
 }
 
 /* Test classes (keep if you use them) */
-.test-red { color: red; }
-.test-blue { color: blue; }
-.test-green { color: green; }
+.test-red {
+  color: red;
+}
+
+.test-blue {
+  color: blue;
+}
+
+.test-green {
+  color: green;
+}

@@ -63,7 +63,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
   return (
     <>
-     
+
 
       <IonContent color="white" className="history-content" scrollEvents={true}>
 
@@ -181,7 +181,21 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                         })}
                       </h3>
                       <div className="record-duration-pill">
-                        {rec.duration === "N/A" ? "00h 00m" : rec.duration}
+                        {(() => {
+                          const isToday = new Date().toDateString() === rec.date.toDateString();
+                          const isActive = isToday && todayRecord?.checkInTime && !todayRecord?.checkOutTime;
+
+                          if (isActive) {
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <div className="blinking-dot"></div>
+                                {liveDuration}
+                              </div>
+                            );
+                          }
+
+                          return rec.duration === "N/A" ? "00h 00m" : rec.duration;
+                        })()}
                       </div>
                     </div>
 

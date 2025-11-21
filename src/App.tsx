@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
-  IonApp,
-  IonSpinner,
-  setupIonicReact,
+    IonApp,
+    IonSpinner,
+    setupIonicReact,
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { IonRouterOutlet } from "@ionic/react";
@@ -31,101 +31,101 @@ setupIonicReact();
 
 /* THIS IS THE MAGIC FUNCTION - PERFECT INVERTED NOTCH */
 const updateStatusBarForInvertedCutout = async () => {
-  try {
-    const info = await Device.getInfo();
-    if (info.platform !== "android" && info.platform !== "ios") return;
+    try {
+        const info = await Device.getInfo();
+        if (info.platform !== "android" && info.platform !== "ios") return;
 
-    const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    if (isDarkMode) {
-      // Dark mode → White notch + Black icons
-      await StatusBar.setBackgroundColor({ color: "#ffffff" });
-      await StatusBar.setStyle({ style: Style.Dark });        // Black text/icons
-    } else {
-      // Light mode → Black notch + White icons
-      await StatusBar.setBackgroundColor({ color: "#000000" });
-      await StatusBar.setStyle({ style: Style.Light });       // White text/icons
+        if (isDarkMode) {
+            // Dark mode → White notch + Black icons
+            await StatusBar.setBackgroundColor({ color: "#ffffff" });
+            await StatusBar.setStyle({ style: Style.Dark });        // Black text/icons
+        } else {
+            // Light mode → Black notch + White icons
+            await StatusBar.setBackgroundColor({ color: "#000000" });
+            await StatusBar.setStyle({ style: Style.Light });       // White text/icons
+        }
+
+        // Make status bar overlay so our color fills the notch
+        await StatusBar.setOverlaysWebView({ overlay: true });
+    } catch (error) {
+        console.log("Status bar update failed:", error);
     }
-
-    // Make status bar overlay so our color fills the notch
-    await StatusBar.setOverlaysWebView({ overlay: true });
-  } catch (error) {
-    console.log("Status bar update failed:", error);
-  }
 };
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  // Apply inverted notch effect + listen for system theme changes
-  useEffect(() => {
-    updateStatusBarForInvertedCutout();
+    // Apply inverted notch effect + listen for system theme changes
+    useEffect(() => {
+        updateStatusBarForInvertedCutout();
 
-    const listener = window.matchMedia("(prefers-color-scheme: dark)");
-    listener.addEventListener("change", updateStatusBarForInvertedCutout);
+        const listener = window.matchMedia("(prefers-color-scheme: dark)");
+        listener.addEventListener("change", updateStatusBarForInvertedCutout);
 
-    return () => {
-      listener.removeEventListener("change", updateStatusBarForInvertedCutout);
+        return () => {
+            listener.removeEventListener("change", updateStatusBarForInvertedCutout);
+        };
+    }, []);
+
+    // Check login state
+    useEffect(() => {
+        const saved = localStorage.getItem("isLoggedIn");
+        setIsLoggedIn(saved === "true");
+    }, []);
+
+    const handleLogin = (email: string) => {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userEmail", email);
+        setIsLoggedIn(true);
     };
-  }, []);
 
-  // Check login state
-  useEffect(() => {
-    const saved = localStorage.getItem("isLoggedIn");
-    setIsLoggedIn(saved === "true");
-  }, []);
+    if (isLoggedIn === null) {
+        return (
+            <IonApp>
+                <div
+                    style={{
+                        height: "100vh",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        background: "#f4f5f8",
+                    }}
+                >
+                    <IonSpinner name="crescent" />
+                </div>
+            </IonApp>
+        );
+    }
 
-  const handleLogin = (email: string) => {
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userEmail", email);
-    setIsLoggedIn(true);
-  };
-
-  if (isLoggedIn === null) {
     return (
-      <IonApp>
-        <div
-          style={{
-            height: "100vh",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#f4f5f8",
-          }}
-        >
-          <IonSpinner name="crescent" />
-        </div>
-      </IonApp>
+        <IonApp>
+            <IonReactRouter>
+                <IonRouterOutlet>
+                    <Route exact path="/">
+                        <Redirect to={isLoggedIn ? "/home" : "/login"} />
+                    </Route>
+
+                    <Route exact path="/login">
+                        {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
+                    </Route>
+
+                    <Route path="/home">
+                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                    </Route>
+
+                    <Route path="/profile">
+                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                    </Route>
+
+                    <Route path="/history">
+                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                    </Route>
+                </IonRouterOutlet>
+            </IonReactRouter>
+        </IonApp>
     );
-  }
-
-  return (
-    <IonApp>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <Route exact path="/">
-            <Redirect to={isLoggedIn ? "/home" : "/login"} />
-          </Route>
-
-          <Route exact path="/login">
-            {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
-          </Route>
-
-          <Route path="/home">
-            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-          </Route>
-
-          <Route path="/profile">
-            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-          </Route>
-
-          <Route path="/history">
-            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-          </Route>
-        </IonRouterOutlet>
-      </IonReactRouter>
-    </IonApp>
-  );
 };
 
 export default App;
