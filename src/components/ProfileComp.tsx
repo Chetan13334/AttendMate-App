@@ -50,20 +50,20 @@ const ProfileCom: React.FC<ProfileComProps> = ({ onLogout }) => {
 
       {loading ? (
         <div className="skeleton-center">
-          <Skeleton width="110px" height="110px" borderRadius="50%" />
-          <Skeleton width="160px" height="22px" />
-          <Skeleton width="200px" height="15px" />
+          <Skeleton width="110px" height="110px" borderRadius="50%" style={{ margin: "0 auto 20px" }} />
+          <Skeleton width="160px" height="22px" style={{ margin: "10px auto 2px" }} />
+          <Skeleton width="200px" height="15px" style={{ margin: "0 auto 20px" }} />
 
           <div className="profile-info-box">
-            <Skeleton width="80px" height="13px" />
-            <Skeleton width="120px" height="15px" />
+            <Skeleton width="80px" height="13px" style={{ margin: "0 auto 6px" }} />
+            <Skeleton width="120px" height="15px" style={{ margin: "0 auto" }} />
           </div>
 
           <div className="profile-options">
             {[...Array(3)].map((_, idx) => (
               <div key={idx} className="profile-option-item">
                 <div className="profile-option-left">
-                  <Skeleton width="20px" height="20px" />
+                  <Skeleton width="20px" height="20px" style={{ marginRight: "12px" }} />
                   <Skeleton width="120px" height="15px" />
                 </div>
                 <Skeleton width="18px" height="18px" />
@@ -73,7 +73,7 @@ const ProfileCom: React.FC<ProfileComProps> = ({ onLogout }) => {
 
           <div className="logout-section">
             <div className="logout-left">
-              <Skeleton width="20px" height="20px" />
+              <Skeleton width="20px" height="20px" style={{ marginRight: "10px" }} />
               <Skeleton width="80px" height="15px" />
             </div>
           </div>
