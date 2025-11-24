@@ -38,7 +38,7 @@ interface HistoryLayoutProps {
   userPhoto?: string | null;
   photoLoading?: boolean;
   photoError?: boolean;
-  liveDuration?: string; // Add liveDuration property
+  liveDuration?: string;
 }
 
 const HistoryLayout: React.FC<HistoryLayoutProps> = ({
@@ -57,19 +57,17 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   userPhoto,
   photoLoading,
   photoError,
-  liveDuration = "00h 00m", // Default value for liveDuration
+  liveDuration = "00h 00m",
 }) => {
   const handlePhotoError = () => console.log("User photo failed");
 
   return (
     <>
-
-
       <IonContent color="white" className="history-content" scrollEvents={true}>
-
         <div className="content-wrapper">
           <Header />
-          {/* HEADER */}
+
+          
           <div className="history-header">
             <div className="history-header-inner">
 
@@ -113,7 +111,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   <p className="today-label total">Duration</p>
                   <h5 className="today-time total">
                     {todayRecord?.checkInTime && !todayRecord?.checkOutTime ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <div className="blinking-dot"></div>
                         {liveDuration}
                       </div>
@@ -126,26 +124,18 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 </div>
               </div>
 
-
-
             </div>
           </div>
 
-          {/* RECORD LIST */}
           <div className="records-container">
 
-            {/* Modern Button */}
-            <button
-              className="date-range-btn"
-              onClick={() => setShowModal(true)}
-            >
+            <button className="date-range-btn" onClick={() => setShowModal(true)}>
               <IonIcon icon={calendarOutline} className="range-btn-icon" />
               <span>{rangeLabel}</span>
               <IonIcon icon={chevronForwardOutline} className="range-btn-icon" />
             </button>
 
             {loading ? (
-              // Show skeleton loaders when loading
               <>
                 {[...Array(5)].map((_, i) => (
                   <IonCard key={i} className="record-modern-card">
@@ -171,7 +161,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               records.map((rec, i) => (
                 <IonCard key={i} className="record-modern-card">
                   <IonCardContent>
-
                     <div className="record-header">
                       <h3 className="record-date-modern">
                         {rec.date.toLocaleDateString("en-US", {
@@ -187,7 +176,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
                           if (isActive) {
                             return (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                 <div className="blinking-dot"></div>
                                 {liveDuration}
                               </div>
@@ -227,7 +216,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
           </div>
 
-          {/* MODAL */}
+         
           <IonModal
             isOpen={showModal}
             onDidDismiss={() => setShowModal(false)}
@@ -239,12 +228,12 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
               <div className="popup-body">
 
-                {/* START DATE */}
+               
                 <div className="popup-field">
                   <label>Start Date</label>
                   <input
                     type="date"
-                    value={startDate.toISOString().split("T")[0]}
+                    value={startDate ? startDate.toLocaleDateString("en-CA") : ""}
                     onChange={(e) => {
                       const d = new Date(e.target.value);
                       d.setHours(0, 0, 0, 0);
@@ -254,12 +243,12 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   />
                 </div>
 
-                {/* END DATE */}
+               
                 <div className="popup-field">
                   <label>End Date</label>
                   <input
                     type="date"
-                    value={endDate.toISOString().split("T")[0]}
+                    value={endDate ? endDate.toLocaleDateString("en-CA") : ""}
                     onChange={(e) => {
                       const d = new Date(e.target.value);
                       d.setHours(23, 59, 59, 999);
@@ -269,7 +258,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   />
                 </div>
 
-                {/* DONE BUTTON */}
                 <IonButton expand="block" className="popup-done-btn" onClick={() => setShowModal(false)}>
                   Done
                 </IonButton>

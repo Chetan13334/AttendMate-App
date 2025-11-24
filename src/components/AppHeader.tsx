@@ -9,46 +9,39 @@ import {
 } from "@ionic/react";
 
 import { personCircleOutline } from "ionicons/icons";
-import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
 
 import Logo from "../assets/main_logo.png";
 import ProfileIcon from "../assets/user.png";
 import LogoutIcon from "../assets/logout.png";
 
 import "../components/AppHeader.css";
+import { fetchHeaderUserData } from "../Services/HeaderService";
+import ConfirmLogoutPopup from "./ConfirmLogoutPopup";
 
 const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [loadingPhoto, setLoadingPhoto] = useState(true);
   const [photoError, setPhotoError] = useState(false);
 
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const userEmail = localStorage.getItem("userEmail");
 
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const loadUserData = async () => {
       if (!userEmail) return;
-      try {
-        const q = query(
-          collection(db, "Employee_Details"),
-          where("Email", "==", userEmail)
-        );
-        const snap = await getDocs(q);
 
-        if (!snap.empty && snap.docs[0].data().Photo) {
-          setPhotoUrl(snap.docs[0].data().Photo as string);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingPhoto(false);
-      }
+      const data = await fetchHeaderUserData(userEmail);
+      setPhotoUrl(data.photo);
+      setUserName(data.name);
+
+      setLoadingPhoto(false);
     };
 
-    fetchPhoto();
+    loadUserData();
   }, [userEmail]);
 
   const logout = () => {
@@ -57,16 +50,24 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
     window.location.href = "/";
   };
 
+  const getInitial = () => {
+    if (userName && userName.trim().length > 0) {
+      return userName.trim().charAt(0).toUpperCase();
+    }
+    if (userEmail && userEmail.trim().length > 0) {
+      return userEmail.trim().charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
   return (
     <IonToolbar className="app-header-toolbar">
 
-      {/* LEFT SIDE */}
       <div slot="start" className="header-left">
         <img src={Logo} alt="Logo" className="app-logo" />
         <h1 className="app-title">{title}</h1>
       </div>
 
-      {/* AVATAR */}
       <div
         slot="end"
         className="avatar-trigger"
@@ -77,7 +78,9 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
       >
         {loadingPhoto ? (
           <IonSpinner name="dots" color="medium" className="avatar-size" />
-        ) : photoUrl && !photoError ? (
+        ) : photoUrl &&
+          !photoError &&
+          !photoUrl.includes("placehold.co") ? (
           <img
             src={photoUrl}
             alt="Profile"
@@ -85,11 +88,12 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
             onError={() => setPhotoError(true)}
           />
         ) : (
-          <IonIcon icon={personCircleOutline} className="avatar-size" />
+          <div className="avatar-fallback">
+            {getInitial()}
+          </div>
         )}
       </div>
 
-      {/* SMALL RESPONSIVE POPOVER */}
       <IonPopover
         isOpen={showPopover}
         event={popoverEvent}
@@ -119,7 +123,7 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
             detail={false}
             onClick={() => {
               setShowPopover(false);
-              logout();
+              setShowLogoutConfirm(true);
             }}
           >
             <img src={LogoutIcon} className="menu-icon" />
@@ -128,6 +132,12 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
 
         </IonList>
       </IonPopover>
+
+      <ConfirmLogoutPopup
+        isOpen={showLogoutConfirm}
+        onConfirm={logout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
 
     </IonToolbar>
   );

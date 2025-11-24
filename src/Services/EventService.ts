@@ -1,4 +1,3 @@
-// src/Services/EventService.ts
 import { onSnapshot } from "firebase/firestore";
 import { DB } from "../config/databaseConfig";
 

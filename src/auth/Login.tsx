@@ -35,7 +35,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const passwordRef = useRef(password);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
-  // NEW FUNCTION (Fix mobile keyboard overlap)
+
   const scrollUpForPassword = () => {
     setTimeout(() => {
       contentRef.current?.scrollToPoint(0, 220, 300); 
@@ -148,7 +148,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 setPassword(e.target.value);
                 passwordRef.current = e.target.value;
               }}
-              onFocus={scrollUpForPassword}  // ← NEW FIX HERE
+              onFocus={scrollUpForPassword}  
             />
             <IonIcon
               icon={showPassword ? eyeOffOutline : eyeOutline}

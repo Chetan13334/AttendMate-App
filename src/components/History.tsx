@@ -11,9 +11,6 @@ import { db } from "../firebase";
 import { collection, query, where, getDocs, getDoc, onSnapshot } from "firebase/firestore";
 import { DB } from "../config/databaseConfig";
 
-/* ---------------------------------------------------
-   NEW FUNCTION: Load today's record instantly ONCE
----------------------------------------------------- */
 const fetchTodayRecordOnce = async (employeeId: string) => {
   const today = new Date();
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
@@ -58,7 +55,7 @@ const History: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [liveDuration, setLiveDuration] = useState<string>("00h 00m"); // New state for live duration
+  const [liveDuration, setLiveDuration] = useState<string>("00h 00m");
 
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [employeeName, setEmployeeName] = useState<string>("Employee");
@@ -84,9 +81,6 @@ const History: React.FC = () => {
     return d;
   });
 
-  /* -------------------------------------------
-     FETCH USER PHOTO AND NAME
-  ------------------------------------------- */
   useEffect(() => {
     const fetchUserPhotoAndName = async () => {
       if (!userEmail) return;
@@ -112,9 +106,7 @@ const History: React.FC = () => {
     fetchUserPhotoAndName();
   }, [userEmail]);
 
-  /* -------------------------------------------
-     FETCH EMPLOYEE ID
-  ------------------------------------------- */
+
   useEffect(() => {
     if (!userEmail) return;
 
@@ -126,20 +118,18 @@ const History: React.FC = () => {
     loadEmployeeId();
   }, [userEmail]);
 
-  /* -------------------------------------------
-     LIVE DURATION CALCULATION
-  ------------------------------------------- */
+
   useEffect(() => {
-    // Clear any existing timer
+
     if (liveTimerRef.current) {
       clearInterval(liveTimerRef.current);
       liveTimerRef.current = null;
     }
 
-    // Log for debugging
+
     console.log("Today Record:", todayRecord);
-    
-    // Only start timer if we have a check-in time but no check-out time
+
+
     if (todayRecord?.checkInTime && !todayRecord?.checkOutTime) {
       console.log("Starting live duration timer");
       const updateLiveDuration = () => {
@@ -154,13 +144,13 @@ const History: React.FC = () => {
         setLiveDuration(formattedDuration);
       };
 
-      // Initial update
+
       updateLiveDuration();
-      
-      // Update every second for real-time counting
+
+
       liveTimerRef.current = setInterval(updateLiveDuration, 1000);
     } else {
-      // If not actively tracking, show the stored duration or default
+
       console.log("Not tracking live duration");
       if (todayRecord?.duration && todayRecord?.duration !== "N/A") {
         setLiveDuration(todayRecord.duration);
@@ -169,7 +159,7 @@ const History: React.FC = () => {
       }
     }
 
-    // Cleanup function
+
     return () => {
       if (liveTimerRef.current) {
         clearInterval(liveTimerRef.current);
@@ -178,23 +168,18 @@ const History: React.FC = () => {
     };
   }, [todayRecord]);
 
-  /* ----------------------------------------------------------
-     MAIN LOGIC: LOAD (Today + Past Records) TOGETHER FAST
-  ----------------------------------------------------------- */
   useEffect(() => {
     if (!employeeId) return;
     setLoading(true);
 
     const loadAllRecords = async () => {
       try {
-        // 1️⃣ Load today's record immediately (no listener delay)
         const todayData = await fetchTodayRecordOnce(employeeId);
         setTodayRecord(todayData);
 
-        // 2️⃣ Load past records
         const pastRecords = await fetchPastRecords(employeeId, startDate, endDate);
 
-        // remove today's record from past
+
         const filteredPast = pastRecords.filter((rec) => {
           const d1 = new Date(rec.date);
           const d2 = new Date(todayData.date);
@@ -203,7 +188,7 @@ const History: React.FC = () => {
           return d1.getTime() !== d2.getTime();
         });
 
-        // 3️⃣ Merge today + past instantly
+
         const merged = [todayData, ...filteredPast].sort(
           (a, b) => b.date.getTime() - a.date.getTime()
         );
@@ -218,21 +203,20 @@ const History: React.FC = () => {
 
     loadAllRecords();
 
-    /* Live listener AFTER initial load */
-    // Set up a listener for today's record specifically
+
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       2,
       "0"
     )}-${String(today.getDate()).padStart(2, "0")}`;
-    
-    // Set up a listener for today's record specifically
+
+
     const unsubscribeToday = onSnapshot(DB.employeeRecord(todayKey, employeeId), (doc) => {
       if (doc.exists()) {
         const data = doc.data();
         const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
         const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
-        
+
         const updatedTodayRecord = {
           date: today,
           checkIn: checkIn
@@ -245,10 +229,10 @@ const History: React.FC = () => {
           checkInTime: checkIn,
           checkOutTime: checkOut,
         };
-        
+
         setTodayRecord(updatedTodayRecord);
       } else {
-        // If document doesn't exist, update with default values
+
         const defaultTodayRecord = {
           date: today,
           checkIn: "Not marked",
@@ -257,21 +241,19 @@ const History: React.FC = () => {
           checkInTime: null,
           checkOutTime: null,
         };
-        
+
         setTodayRecord(defaultTodayRecord);
       }
     });
 
-    // For simplicity, we'll reload past records periodically
-    // A more sophisticated approach would be to listen to all relevant documents
     const intervalId = setInterval(() => {
       loadAllRecords();
-    }, 30000); // Refresh every 30 seconds
+    }, 30000);
 
     return () => {
       unsubscribeToday();
       clearInterval(intervalId);
-      // Clear live timer on unmount
+
       if (liveTimerRef.current) {
         clearInterval(liveTimerRef.current);
       }
@@ -304,7 +286,7 @@ const History: React.FC = () => {
         userPhoto={userPhoto}
         photoLoading={photoLoading}
         photoError={photoError}
-        liveDuration={liveDuration} // Pass live duration to layout
+        liveDuration={liveDuration}
       />
     </IonPage>
   );

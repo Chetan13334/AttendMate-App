@@ -1,4 +1,4 @@
-// src/services/locationService.ts
+
 import { Capacitor } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
 import { officeLocation } from "../config/constants";
@@ -19,25 +19,18 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   return R * c;
 };
 
-/**
- * Try to enable/check location permission & get current position.
- * Returns true if we could obtain a position (permissions ok & GPS available).
- * Returns false if we could not obtain position (permission denied or GPS off).
- *
- * NOTE: Per Option 3 we DO NOT open system settings automatically.
- */
+
 export const enableLocation = async (): Promise<boolean> => {
   try {
     const perm = await Geolocation.requestPermissions();
-    // Capacitor may return different shapes; be defensive
-    // perm could be a string ("granted") or an object like { location: "granted" }
+    
     const granted =
       (typeof perm === "string" && perm === "granted") ||
       (perm && (perm as any).location === "granted");
 
     if (!granted) return false;
 
-    // Attempt to get a position — if device GPS is off this will throw
+    
     await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 15000,
@@ -50,12 +43,7 @@ export const enableLocation = async (): Promise<boolean> => {
   }
 };
 
-/**
- * Quickly get coordinates and check distance against office geofence.
- * Returns { success, inside, distance }:
- *  - success: whether we obtained coords
- *  - inside: whether user is inside geofence (only valid if success===true)
- */
+
 export const quickGeoCheck = async (): Promise<{
   success: boolean;
   inside: boolean;

@@ -347,6 +347,14 @@ const CheckIn_CheckOut: React.FC = () => {
           <h2>Confirm {modalTitle}</h2>
           <p>Are you sure you want to proceed?</p>
           <div className="modal-buttons">
+             <IonButton
+              fill="outline"
+              color="medium"
+              onClick={() => setShowModal(false)}
+              disabled={isProcessing}
+            >
+              <IonIcon icon={close} slot="start" /> Cancel
+            </IonButton>
             <IonButton
               color="success"
               onClick={executeAction}
@@ -359,14 +367,7 @@ const CheckIn_CheckOut: React.FC = () => {
               )}
               {isProcessing ? "Processing..." : "Confirm"}
             </IonButton>
-            <IonButton
-              fill="outline"
-              color="medium"
-              onClick={() => setShowModal(false)}
-              disabled={isProcessing}
-            >
-              <IonIcon icon={close} slot="start" /> Cancel
-            </IonButton>
+           
           </div>
         </div>
       </IonModal>

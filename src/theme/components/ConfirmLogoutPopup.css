@@ -1,0 +1,46 @@
+.logout-popup-modal {
+    --height: auto;
+    --width: 90%;
+    --max-width: 400px;
+    --border-radius: 16px;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-popup-modal::part(content) {
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    background: white;
+}
+
+.popup-container {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.popup-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.popup-message {
+    font-size: 16px;
+    color: #4b5563;
+    margin-bottom: 24px;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.popup-btn {
+    flex: 1;
+    --border-radius: 8px;
+    font-weight: 600;
+    margin: 0;
+}
