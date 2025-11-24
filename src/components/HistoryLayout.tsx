@@ -22,6 +22,24 @@ import Skeleton from "./Skeleton";
 import Header from "../components/AppHeader";
 import "../theme/components/HistoryLayout.css";
 
+function getStartOfWeek() {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const start = new Date(today.setDate(diff));
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function getEndOfWeek() {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + 7;
+  const end = new Date(today.setDate(diff));
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
 interface HistoryLayoutProps {
   initials: string;
   userName: string;
@@ -67,10 +85,8 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
         <div className="content-wrapper">
           <Header />
 
-          
           <div className="history-header">
             <div className="history-header-inner">
-
               <div className="user-section">
                 {loading || photoLoading ? (
                   <IonText>
@@ -123,12 +139,10 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   </h5>
                 </div>
               </div>
-
             </div>
           </div>
 
           <div className="records-container">
-
             <button className="date-range-btn" onClick={() => setShowModal(true)}>
               <IonIcon icon={calendarOutline} className="range-btn-icon" />
               <span>{rangeLabel}</span>
@@ -203,7 +217,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                         <span className="rec-value">{rec.checkOut}</span>
                       </div>
                     </div>
-
                   </IonCardContent>
                 </IonCard>
               ))
@@ -213,10 +226,8 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 <h3>No Records Found</h3>
               </div>
             )}
-
           </div>
 
-         
           <IonModal
             isOpen={showModal}
             onDidDismiss={() => setShowModal(false)}
@@ -225,16 +236,18 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             className="popup-modal"
           >
             <div className="popup-container">
-
               <div className="popup-body">
 
-               
                 <div className="popup-field">
                   <label>Start Date</label>
                   <input
                     type="date"
                     value={startDate ? startDate.toLocaleDateString("en-CA") : ""}
                     onChange={(e) => {
+                      if (!e.target.value) {
+                        setStartDate(getStartOfWeek());
+                        return;
+                      }
                       const d = new Date(e.target.value);
                       d.setHours(0, 0, 0, 0);
                       setStartDate(d);
@@ -243,13 +256,16 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   />
                 </div>
 
-               
                 <div className="popup-field">
                   <label>End Date</label>
                   <input
                     type="date"
                     value={endDate ? endDate.toLocaleDateString("en-CA") : ""}
                     onChange={(e) => {
+                      if (!e.target.value) {
+                        setEndDate(getEndOfWeek());
+                        return;
+                      }
                       const d = new Date(e.target.value);
                       d.setHours(23, 59, 59, 999);
                       setEndDate(d);
@@ -258,7 +274,11 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                   />
                 </div>
 
-                <IonButton expand="block" className="popup-done-btn" onClick={() => setShowModal(false)}>
+                <IonButton
+                  expand="block"
+                  className="popup-done-btn"
+                  onClick={() => setShowModal(false)}
+                >
                   Done
                 </IonButton>
 

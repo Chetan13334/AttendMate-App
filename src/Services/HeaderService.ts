@@ -20,7 +20,6 @@ export const fetchHeaderUserData = async (email: string) => {
 
     return { photo: null, name: null };
   } catch (err) {
-    console.error("Error fetching header user data:", err);
     return { photo: null, name: null };
   }
 };

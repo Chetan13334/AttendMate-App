@@ -9,7 +9,7 @@ const GEOFENCE_RADIUS = officeLocation.radius;
 
 const toRad = (value: number) => (value * Math.PI) / 180;
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; // meters
+  const R = 6371e3; 
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   const a =
@@ -38,7 +38,7 @@ export const enableLocation = async (): Promise<boolean> => {
 
     return true;
   } catch (err) {
-    console.error("enableLocation failed:", err);
+   
     return false;
   }
 };
@@ -64,7 +64,7 @@ export const quickGeoCheck = async (): Promise<{
 
     return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
   } catch (err) {
-    console.error("quickGeoCheck error:", err);
+    
     return { success: false, inside: false, distance: 0 };
   }
 };

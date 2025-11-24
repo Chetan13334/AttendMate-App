@@ -8,7 +8,7 @@ import { IonReactRouter } from "@ionic/react-router";
 import { IonRouterOutlet } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
 
-// Capacitor plugins
+
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Device } from "@capacitor/device";
 
@@ -29,7 +29,7 @@ import "./theme/variables.css";
 
 setupIonicReact();
 
-/* THIS IS THE MAGIC FUNCTION - PERFECT INVERTED NOTCH */
+
 const updateStatusBarForInvertedCutout = async () => {
     try {
         const info = await Device.getInfo();
@@ -38,16 +38,16 @@ const updateStatusBarForInvertedCutout = async () => {
         const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
         if (isDarkMode) {
-            // Dark mode → White notch + Black icons
+         
             await StatusBar.setBackgroundColor({ color: "#ffffff" });
-            await StatusBar.setStyle({ style: Style.Dark });        // Black text/icons
+            await StatusBar.setStyle({ style: Style.Dark });      
         } else {
-            // Light mode → Black notch + White icons
+           
             await StatusBar.setBackgroundColor({ color: "#000000" });
-            await StatusBar.setStyle({ style: Style.Light });       // White text/icons
+            await StatusBar.setStyle({ style: Style.Light });      
         }
 
-        // Make status bar overlay so our color fills the notch
+
         await StatusBar.setOverlaysWebView({ overlay: true });
     } catch (error) {
         console.log("Status bar update failed:", error);
@@ -57,7 +57,6 @@ const updateStatusBarForInvertedCutout = async () => {
 const App: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-    // Apply inverted notch effect + listen for system theme changes
     useEffect(() => {
         updateStatusBarForInvertedCutout();
 
@@ -69,7 +68,6 @@ const App: React.FC = () => {
         };
     }, []);
 
-    // Check login state
     useEffect(() => {
         const saved = localStorage.getItem("isLoggedIn");
         setIsLoggedIn(saved === "true");

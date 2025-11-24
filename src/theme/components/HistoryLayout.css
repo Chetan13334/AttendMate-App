@@ -260,9 +260,6 @@
   padding: 10px 14px !important;
   box-sizing: border-box !important;
 }
-
-
-/* Done Button */
 .popup-done-btn {
   --background: #4f46e5;
   height: 46px;
