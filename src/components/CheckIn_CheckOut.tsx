@@ -34,7 +34,7 @@ const CheckIn_CheckOut: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(
-    () => () => {}
+    () => () => { }
   );
   const [employeeId, setEmployeeId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -418,8 +418,8 @@ const CheckIn_CheckOut: React.FC = () => {
                   {isBlocking
                     ? "Action Required"
                     : isWarning
-                    ? "Action Failed"
-                    : "Success"}
+                      ? "Action Failed"
+                      : "Success"}
                 </h2>
                 <p className="alert-modal-message">
                   {msg

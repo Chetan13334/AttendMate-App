@@ -14,7 +14,7 @@ import Logo from "../assets/main_logo.png";
 import ProfileIcon from "../assets/user.png";
 import LogoutIcon from "../assets/logout.png";
 
-import "../components/AppHeader.css";
+import "../theme/components/AppHeader.css";
 import { fetchHeaderUserData } from "../Services/HeaderService";
 import ConfirmLogoutPopup from "./ConfirmLogoutPopup";
 

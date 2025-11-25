@@ -38,13 +38,13 @@ const updateStatusBarForInvertedCutout = async () => {
         const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
         if (isDarkMode) {
-         
+
             await StatusBar.setBackgroundColor({ color: "#ffffff" });
-            await StatusBar.setStyle({ style: Style.Dark });      
+            await StatusBar.setStyle({ style: Style.Dark });
         } else {
-           
+
             await StatusBar.setBackgroundColor({ color: "#000000" });
-            await StatusBar.setStyle({ style: Style.Light });      
+            await StatusBar.setStyle({ style: Style.Light });
         }
 
 

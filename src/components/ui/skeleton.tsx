@@ -7,7 +7,7 @@ interface SkeletonProps {
 
 const Skeleton: React.FC<SkeletonProps> = ({ className = "", style = {} }) => {
   return (
-    <div 
+    <div
       className={className}
       style={{
         backgroundColor: '#f4f4f4ff',
