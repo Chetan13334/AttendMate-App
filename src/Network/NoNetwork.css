@@ -1,0 +1,173 @@
+/* Main Container */
+.nes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding: 24px;
+    text-align: center;
+}
+
+/* Illustration Container */
+.nes-illustration-wrapper {
+    position: relative;
+    width: 12rem;
+    height: 12rem;
+    margin-bottom: 3rem;
+}
+
+/* Moon Background */
+.nes-moon {
+    position: absolute;
+    inset: 0;
+    background: #e5e7eb;
+    opacity: 0.5;
+    border-radius: 50%;
+}
+
+/* UFO */
+.nes-ufo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8rem;
+    height: 4rem;
+    background: #60a5fa;
+    transform: translate(-50%, -50%);
+    border-radius: 50% 50% 10px 10px;
+    border-bottom: 4px solid #3b82f6;
+    transition: transform 1s ease;
+}
+
+.nes-ufo-top {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    right: 0;
+    height: 1rem;
+    background: #93c5fd;
+    border-radius: 50% 50% 0 0;
+}
+
+.nes-ufo-rotate {
+    transform: translate(-50%, -50%) rotate(12deg);
+}
+
+/* Wifi Icon */
+.nes-icon-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ffffff;
+    padding: 0.5rem;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.nes-icon {
+    width: 2rem;
+    height: 2rem;
+    color: #ef4444;
+}
+
+/* Spinner inside UFO */
+.nes-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    animation: spin 1s linear infinite;
+    color: #1d4ed8;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Text */
+.nes-heading {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.nes-description {
+    max-width: 16rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Button */
+.nes-button {
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: none;
+    color: white;
+    background: linear-gradient(to right, #3b82f6, #2563eb);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+    transition: 0.3s;
+}
+
+.nes-button:hover {
+    background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.nes-button:active {
+    transform: scale(0.95);
+}
+
+.nes-button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modal Overlay */
+.nes-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.nes-modal {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 20rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.nes-modal-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nes-modal-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    animation: spin 1s linear infinite;
+    color: #3b82f6;
+}
+
+.nes-modal-close {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 10px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+}

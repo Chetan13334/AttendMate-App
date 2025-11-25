@@ -4,7 +4,6 @@ import {
   IonCardContent,
   IonText,
   IonIcon,
-  IonAlert,
   IonModal,
   IonButton,
   IonRippleEffect,
@@ -25,20 +24,26 @@ import "../theme/components/CheckIn_CheckOut.css";
 
 type Status = "not-checked" | "checked-in" | "checked-out";
 
+const SKELETON_TRANSITION_MS = 300;
+
 const CheckIn_CheckOut: React.FC = () => {
   const [status, setStatus] = useState<Status>("not-checked");
   const [time, setTime] = useState("");
   const [currentTime, setCurrentTime] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [statusLoading, setStatusLoading] = useState(true);
+
   const [showAlert, setShowAlert] = useState(false);
   const [msg, setMsg] = useState("");
+
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(
-    () => () => { }
-  );
-  const [employeeId, setEmployeeId] = useState("");
-  const [loading, setLoading] = useState(true);
+
   const [isProcessing, setIsProcessing] = useState(false);
+  const [employeeId, setEmployeeId] = useState("");
+
+  const [pendingAction, setPendingAction] = useState<(inside: boolean) => void>(() => () => { });
   const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [showLocationChecking, setShowLocationChecking] = useState(false);
   const [showNoThanksAlert, setShowNoThanksAlert] = useState(false);
@@ -58,6 +63,7 @@ const CheckIn_CheckOut: React.FC = () => {
       year: "numeric",
     });
 
+
   useEffect(() => {
     setCurrentTime(formatTime());
     const timer = setInterval(() => setCurrentTime(formatTime()), 1000);
@@ -65,50 +71,94 @@ const CheckIn_CheckOut: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
       try {
         const empId = await fetchEmployeeId(loggedInUserEmail);
         if (!empId) {
-          setLoading(false);
+          if (!cancelled) {
+            setEmployeeId("");
+            setLoading(false);
+            setStatusLoading(false);
+            setStatus("not-checked");
+          }
           return;
         }
-        setEmployeeId(empId);
+
+        if (!cancelled) setEmployeeId(empId);
+
         const data = await fetchTodayRecord(today, empId);
-        if (data) {
-          if (data.CheckIn && !data.CheckOut) {
-            setStatus("checked-in");
-            setTime(data.CheckIn.toDate().toLocaleTimeString());
-          } else if (data.CheckOut) {
-            setStatus("checked-out");
-            setTime(data.CheckOut.toDate().toLocaleTimeString());
+
+        if (!cancelled) {
+          let newStatus: Status = "not-checked";
+          let newTime = "";
+
+          if (data) {
+            if (data.CheckIn && !data.CheckOut) {
+              newStatus = "checked-in";
+              newTime = data.CheckIn.toDate().toLocaleTimeString();
+            } else if (data.CheckOut) {
+              newStatus = "checked-out";
+              newTime = data.CheckOut.toDate().toLocaleTimeString();
+            }
           }
+
+          setStatus(newStatus);
+          setTime(newTime);
         }
-      } catch (err) {
-        console.error("Error fetching data:", err);
+      } catch (e) {
+        console.error("loadData error:", e);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setStatusLoading(false);
+        }
       }
     };
+
     loadData();
-  }, [loggedInUserEmail]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loggedInUserEmail, today]);
 
   useEffect(() => {
     if (!employeeId) return;
-    const unsubscribe = listenToAttendance(today, employeeId, (data: any) => {
+
+    const unsub = listenToAttendance(today, employeeId, (data: any) => {
+
+      setStatusLoading(true);
+
+
+      let newStatus: Status = "not-checked";
+      let newTime = "";
+
       if (data) {
         if (data.CheckIn && !data.CheckOut) {
-          setStatus("checked-in");
-          setTime(data.CheckIn.toDate().toLocaleTimeString());
+          newStatus = "checked-in";
+          newTime = data.CheckIn.toDate().toLocaleTimeString();
         } else if (data.CheckOut) {
-          setStatus("checked-out");
-          setTime(data.CheckOut.toDate().toLocaleTimeString());
+          newStatus = "checked-out";
+          newTime = data.CheckOut.toDate().toLocaleTimeString();
+        } else {
+          newStatus = "not-checked";
         }
       } else {
-        setStatus("not-checked");
+        newStatus = "not-checked";
       }
+
+      setTimeout(() => {
+        setStatus(newStatus);
+        setTime(newTime);
+        setStatusLoading(false);
+      }, SKELETON_TRANSITION_MS);
     });
-    return () => unsubscribe();
+
+    return () => unsub();
   }, [employeeId, today]);
+
 
   const confirmAction = (action: (inside: boolean) => void, title: string) => {
     setPendingAction(() => action);
@@ -119,13 +169,16 @@ const CheckIn_CheckOut: React.FC = () => {
   const executeAction = async () => {
     setShowModal(false);
     setShowLocationChecking(true);
+
     try {
       const { success, inside } = await quickGeoCheck();
       setShowLocationChecking(false);
+
       if (!success) {
         setShowLocationAlert(true);
         return;
       }
+
       pendingAction?.(inside);
     } catch (err) {
       console.error("executeAction error:", err);
@@ -134,76 +187,98 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
+
   const handleCheckIn = async (inside: boolean) => {
     if (!employeeId) return;
+
     setIsProcessing(true);
+
     if (!inside) {
-      setMsg(
-        "Warning: Check-In Failed: You are not in the designated location!"
-      );
+      setMsg("Warning: Check-In Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
       return;
     }
-    const now = await saveCheckIn(today, employeeId, inside);
-    setStatus("checked-in");
-    setTime(now.toLocaleTimeString());
-    setMsg("Success: Check-In Successful!");
-    setShowAlert(true);
-    setIsProcessing(false);
+
+    try {
+      const now = await saveCheckIn(today, employeeId, inside);
+      setStatus("checked-in");
+      setTime(now.toLocaleTimeString());
+      setMsg("Success: Check-In Successful!");
+      setShowAlert(true);
+    } catch (err) {
+      console.error("handleCheckIn error:", err);
+      setMsg("Warning: Check-In Failed: Something went wrong.");
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
 
   const handleCheckOut = async (inside: boolean) => {
     if (!employeeId) return;
+
     setIsProcessing(true);
+
     if (!inside) {
-      setMsg(
-        "Warning: Check-Out Failed: You are not in the designated location!"
-      );
+      setMsg("Warning: Check-Out Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
       return;
     }
-    const now = await saveCheckOut(today, employeeId, inside);
-    setStatus("checked-out");
-    setTime(now.toLocaleTimeString());
-    setMsg("Success: Check-Out Successful!");
-    setShowAlert(true);
-    setIsProcessing(false);
+
+    try {
+      const now = await saveCheckOut(today, employeeId, inside);
+      setStatus("checked-out");
+      setTime(now.toLocaleTimeString());
+      setMsg("Success: Check-Out Successful!");
+      setShowAlert(true);
+    } catch (err) {
+      console.error("handleCheckOut error:", err);
+      setMsg("Warning: Check-Out Failed: Something went wrong.");
+      setShowAlert(true);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
 
   const handleTap = () => {
     if (isProcessing) return;
+
     if (isWeb) {
-      setMsg(
-        "Check-in/out requires GPS and is only available on the mobile app."
-      );
+      setMsg("Check-in/out requires GPS and is only available on the mobile app.");
       setShowAlert(true);
       return;
     }
+
     if (status === "not-checked") confirmAction(handleCheckIn, "Check In");
-    else if (status === "checked-in")
-      confirmAction(handleCheckOut, "Check Out");
+    else if (status === "checked-in") confirmAction(handleCheckOut, "Check Out");
   };
+
 
   const onTurnOnLocation = async () => {
     setShowLocationAlert(false);
     setShowLocationChecking(true);
+
     try {
       const enabled = await enableLocation();
       setShowLocationChecking(false);
+
       if (!enabled) {
         setShowNoThanksAlert(true);
         return;
       }
+
       const { success, inside } = await quickGeoCheck();
+
       if (!success) {
         setMsg("Warning: Could not verify location after enabling location.");
         setShowAlert(true);
         return;
       }
-      setShowLocationAlert(false);
-      setShowNoThanksAlert(false);
+
       pendingAction?.(inside);
     } catch (err) {
       console.error("onTurnOnLocation error:", err);
@@ -217,27 +292,69 @@ const CheckIn_CheckOut: React.FC = () => {
     setShowNoThanksAlert(true);
   };
 
-  if (loading) {
-    return (
-      <IonCard className="checkin-card">
-        <div className="checkin-header" style={{ padding: "50px 20px 40px", textAlign: "center" }}>
-          <div style={{ margin: "0 auto 24px" }}>
-            <Skeleton style={{ width: 120, height: 120, borderRadius: "50%", margin: "0 auto" }} />
-          </div>
-          <Skeleton style={{ height: 28, width: 140, margin: "0 auto 12px" }} />
-          <Skeleton style={{ height: 22, width: 240, margin: "0 auto" }} />
+  const CheckInSkeleton = () => (
+    <IonCard className="checkin-card">
+      <div className="checkin-header" style={{ padding: "50px 20px 40px", textAlign: "center" }}>
+        <div style={{ margin: "0 auto 24px" }}>
+          <Skeleton style={{ width: 120, height: 120, borderRadius: "50%", margin: "0 auto" }} />
         </div>
-      </IonCard>
-    );
+        <Skeleton style={{ height: 28, width: 140, margin: "0 auto 12px" }} />
+        <Skeleton style={{ height: 22, width: 240, margin: "0 auto" }} />
+      </div>
+    </IonCard>
+  );
+
+  const CheckedInSkeleton = () => (
+    <IonCard className="checkedin-card">
+      <div className="checkedin-header">
+        <Skeleton style={{ width: 40, height: 40, borderRadius: "50%" }} />
+        <div style={{ flex: 1, marginLeft: "16px" }}>
+          <Skeleton style={{ height: 22, width: "60%" }} />
+          <Skeleton style={{ height: 18, width: "40%", marginTop: "8px" }} />
+        </div>
+        <Skeleton style={{ width: 32, height: 32, borderRadius: "50%" }} />
+      </div>
+      <IonCardContent className="checkedin-content">
+        <Skeleton style={{ height: 22, width: 140 }} />
+        <Skeleton style={{ height: 18, width: 100, marginTop: "8px" }} />
+      </IonCardContent>
+    </IonCard>
+  );
+
+  const CheckedOutSkeleton = () => (
+    <IonCard className="checkedout-card">
+      <div className="checkedout-header">
+        <Skeleton style={{ width: 40, height: 40, borderRadius: "50%" }} />
+        <div style={{ flex: 1, marginLeft: "16px" }}>
+          <Skeleton style={{ height: 22, width: "60%" }} />
+          <Skeleton style={{ height: 18, width: "40%", marginTop: "8px" }} />
+        </div>
+      </div>
+      <IonCardContent className="checkedout-content">
+        <Skeleton style={{ height: 22, width: 140 }} />
+        <Skeleton style={{ height: 18, width: 100, marginTop: "8px" }} />
+      </IonCardContent>
+    </IonCard>
+  );
+
+
+  if (loading || statusLoading) {
+    
+    if (status === "checked-in") return <CheckedInSkeleton />;
+    if (status === "checked-out") return <CheckedOutSkeleton />;
+    
+    return <CheckInSkeleton />; 
   }
+
 
   return (
     <>
+
       {status === "not-checked" && (
         <IonCard
           button
-          onClick={handleTap}
           disabled={isProcessing}
+          onClick={handleTap}
           className="checkin-card ion-activatable ripple-parent"
         >
           <div className="checkin-header">
@@ -246,26 +363,27 @@ const CheckIn_CheckOut: React.FC = () => {
                 {isProcessing ? (
                   <IonSpinner name="crescent" color="light" />
                 ) : (
-                  <IonText
-                    color="light"
-                    style={{ fontWeight: 700, fontSize: "16px" }}
-                  >
+                  <IonText color="light" style={{ fontWeight: 700, fontSize: "16px" }}>
                     CHECK IN
                   </IonText>
                 )}
               </div>
             </div>
+
             <h3 className="checkin-status">STATUS: Pending</h3>
             <p className="checkin-time">{currentTime}</p>
           </div>
+
           <IonRippleEffect />
         </IonCard>
       )}
+
+
       {status === "checked-in" && (
         <IonCard
           button
-          onClick={handleTap}
           disabled={isProcessing}
+          onClick={handleTap}
           className="checkedin-card ion-activatable ripple-parent"
         >
           <div className="checkedin-header">
@@ -274,17 +392,16 @@ const CheckIn_CheckOut: React.FC = () => {
               <h2>{isProcessing ? "PROCESSING..." : "CHECK OUT"}</h2>
               <p>Tap to end your shift</p>
             </IonText>
+
             <div className="checkedin-badge">
               {isProcessing ? (
                 <IonSpinner name="crescent" color="primary" />
               ) : (
-                <IonIcon
-                  icon={checkmarkCircle}
-                  className="checkedin-badge-icon"
-                />
+                <IonIcon icon={checkmarkCircle} className="checkedin-badge-icon" />
               )}
             </div>
           </div>
+
           <IonCardContent className="checkedin-content">
             <h4>STATUS: Checked In</h4>
             <p>{time}</p>
@@ -292,6 +409,8 @@ const CheckIn_CheckOut: React.FC = () => {
           <IonRippleEffect />
         </IonCard>
       )}
+
+
       {status === "checked-out" && (
         <IonCard className="checkedout-card">
           <div className="checkedout-header">
@@ -301,12 +420,15 @@ const CheckIn_CheckOut: React.FC = () => {
               <p>Great job! See you tomorrow</p>
             </IonText>
           </div>
+
           <IonCardContent className="checkedout-content">
             <h4>STATUS: Checked Out</h4>
             <p>{time}</p>
           </IonCardContent>
         </IonCard>
       )}
+
+
       <IonModal
         isOpen={showModal}
         onDidDismiss={() => setShowModal(false)}
@@ -318,6 +440,7 @@ const CheckIn_CheckOut: React.FC = () => {
           <IonIcon icon={timeOutline} className="modal-icon" />
           <h2>Confirm {modalTitle}</h2>
           <p>Are you sure you want to proceed?</p>
+
           <div className="modal-buttons">
             <IonButton
               fill="outline"
@@ -327,11 +450,8 @@ const CheckIn_CheckOut: React.FC = () => {
             >
               <IonIcon icon={close} slot="start" /> Cancel
             </IonButton>
-            <IonButton
-              color="success"
-              onClick={executeAction}
-              disabled={isProcessing}
-            >
+
+            <IonButton color="success" onClick={executeAction} disabled={isProcessing}>
               {isProcessing ? (
                 <IonSpinner name="crescent" slot="start" />
               ) : (
@@ -342,6 +462,7 @@ const CheckIn_CheckOut: React.FC = () => {
           </div>
         </div>
       </IonModal>
+
       <IonModal
         isOpen={showLocationChecking}
         backdropDismiss={false}
@@ -349,15 +470,13 @@ const CheckIn_CheckOut: React.FC = () => {
         className="confirm-modal"
       >
         <div className="confirm-modal-content">
-          <IonSpinner
-            name="crescent"
-            color="primary"
-            className="location-spinner"
-          />
+          <IonSpinner name="crescent" color="primary" className="location-spinner" />
           <h2>Checking Location</h2>
           <p>Please wait while we verify your location...</p>
         </div>
       </IonModal>
+
+
       <IonModal
         isOpen={showLocationAlert}
         onDidDismiss={() => setShowLocationAlert(false)}
@@ -368,25 +487,20 @@ const CheckIn_CheckOut: React.FC = () => {
         <div className="confirm-modal-content">
           <IonIcon icon={timeOutline} className="modal-icon" />
           <h2>Turn On Location</h2>
-          <p>We need your location to verify check-in, try again...</p>
+          <p>We need your location to verify check-in.</p>
+
           <div className="modal-buttons">
-            <IonButton
-              color="success"
-              fill="solid"
-              onClick={onNoThanks}
-              style={{
-                "--background": "#4CAF50",
-                "--color": "#ffffff",
-                "--border-radius": "8px",
-                "--padding-start": "20px",
-                "--padding-end": "20px",
-              } as any}
-            >
+            <IonButton color="success" fill="solid" onClick={onTurnOnLocation}>
               OK
+            </IonButton>
+            <IonButton fill="outline" color="medium" onClick={onNoThanks}>
+              No thanks
             </IonButton>
           </div>
         </div>
       </IonModal>
+
+
       <IonModal
         isOpen={showAlert}
         onDidDismiss={() => setShowAlert(false)}
@@ -396,15 +510,11 @@ const CheckIn_CheckOut: React.FC = () => {
       >
         <div className="alert-modal-content alert-modal-inner">
           {(() => {
-            const isBlocking =
-              msg.includes("requires GPS") || msg.includes("not supported");
+            const isBlocking = msg.includes("requires GPS") || msg.includes("not supported");
             const isWarning = msg.includes("Warning") || msg.includes("Failed");
-            const failedClass =
-              isBlocking || isWarning ? "alert-failed" : "alert-success";
-            const titleClass =
-              isBlocking || isWarning
-                ? "alert-failed-title"
-                : "alert-success-title";
+            const failedClass = isBlocking || isWarning ? "alert-failed" : "alert-success";
+            const titleClass = isBlocking || isWarning ? "alert-failed-title" : "alert-success-title";
+
             return (
               <>
                 <div className={`alert-icon-container ${failedClass}`}>
@@ -414,18 +524,15 @@ const CheckIn_CheckOut: React.FC = () => {
                     style={{ fontSize: "34px", color: "#fff" }}
                   />
                 </div>
+
                 <h2 className={`alert-modal-title ${titleClass}`}>
-                  {isBlocking
-                    ? "Action Required"
-                    : isWarning
-                      ? "Action Failed"
-                      : "Success"}
+                  {isBlocking ? "Action Required" : isWarning ? "Action Failed" : "Success"}
                 </h2>
+
                 <p className="alert-modal-message">
-                  {msg
-                    .replace(/Warning:|Success:|Action Required:/g, "")
-                    .trim()}
+                  {msg.replace(/Warning:|Success:|Action Required:/g, "").trim()}
                 </p>
+
                 <IonButton
                   expand="block"
                   color={isBlocking || isWarning ? "danger" : "success"}

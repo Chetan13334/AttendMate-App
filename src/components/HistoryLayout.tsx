@@ -81,9 +81,10 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
 
   return (
     <>
+     <Header />
       <IonContent color="white" className="history-content" scrollEvents={true}>
         <div className="content-wrapper">
-          <Header />
+         
 
           <div className="history-header">
             <div className="history-header-inner">

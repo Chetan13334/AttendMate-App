@@ -161,20 +161,24 @@ const EventsSection: React.FC = () => {
           {[...Array(1)].map((_, index) => (
             <div key={index} className="birthday-new-card">
              
-              <Skeleton width="72px" height="72px" variant="circle" />
+              <div style={{ minWidth: "72px", minHeight: "72px" }}>
+                <Skeleton width="72px" height="72px" variant="circle" />
+              </div>
 
               
-              <div style={{ marginLeft: "16px", width: "100%" }}>
-                <Skeleton width="150px" height="20px" />
-                <Skeleton
-                  width="110px"
-                  height="16px"
-                  style={{ marginTop: "8px" }}
-                />
+              <div style={{ marginLeft: "14px", width: "100%" }}>
+                <div style={{ marginBottom: "8px" }}>
+                  <Skeleton width="150px" height="20px" />
+                </div>
+                <div style={{ marginBottom: "6px" }}>
+                  <Skeleton
+                    width="110px"
+                    height="16px"
+                  />
+                </div>
                 <Skeleton
                   width="180px"
                   height="14px"
-                  style={{ marginTop: "6px" }}
                 />
               </div>
             </div>
@@ -187,7 +191,7 @@ const EventsSection: React.FC = () => {
           <div key={person.id} className="birthday-new-card">
             <div className="birthday-photo-box">
               <img
-                src={person.Photo || "/assets/default-user.png"}
+                src={person.Photo}
                 alt={person.Name}
                 className="birthday-photo-img"
               />
@@ -229,15 +233,18 @@ const EventsSection: React.FC = () => {
               }}
             >
               
-              <Skeleton width="40px" height="40px" borderRadius="8px" />
+              <div style={{ minWidth: "40px", minHeight: "40px" }}>
+                <Skeleton width="40px" height="40px" borderRadius="8px" />
+              </div>
 
               
               <div style={{ marginLeft: "14px", width: "100%" }}>
-                <Skeleton width="150px" height="16px" />
+                <div style={{ marginBottom: "6px" }}>
+                  <Skeleton width="150px" height="16px" />
+                </div>
                 <Skeleton
                   width="100px"
                   height="14px"
-                  style={{ marginTop: "6px" }}
                 />
               </div>
             </div>

@@ -1,3 +1,10 @@
+/* Add responsive skeleton styles */
+.skeleton {
+  min-width: 20px;
+  min-height: 10px;
+}
+
+/* Existing styles */
 .events-wrapper {
   background-color: #ffffff;
   padding: 0 14px;

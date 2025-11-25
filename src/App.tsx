@@ -7,6 +7,7 @@ import {
 import { IonReactRouter } from "@ionic/react-router";
 import { IonRouterOutlet } from "@ionic/react";
 import { Route, Redirect } from "react-router-dom";
+import GlobalNetworkGuard from "./Network/GlobalNetworkGuard";
 
 
 import { StatusBar, Style } from "@capacitor/status-bar";
@@ -99,29 +100,31 @@ const App: React.FC = () => {
 
     return (
         <IonApp>
-            <IonReactRouter>
-                <IonRouterOutlet>
-                    <Route exact path="/">
-                        <Redirect to={isLoggedIn ? "/home" : "/login"} />
-                    </Route>
+            <GlobalNetworkGuard>
+                <IonReactRouter>
+                    <IonRouterOutlet>
+                        <Route exact path="/">
+                            <Redirect to={isLoggedIn ? "/home" : "/login"} />
+                        </Route>
 
-                    <Route exact path="/login">
-                        {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
-                    </Route>
+                        <Route exact path="/login">
+                            {isLoggedIn ? <Redirect to="/home" /> : <Login onLogin={handleLogin} />}
+                        </Route>
 
-                    <Route path="/home">
-                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-                    </Route>
+                        <Route path="/home">
+                            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                        </Route>
 
-                    <Route path="/profile">
-                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-                    </Route>
+                        <Route path="/profile">
+                            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                        </Route>
 
-                    <Route path="/history">
-                        {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
-                    </Route>
-                </IonRouterOutlet>
-            </IonReactRouter>
+                        <Route path="/history">
+                            {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                        </Route>
+                    </IonRouterOutlet>
+                </IonReactRouter>
+            </GlobalNetworkGuard>
         </IonApp>
     );
 };

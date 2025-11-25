@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const scrollUpForPassword = () => {
     setTimeout(() => {
-      contentRef.current?.scrollToPoint(0, 220, 300); 
+      contentRef.current?.scrollToPoint(0, 220, 300);
     }, 100);
   };
 
@@ -148,7 +148,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 setPassword(e.target.value);
                 passwordRef.current = e.target.value;
               }}
-              onFocus={scrollUpForPassword}  
+              onFocus={scrollUpForPassword}
             />
             <IonIcon
               icon={showPassword ? eyeOffOutline : eyeOutline}
@@ -172,7 +172,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <p className="signup-text">
             Don't have an account?
-            <span className="signup-link"> Contact HR</span>
+            <span
+              className="signup-link"
+              onClick={() => {
+                window.location.href = "mailto:hr@scalartechhub.com";
+              }}
+            >
+              Contact HR
+            </span>
+
           </p>
 
           <IonToast

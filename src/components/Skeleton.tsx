@@ -26,6 +26,8 @@ const Skeleton: React.FC<SkeletonProps> = ({
     background: "linear-gradient(90deg, #ececec 25%, #f8f8f8 50%, #ececec 75%)",
     backgroundSize: "200% 100%",
     animation: "skeleton-shimmer 1.4s linear infinite",
+    minWidth: variant === "circle" ? height : "20px", // Ensure minimum width
+    minHeight: "10px", // Ensure minimum height
     ...style,
   };
 
