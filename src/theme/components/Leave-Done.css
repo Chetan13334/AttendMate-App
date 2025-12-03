@@ -1,0 +1,154 @@
+.ld-page {
+    background: #f6f7f8;
+    font-family: "Inter", sans-serif;
+}
+
+.ld-content {
+    padding: 1.5rem 1rem;
+}
+
+.ld-status-wrapper {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.ld-status-chip {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    border-radius: 9999px;
+    padding: 4px 16px;
+    background: rgba(255, 149, 0, 0.2);
+}
+
+.ld-status-chip p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #ff9500;
+}
+
+.ld-card {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 12px;
+    margin-top: 24px;
+    overflow: hidden;
+}
+
+.dark .ld-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.ld-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.ld-divider {
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.dark .ld-divider {
+    background: #334155;
+}
+
+.ld-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(19, 127, 236, 0.1);
+    color: #137fec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ld-text-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.ld-label {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.dark .ld-label {
+    color: #94a3b8;
+}
+
+.ld-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.dark .ld-value {
+    color: #f1f5f9;
+}
+
+.p4 {
+    padding: 16px;
+}
+
+.ld-info-section {
+    margin-bottom: 16px;
+}
+
+.ld-info-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.dark .ld-info-label {
+    color: #94a3b8;
+}
+
+.ld-info-value {
+    margin-top: 4px;
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.dark .ld-info-value {
+    color: #f1f5f9;
+}
+
+.ld-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #f6f7f8;
+    border-top: 1px solid #e2e8f0;
+}
+
+.ld-btn-outline {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid #137fec;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 700;
+    color: #137fec;
+}
+
+.ld-btn-primary {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    background: #137fec;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+}

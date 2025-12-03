@@ -15,6 +15,8 @@ import { Device } from "@capacitor/device";
 
 import Login from "./auth/Login";
 import HomeTabs from "./routes/Routing";
+import LeaveReqPage from "./pages/LeaveReqPage";
+import LeaveForm from "./components/Leave-Form";
 
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -121,6 +123,13 @@ const App: React.FC = () => {
 
                         <Route path="/history">
                             {isLoggedIn ? <HomeTabs /> : <Redirect to="/login" />}
+                        </Route>
+
+                        <Route path="/leave-form">
+                            {isLoggedIn ? <LeaveForm /> : <Redirect to="/login" />}
+                        </Route>
+                        <Route path="/leave-request">
+                            {isLoggedIn ? <LeaveReqPage /> : <Redirect to="/login" />}
                         </Route>
                     </IonRouterOutlet>
                 </IonReactRouter>

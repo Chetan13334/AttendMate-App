@@ -1,0 +1,224 @@
+.leave-container-fixed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.leave-fixed-header {
+  flex-shrink: 0;
+  padding-bottom: 10px;
+}
+.no-data {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 20px;
+  font-size: 15px;
+}
+
+
+.records-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 140px;
+}
+
+.fab-wrapper {
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+}
+
+.fab-button {
+  --background: #137fec;
+  --background-hover: #0f6fcc;
+  width: 56px;
+  height: 56px;
+}
+
+.leave-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ion-text-color);
+  padding: 20px 16px 8px;
+  margin: 0;
+}
+
+.leave-balances {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.leave-balances::-webkit-scrollbar {
+  display: none;
+}
+
+.balance-card {
+  min-width: 160px;
+  margin: 0;
+  flex-shrink: 0;
+  --border-radius: 16px;
+  background: var(--ion-background-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.balance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px;
+}
+
+.balance-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.balance-icon {
+  font-size: 28px;
+  color: white;
+}
+
+.annual-icon {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.sick-icon {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.personal-icon {
+  background: linear-gradient(135deg, #a855f7, #9333ea);
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balance-days {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.balance-label {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.leave-segment {
+  margin: 0 16px 16px;
+  border-radius: 12px;
+  --background: var(--ion-color-light);
+  padding: 4px;
+}
+
+.history-filter {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-btn {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.filter-btn.active {
+  background: #137fec;
+  color: white;
+}
+
+.leave-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 20px;
+}
+
+.request-card {
+  margin: 0;
+  --border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.request-content {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 16px;
+}
+
+.request-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.request-icon-wrapper ion-icon {
+  color: white;
+  font-size: 24px;
+}
+
+.request-info {
+  flex: 1;
+}
+
+.request-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.request-date {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.request-status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pending-status {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff8904;
+}
+
+.approved-status {
+  background: rgba(76, 175, 80, 0.15);
+  color: #016630;
+}
+
+.rejected-status {
+  background: rgba(244, 67, 54, 0.15);
+  color: #9f0712;
+}

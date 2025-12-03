@@ -1,13 +1,10 @@
 import React from "react";
 import {
-  IonToolbar,
   IonContent,
   IonText,
   IonIcon,
-  IonModal,
   IonCard,
   IonCardContent,
-  IonButton,
 } from "@ionic/react";
 
 import {
@@ -20,25 +17,8 @@ import {
 
 import Skeleton from "./Skeleton";
 import Header from "../components/AppHeader";
+import DateFilterModal from "../components/DateFilterModal";
 import "../theme/components/HistoryLayout.css";
-
-function getStartOfWeek() {
-  const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  const start = new Date(today.setDate(diff));
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
-function getEndOfWeek() {
-  const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + 7;
-  const end = new Date(today.setDate(diff));
-  end.setHours(23, 59, 59, 999);
-  return end;
-}
 
 interface HistoryLayoutProps {
   initials: string;
@@ -72,34 +52,22 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   setShowModal,
   setStartDate,
   setEndDate,
-  userPhoto,
-  photoLoading,
-  photoError,
   liveDuration = "00h 00m",
 }) => {
-  const handlePhotoError = () => console.log("User photo failed");
-
   return (
     <>
-     <Header />
-      <IonContent color="white" className="history-content" scrollEvents={true}>
+      <Header />
+
+      <IonContent color="white" className="history-content">
         <div className="content-wrapper">
-         
 
           <div className="history-header">
             <div className="history-header-inner">
               <div className="user-section">
-                {loading || photoLoading ? (
-                  <IonText>
-                    <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
-                    <p className="user-subtitle">Review your daily attendance.</p>
-                  </IonText>
-                ) : (
-                  <IonText>
-                    <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
-                    <p className="user-subtitle">Review your daily attendance.</p>
-                  </IonText>
-                )}
+                <IonText>
+                  <h2 className="user-greeting">Hello, {userName.split(" ")[0]}</h2>
+                  <p className="user-subtitle">Review your daily attendance.</p>
+                </IonText>
               </div>
 
               <div className="today-card">
@@ -126,6 +94,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                 <div className="today-item">
                   <IonIcon icon={timeOutline} color="medium" />
                   <p className="today-label total">Duration</p>
+
                   <h5 className="today-time total">
                     {todayRecord?.checkInTime && !todayRecord?.checkOutTime ? (
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -142,13 +111,14 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               </div>
             </div>
           </div>
-
-          <div className="records-container">
-            <button className="date-range-btn" onClick={() => setShowModal(true)}>
+           <button className="date-range-btn" onClick={() => setShowModal(true)}>
               <IonIcon icon={calendarOutline} className="range-btn-icon" />
               <span>{rangeLabel}</span>
               <IonIcon icon={chevronForwardOutline} className="range-btn-icon" />
             </button>
+
+          <div className="records-container">
+           
 
             {loading ? (
               <>
@@ -159,7 +129,9 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                         <Skeleton width="120px" height="16px" />
                         <Skeleton width="60px" height="20px" borderRadius="999px" />
                       </div>
+
                       <div className="record-divider"></div>
+
                       <div className="record-row-modern">
                         <div className="rec-col">
                           <Skeleton width="80px" height="14px" />
@@ -184,10 +156,16 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
                           day: "numeric",
                         })}
                       </h3>
+
                       <div className="record-duration-pill">
                         {(() => {
-                          const isToday = new Date().toDateString() === rec.date.toDateString();
-                          const isActive = isToday && todayRecord?.checkInTime && !todayRecord?.checkOutTime;
+                          const isToday =
+                            new Date().toDateString() === rec.date.toDateString();
+
+                          const isActive =
+                            isToday &&
+                            todayRecord?.checkInTime &&
+                            !todayRecord?.checkOutTime;
 
                           if (isActive) {
                             return (
@@ -229,64 +207,15 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             )}
           </div>
 
-          <IonModal
-            isOpen={showModal}
-            onDidDismiss={() => setShowModal(false)}
-            initialBreakpoint={0.55}
-            breakpoints={[0, 0.55, 0.75]}
-            className="popup-modal"
-          >
-            <div className="popup-container">
-              <div className="popup-body">
-
-                <div className="popup-field">
-                  <label>Start Date</label>
-                  <input
-                    type="date"
-                    value={startDate ? startDate.toLocaleDateString("en-CA") : ""}
-                    onChange={(e) => {
-                      if (!e.target.value) {
-                        setStartDate(getStartOfWeek());
-                        return;
-                      }
-                      const d = new Date(e.target.value);
-                      d.setHours(0, 0, 0, 0);
-                      setStartDate(d);
-                    }}
-                    className="popup-date-input"
-                  />
-                </div>
-
-                <div className="popup-field">
-                  <label>End Date</label>
-                  <input
-                    type="date"
-                    value={endDate ? endDate.toLocaleDateString("en-CA") : ""}
-                    onChange={(e) => {
-                      if (!e.target.value) {
-                        setEndDate(getEndOfWeek());
-                        return;
-                      }
-                      const d = new Date(e.target.value);
-                      d.setHours(23, 59, 59, 999);
-                      setEndDate(d);
-                    }}
-                    className="popup-date-input"
-                  />
-                </div>
-
-                <IonButton
-                  expand="block"
-                  className="popup-done-btn"
-                  onClick={() => setShowModal(false)}
-                >
-                  Done
-                </IonButton>
-
-              </div>
-            </div>
-          </IonModal>
-
+          {/* NEW SEPARATE FILTER COMPONENT */}
+          <DateFilterModal
+            showModal={showModal}
+            startDate={startDate}
+            endDate={endDate}
+            setShowModal={setShowModal}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+          />
         </div>
       </IonContent>
     </>

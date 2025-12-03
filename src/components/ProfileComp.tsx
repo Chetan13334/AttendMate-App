@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { IonIcon, IonAlert } from "@ionic/react";
+import { useHistory } from "react-router-dom";
 import {
   pencilOutline,
   settingsOutline,
   helpCircleOutline,
+  calendarOutline,
   logOutOutline,
 } from "ionicons/icons";
 
@@ -22,6 +24,7 @@ const ProfileCom: React.FC<ProfileComProps> = ({ onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const history = useHistory();
 
   const userEmail = localStorage.getItem("userEmail");
 
@@ -111,13 +114,20 @@ const ProfileCom: React.FC<ProfileComProps> = ({ onLogout }) => {
           <div className="profile-options">
             {[
               { icon: pencilOutline, label: "Edit Profile Details" },
+              { icon: calendarOutline, label: "Leave Request" },
               { icon: settingsOutline, label: "Settings" },
               { icon: helpCircleOutline, label: "Help & Support" },
             ].map((item, idx) => (
               <div
                 key={idx}
                 className="profile-option-item"
-                onClick={() => alert(`${item.label} (Coming soon...)`)}
+                onClick={() => {
+                  if (item.label === "Leave Request") {
+                    history.push("/leave-request");
+                  } else {
+                    alert(`${item.label} (Coming soon...)`);
+                  }
+                }}
               >
                 <div className="profile-option-left">
                   <IonIcon

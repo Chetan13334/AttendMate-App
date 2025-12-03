@@ -1,0 +1,547 @@
+/* PAGE BACKGROUND */
+.lf-page {
+    background: #F5F6FA;
+    font-family: "Inter", sans-serif;
+}
+
+/* HEADER */
+.lf-header {
+    position: sticky;
+    top: 0;
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 20;
+}
+
+.lf-back-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lf-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.lf-spacer {
+    width: 36px;
+}
+
+/* MAIN CONTENT */
+.lf-content {
+    padding-bottom: 120px;
+}
+
+/* CONTAINER */
+.lf-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/********** FORM LABEL **********/
+.lf-label {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+/********** INPUT CARD **********/
+.lf-input-card,
+.lf-textarea-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/********** INPUT **********/
+.lf-input {
+    flex: 1;
+    font-size: 15px;
+    border: none;
+    outline: none;
+    background: transparent;
+}
+
+/********** SELECT **********/
+.lf-select {
+    flex: 1;
+    font-size: 15px;
+    border: none;
+    background: transparent;
+    outline: none;
+    appearance: none;
+}
+
+.lf-chevron {
+    position: absolute;
+    right: 16px;
+    color: #6B7280;
+}
+
+/********** ICON **********/
+.lf-icon {
+    position: absolute;
+    right: 16px;
+    color: #6B7280;
+}
+
+/********** TOTAL CARD **********/
+.lf-total-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.lf-total-text {
+    font-size: 14px;
+    color: #6B7280;
+}
+
+.lf-total-value {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/********** TEXTAREA **********/
+.lf-textarea {
+    width: 100%;
+    min-height: 120px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    background: transparent;
+    resize: none;
+}
+
+/********** FOOTER BUTTON **********/
+.lf-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 16px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.lf-submit-btn {
+    width: 100%;
+   
+    height: 52px;
+    background: #137FEC;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    transition: 0.2s;
+}
+
+.lf-submit-btn:hover {
+    transform: scale(1.02);
+}
+
+.lf-submit-btn:active {
+    transform: scale(0.97);
+}
+
+/* CSS Reset and Base Styles */
+.lf-page * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.lf-page {
+    font-family: 'Arial', sans-serif;
+    /* Simplified font-family */
+    background-color: #f6f7f8;
+    /* background-light */
+    color: #101922;
+    /* Text color for light mode */
+    min-height: 100vh;
+}
+
+.lf-page .container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    flex-direction: column;
+}
+
+/* --- Header (Top App Bar) --- */
+.lf-page .header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    height: 56px;
+    /* h-14 */
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    /* border-slate-200/80 */
+    background-color: rgba(246, 247, 248, 0.8);
+    /* background-light/80 */
+    padding: 0 1rem;
+    /* px-4 */
+    backdrop-filter: blur(4px);
+    /* backdrop-blur-sm */
+}
+
+.lf-page .back-button {
+    display: flex;
+    width: 40px;
+    /* size-10 */
+    height: 40px;
+    /* size-10 */
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    /* rounded-full */
+    color: #475569;
+    /* text-slate-700 */
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.lf-page .header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.125rem;
+    /* text-lg */
+    font-weight: 700;
+    /* font-bold */
+    color: #0f172a;
+    /* text-slate-900 */
+}
+
+.lf-page .header-spacer {
+    width: 40px;
+    /* size-10 */
+    flex-shrink: 0;
+}
+
+/* --- Main Content --- */
+.lf-page .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem 7rem;
+    /* pt-6 px-4 pb-28 */
+}
+
+.lf-page .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    /* space-y-6 */
+}
+
+/* --- Form Elements --- */
+.lf-page .form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.lf-page .label-text {
+    padding-bottom: 0.5rem;
+    /* pb-2 */
+    font-size: 1rem;
+    /* text-base */
+    font-weight: 500;
+    /* font-medium */
+    color: #1e293b;
+    /* text-slate-800 */
+}
+
+.lf-page .input-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    /* gap-4 */
+}
+
+@media (min-width: 640px) {
+
+    /* sm:grid-cols-2 */
+    .lf-page .input-group {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.lf-page .input-wrapper {
+    position: relative;
+}
+
+.lf-page .form-input,
+.lf-page .form-select,
+.lf-page .form-textarea {
+    height: 56px;
+    /* h-14 */
+    width: 100%;
+    min-width: 0;
+    padding: 0.5rem 1rem;
+    /* p-4, reduced vertical padding for select/input */
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #0f172a;
+    /* text-slate-900 */
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    /* border-slate-300 */
+    border-radius: 0.5rem;
+    /* rounded-lg */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    resize: none;
+}
+
+.lf-page .form-textarea {
+    min-height: 9rem;
+    /* min-h-36 */
+    height: auto;
+    padding: 1rem;
+}
+
+.lf-page .form-input::placeholder,
+.lf-page .form-textarea::placeholder {
+    color: #94a3b8;
+    /* placeholder:text-slate-400 */
+}
+
+.lf-page .form-input:focus,
+.lf-page .form-select:focus,
+.lf-page .form-textarea:focus {
+    outline: 0;
+    border-color: #137fec;
+    /* primary */
+    box-shadow: 0 0 0 2px rgba(19, 127, 236, 0.2);
+    /* focus:ring-2 focus:ring-primary/20 */
+}
+
+/* Select custom arrow styling */
+.lf-page .form-select {
+    padding-right: 3rem;
+    /* Extra space for custom icon */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%23475569"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.5em 1.5em;
+}
+
+/* Calendar Icon Positioning for Date Inputs */
+.lf-page .input-icon {
+    position: absolute;
+    right: 1rem;
+    /* right-4 */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    /* text-slate-500 */
+    pointer-events: none;
+}
+
+/* --- Total Days Summary --- */
+.lf-page .summary-box {
+    border: 1px solid #e2e8f0;
+    /* border-slate-200 */
+    background-color: white;
+    border-radius: 0.5rem;
+    /* rounded-lg */
+    padding: 1rem;
+    /* p-4 */
+}
+
+.lf-page .summary-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lf-page .summary-label {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    /* font-medium */
+    color: #475569;
+    /* text-slate-600 */
+}
+
+.lf-page .summary-value {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 600;
+    /* font-semibold */
+    color: #1e293b;
+    /* text-slate-800 */
+}
+
+/* --- Footer (Bottom Action Bar) --- */
+.lf-page .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    /* border-slate-200/80 */
+    background-color: rgba(246, 247, 248, 0.8);
+    /* background-light/80 */
+    padding: 1rem;
+    /* p-4 */
+    backdrop-filter: blur(4px);
+    /* backdrop-blur-sm */
+}
+
+.lf-page .submit-button {
+    height: 56px;
+    /* h-14 */
+    width: 100%;
+    margin-top: 3%;
+    border-radius: 0.75rem;
+    /* rounded-xl */
+    background-color: #137fec;
+    /* primary */
+    color: white;
+    font-size: 1rem;
+    /* text-base */
+    font-weight: 700;
+    /* font-bold */
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(19, 127, 236, 0.3), 0 4px 6px -4px rgba(19, 127, 236, 0.3);
+    /* shadow-lg shadow-primary/30 */
+    transition: transform 0.2s ease-in-out;
+}
+
+.lf-page .submit-button:hover {
+    transform: scale(1.02);
+    /* hover:scale-[1.02] */
+}
+
+.lf-page .submit-button:active {
+    transform: scale(0.98);
+    /* active:scale-[0.98] */
+}
+
+/* Material Symbols Icon Specific Styles */
+.lf-page .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 24px;
+}
+
+.lf-page .back-button .material-symbols-outlined {
+    font-size: 20px !important;
+    /* Slightly smaller for the back button */
+}
+
+/* MODAL STYLES COPIED FROM CheckIn_CheckOut.css */
+.confirm-modal {
+    --height: auto;
+    --width: 90%;
+    --max-width: 380px;
+    --border-radius: 24px;
+    z-index: 9999;
+}
+
+.confirm-modal-content {
+    padding: 32px 24px;
+    text-align: center;
+}
+
+.modal-icon {
+    font-size: 48px;
+    color: var(--ion-color-primary);
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.alert-modal-content {
+    padding: 32px 24px;
+    text-align: center;
+}
+
+.alert-modal-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.alert-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+.alert-icon-container.alert-failed {
+    background-color: rgba(244, 9, 9, 0.58);
+}
+
+.alert-icon-container.alert-success {
+    background-color: #16bc5b;
+}
+
+.alert-modal-title {
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.alert-modal-message {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #444;
+}
+
+.alert-ok-btn {
+    width: 80%;
+    max-width: 220px;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.alert-failed-title {
+    color: #d32f2f;
+}
+
+.alert-success-title {
+    color: #16bc5b;
+}
