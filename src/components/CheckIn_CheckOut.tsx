@@ -50,7 +50,6 @@ const CheckIn_CheckOut: React.FC = () => {
 
   const loggedInUserEmail = localStorage.getItem("userEmail") || "";
   const today = new Date().toISOString().split("T")[0];
-  const isWeb = Capacitor.getPlatform() === "web";
 
   const formatTime = () =>
     new Date().toLocaleString("en-US", {
@@ -62,7 +61,6 @@ const CheckIn_CheckOut: React.FC = () => {
       day: "numeric",
       year: "numeric",
     });
-
 
   useEffect(() => {
     setCurrentTime(formatTime());
@@ -128,9 +126,7 @@ const CheckIn_CheckOut: React.FC = () => {
     if (!employeeId) return;
 
     const unsub = listenToAttendance(today, employeeId, (data: any) => {
-
       setStatusLoading(true);
-
 
       let newStatus: Status = "not-checked";
       let newTime = "";
@@ -159,13 +155,13 @@ const CheckIn_CheckOut: React.FC = () => {
     return () => unsub();
   }, [employeeId, today]);
 
-
   const confirmAction = (action: (inside: boolean) => void, title: string) => {
     setPendingAction(() => action);
     setModalTitle(title);
     setShowModal(true);
   };
 
+  // ⭐ FINAL FIX FOR WEB — correct location flow
   const executeAction = async () => {
     setShowModal(false);
     setShowLocationChecking(true);
@@ -174,8 +170,18 @@ const CheckIn_CheckOut: React.FC = () => {
       const { success, inside } = await quickGeoCheck();
       setShowLocationChecking(false);
 
+      const isWeb = Capacitor.getPlatform() === "web";
+
       if (!success) {
+        // 🚀 Location OFF → Show Turn On Location popup
         setShowLocationAlert(true);
+        return;
+      }
+
+      if (success && !inside) {
+        // 🚫 Location ON but outside geofence
+        setMsg("Warning: You are not in the designated location!");
+        setShowAlert(true);
         return;
       }
 
@@ -187,14 +193,49 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
+ const onTurnOnLocation = async () => {
+  setShowLocationAlert(false);
+  setShowLocationChecking(true);
+
+  try {
+    const enabled = await enableLocation();
+    setShowLocationChecking(false);
+
+    const isWeb = Capacitor.getPlatform() === "web";
+
+    if (!enabled && !isWeb) {
+      setShowNoThanksAlert(true);
+      return;
+    }
+
+    const { success, inside } = await quickGeoCheck();
+
+    if (!success) {
+      // Just close without alert
+      return;
+    }
+
+    pendingAction?.(inside);
+  } catch (err) {
+    console.error("onTurnOnLocation error:", err);
+    setShowLocationChecking(false);
+    setShowNoThanksAlert(false);
+  }
+};
+
+
+  const onNoThanks = () => {
+    setShowLocationAlert(false);
+    setShowNoThanksAlert(true);
+  };
 
   const handleCheckIn = async (inside: boolean) => {
     if (!employeeId) return;
-
     setIsProcessing(true);
 
-    // Only validate location for mobile platforms
-    if (!isWeb && !inside) {
+    // ⭐ Fixed: Web should not show wrong alert when GPS off
+    const isWeb = Capacitor.getPlatform() === "web";
+    if (!inside && !isWeb) {
       setMsg("Warning: Check-In Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
@@ -208,7 +249,6 @@ const CheckIn_CheckOut: React.FC = () => {
       setMsg("Success: Check-In Successful!");
       setShowAlert(true);
     } catch (err) {
-      console.error("handleCheckIn error:", err);
       setMsg("Warning: Check-In Failed: Something went wrong.");
       setShowAlert(true);
     } finally {
@@ -216,14 +256,12 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
-
   const handleCheckOut = async (inside: boolean) => {
     if (!employeeId) return;
-
     setIsProcessing(true);
 
-    // Only validate location for mobile platforms
-    if (!isWeb && !inside) {
+    const isWeb = Capacitor.getPlatform() === "web";
+    if (!inside && !isWeb) {
       setMsg("Warning: Check-Out Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
@@ -237,7 +275,6 @@ const CheckIn_CheckOut: React.FC = () => {
       setMsg("Success: Check-Out Successful!");
       setShowAlert(true);
     } catch (err) {
-      console.error("handleCheckOut error:", err);
       setMsg("Warning: Check-Out Failed: Something went wrong.");
       setShowAlert(true);
     } finally {
@@ -245,54 +282,11 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
-
   const handleTap = () => {
     if (isProcessing) return;
 
-    if (isWeb) {
-      // For web, skip location check and proceed directly
-      if (status === "not-checked") handleCheckIn(true);
-      else if (status === "checked-in") handleCheckOut(true);
-      return;
-    }
-
     if (status === "not-checked") confirmAction(handleCheckIn, "Check In");
     else if (status === "checked-in") confirmAction(handleCheckOut, "Check Out");
-  };
-
-
-  const onTurnOnLocation = async () => {
-    setShowLocationAlert(false);
-    setShowLocationChecking(true);
-
-    try {
-      const enabled = await enableLocation();
-      setShowLocationChecking(false);
-
-      if (!enabled) {
-        setShowNoThanksAlert(true);
-        return;
-      }
-
-      const { success, inside } = await quickGeoCheck();
-
-      if (!success) {
-        setMsg("Warning: Could not verify location after enabling location.");
-        setShowAlert(true);
-        return;
-      }
-
-      pendingAction?.(inside);
-    } catch (err) {
-      console.error("onTurnOnLocation error:", err);
-      setShowLocationChecking(false);
-      setShowNoThanksAlert(true);
-    }
-  };
-
-  const onNoThanks = () => {
-    setShowLocationAlert(false);
-    setShowNoThanksAlert(true);
   };
 
   const CheckInSkeleton = () => (
@@ -340,19 +334,14 @@ const CheckIn_CheckOut: React.FC = () => {
     </IonCard>
   );
 
-
   if (loading || statusLoading) {
-
     if (status === "checked-in") return <CheckedInSkeleton />;
     if (status === "checked-out") return <CheckedOutSkeleton />;
-
     return <CheckInSkeleton />;
   }
 
-
   return (
     <>
-
       {status === "not-checked" && (
         <IonCard
           button
@@ -380,7 +369,6 @@ const CheckIn_CheckOut: React.FC = () => {
           <IonRippleEffect />
         </IonCard>
       )}
-
 
       {status === "checked-in" && (
         <IonCard
@@ -413,7 +401,6 @@ const CheckIn_CheckOut: React.FC = () => {
         </IonCard>
       )}
 
-
       {status === "checked-out" && (
         <IonCard className="checkedout-card">
           <div className="checkedout-header">
@@ -430,7 +417,6 @@ const CheckIn_CheckOut: React.FC = () => {
           </IonCardContent>
         </IonCard>
       )}
-
 
       <IonModal
         isOpen={showModal}
@@ -479,7 +465,6 @@ const CheckIn_CheckOut: React.FC = () => {
         </div>
       </IonModal>
 
-
       <IonModal
         isOpen={showLocationAlert}
         onDidDismiss={() => setShowLocationAlert(false)}
@@ -493,16 +478,15 @@ const CheckIn_CheckOut: React.FC = () => {
           <p>We need your location to verify check-in.</p>
 
           <div className="modal-buttons">
-            <IonButton color="success" fill="solid" onClick={onTurnOnLocation}>
-              OK
-            </IonButton>
             <IonButton fill="outline" color="medium" onClick={onNoThanks}>
               No thanks
+            </IonButton>
+            <IonButton color="success" fill="solid" onClick={onTurnOnLocation}>
+              OK
             </IonButton>
           </div>
         </div>
       </IonModal>
-
 
       <IonModal
         isOpen={showAlert}
@@ -513,7 +497,8 @@ const CheckIn_CheckOut: React.FC = () => {
       >
         <div className="alert-modal-content alert-modal-inner">
           {(() => {
-            const isBlocking = msg.includes("requires GPS") || msg.includes("not supported");
+            const isBlocking =
+              msg.includes("requires GPS") || msg.includes("not supported");
             const isWarning = msg.includes("Warning") || msg.includes("Failed");
             const failedClass = isBlocking || isWarning ? "alert-failed" : "alert-success";
             const titleClass = isBlocking || isWarning ? "alert-failed-title" : "alert-success-title";

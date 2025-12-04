@@ -9,7 +9,7 @@ const GEOFENCE_RADIUS = officeLocation.radius;
 
 const toRad = (value: number) => (value * Math.PI) / 180;
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; 
+  const R = 6371e3;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   const a =
@@ -23,18 +23,18 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 export const enableLocation = async (): Promise<boolean> => {
   try {
     const perm = await Geolocation.requestPermissions();
-    
-   
 
 
-      const granted =
-  (typeof perm === "string" && perm === "granted") ||
-  (perm && ["granted", "prompt"].includes((perm as any).location));
+
+
+    const granted =
+      (typeof perm === "string" && perm === "granted") ||
+      (perm && ["granted", "prompt"].includes((perm as any).location));
 
 
     if (!granted) return false;
 
-    
+
     await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 15000,
@@ -42,7 +42,7 @@ export const enableLocation = async (): Promise<boolean> => {
 
     return true;
   } catch (err) {
-   
+
     return false;
   }
 };
@@ -62,13 +62,13 @@ export const quickGeoCheck = async (): Promise<{
     const distance = getDistance(
       officeLat,
       officeLng,
-      pos.coords.latitude,
+      pos.coords.latitude, 
       pos.coords.longitude
     );
 
     return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
   } catch (err) {
-    
+
     return { success: false, inside: false, distance: 0 };
   }
 };
