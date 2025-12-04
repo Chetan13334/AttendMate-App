@@ -178,7 +178,7 @@ const CheckIn_CheckOut: React.FC = () => {
         return;
       }
 
-      if (success && !inside) {
+      if (success && !inside && !isWeb) {
         // 🚫 Location ON but outside geofence
         setMsg("Warning: You are not in the designated location!");
         setShowAlert(true);
@@ -193,35 +193,35 @@ const CheckIn_CheckOut: React.FC = () => {
     }
   };
 
- const onTurnOnLocation = async () => {
-  setShowLocationAlert(false);
-  setShowLocationChecking(true);
+  const onTurnOnLocation = async () => {
+    setShowLocationAlert(false);
+    setShowLocationChecking(true);
 
-  try {
-    const enabled = await enableLocation();
-    setShowLocationChecking(false);
+    try {
+      const enabled = await enableLocation();
+      setShowLocationChecking(false);
 
-    const isWeb = Capacitor.getPlatform() === "web";
+      const isWeb = Capacitor.getPlatform() === "web";
 
-    if (!enabled && !isWeb) {
-      setShowNoThanksAlert(true);
-      return;
+      if (!enabled && !isWeb) {
+        setShowNoThanksAlert(true);
+        return;
+      }
+
+      const { success, inside } = await quickGeoCheck();
+
+      if (!success) {
+        // Just close without alert
+        return;
+      }
+
+      pendingAction?.(inside);
+    } catch (err) {
+      console.error("onTurnOnLocation error:", err);
+      setShowLocationChecking(false);
+      setShowNoThanksAlert(false);
     }
-
-    const { success, inside } = await quickGeoCheck();
-
-    if (!success) {
-      // Just close without alert
-      return;
-    }
-
-    pendingAction?.(inside);
-  } catch (err) {
-    console.error("onTurnOnLocation error:", err);
-    setShowLocationChecking(false);
-    setShowNoThanksAlert(false);
-  }
-};
+  };
 
 
   const onNoThanks = () => {
