@@ -24,9 +24,13 @@ export const enableLocation = async (): Promise<boolean> => {
   try {
     const perm = await Geolocation.requestPermissions();
     
-    const granted =
-      (typeof perm === "string" && perm === "granted") ||
-      (perm && (perm as any).location === "granted");
+   
+
+
+      const granted =
+  (typeof perm === "string" && perm === "granted") ||
+  (perm && ["granted", "prompt"].includes((perm as any).location));
+
 
     if (!granted) return false;
 
