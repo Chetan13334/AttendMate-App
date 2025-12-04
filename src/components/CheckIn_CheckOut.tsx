@@ -193,7 +193,8 @@ const CheckIn_CheckOut: React.FC = () => {
 
     setIsProcessing(true);
 
-    if (!inside) {
+    // Only validate location for mobile platforms
+    if (!isWeb && !inside) {
       setMsg("Warning: Check-In Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
@@ -221,7 +222,8 @@ const CheckIn_CheckOut: React.FC = () => {
 
     setIsProcessing(true);
 
-    if (!inside) {
+    // Only validate location for mobile platforms
+    if (!isWeb && !inside) {
       setMsg("Warning: Check-Out Failed: You are not in the designated location!");
       setShowAlert(true);
       setIsProcessing(false);
@@ -248,8 +250,9 @@ const CheckIn_CheckOut: React.FC = () => {
     if (isProcessing) return;
 
     if (isWeb) {
-      setMsg("Check-in/out requires GPS and is only available on the mobile app.");
-      setShowAlert(true);
+      // For web, skip location check and proceed directly
+      if (status === "not-checked") handleCheckIn(true);
+      else if (status === "checked-in") handleCheckOut(true);
       return;
     }
 
@@ -339,11 +342,11 @@ const CheckIn_CheckOut: React.FC = () => {
 
 
   if (loading || statusLoading) {
-    
+
     if (status === "checked-in") return <CheckedInSkeleton />;
     if (status === "checked-out") return <CheckedOutSkeleton />;
-    
-    return <CheckInSkeleton />; 
+
+    return <CheckInSkeleton />;
   }
 
 
