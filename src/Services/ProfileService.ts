@@ -1,17 +1,49 @@
-import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+
+const getToken = (): string | null => {
+  return localStorage.getItem("employeeToken");
+};
 
 export const fetchUserProfile = async (email: string) => {
   try {
-    const q = query(
-      collection(db, "Employee_Details"),
-      where("Email", "==", email)
-    );
+    const token = getToken();
+    
+    if (!token) {
+      
+      return null;
+    }
 
-    const snapshot = await getDocs(q);
+    const response = await fetch(`${API_URL}/employees/profile`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-    if (!snapshot.empty) {
-      return snapshot.docs[0].data();
+    if (!response.ok) {
+      
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (data.employee) {
+      return {
+        Name: data.employee.name,
+        Email: data.employee.email,
+        Phone: data.employee.phone,
+        Department: data.employee.department,
+        Designation: data.employee.designation,
+        DateOfJoining: data.employee.joiningDate 
+          ? new Date(data.employee.joiningDate).toLocaleDateString()
+          : "Not Available",
+        Photo: data.employee.image || "",
+        EmployeeId: data.employee.employeeId,
+        Address: data.employee.address,
+      };
     }
 
     return null;
