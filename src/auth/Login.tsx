@@ -1,201 +1,234 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  IonPage,
-  IonContent,
-  IonToast,
-  IonSpinner,
-  IonIcon,
-  IonButton,
+    IonPage,
+    IonContent,
+    IonToast,
+    IonSpinner,
+    IonIcon,
+    IonButton,
 } from "@ionic/react";
 import {
-  eyeOutline,
-  eyeOffOutline,
-  mailOutline,
-  lockClosedOutline,
+    eyeOutline,
+    eyeOffOutline,
+    mailOutline,
+    lockClosedOutline,
 } from "ionicons/icons";
-import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
 import "../theme/components/Login.css";
 import Logo from "../assets/main_logo.png";
 
 interface LoginProps {
-  onLogin: (email: string) => void;
+    onLogin: (email: string) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastColor, setToastColor] = useState<"danger" | "success">("danger");
-  const [showToast, setShowToast] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastColor, setToastColor] = useState<"danger" | "success">("danger");
+    const [showToast, setShowToast] = useState(false);
 
-  const emailRef = useRef(email);
-  const passwordRef = useRef(password);
-  const contentRef = useRef<HTMLIonContentElement>(null);
+    const emailRef = useRef(email);
+    const passwordRef = useRef(password);
+    const contentRef = useRef<HTMLIonContentElement>(null);
 
+    // 🔧 Backend API URL - Updated to use proxy path to avoid CORS issues
+    const API_URL = import.meta.env.VITE_API_URL || "/api";
 
-  const scrollUpForPassword = () => {
-    setTimeout(() => {
-      contentRef.current?.scrollToPoint(0, 220, 300);
-    }, 100);
-  };
-
-  useEffect(() => {
-    const handleKeyboardShow = () => {
-      setTimeout(() => {
-        contentRef.current?.scrollToPoint(0, 100, 300);
-      }, 100);
-    };
-
-    const handleKeyboardHide = () => {
-      contentRef.current?.scrollToTop(300);
-    };
-
-    window.addEventListener("keyboardWillShow", handleKeyboardShow);
-    window.addEventListener("keyboardWillHide", handleKeyboardHide);
-
-    return () => {
-      window.removeEventListener("keyboardWillShow", handleKeyboardShow);
-      window.removeEventListener("keyboardWillHide", handleKeyboardHide);
-    };
-  }, []);
-
-  const handleLogin = async () => {
-    const trimmedEmail = emailRef.current.trim();
-    const trimmedPassword = passwordRef.current.trim();
-
-    if (!trimmedEmail || !trimmedPassword) {
-      setToastMessage("Please enter email and password");
-      setToastColor("danger");
-      setShowToast(true);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const q = query(
-        collection(db, "Employee_Details"),
-        where("Email", "==", trimmedEmail),
-        where("Password", "==", trimmedPassword)
-      );
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        localStorage.setItem("userEmail", trimmedEmail);
-        localStorage.setItem("isLoggedIn", "true");
-
-        setToastMessage("Login successful!");
-        setToastColor("success");
-        setShowToast(true);
-
+    const scrollUpForPassword = () => {
         setTimeout(() => {
-          setLoading(false);
-          window.location.href = "/home";
-        }, 800);
-      } else {
-        setToastMessage("Invalid email or password");
-        setToastColor("danger");
-        setShowToast(true);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setToastMessage("Login failed. Please try again.");
-      setToastColor("danger");
-      setShowToast(true);
-      setLoading(false);
-    }
-  };
+            contentRef.current?.scrollToPoint(0, 220, 300);
+        }, 100);
+    };
 
-  return (
-    <IonPage>
-      <IonContent ref={contentRef} fullscreen className="page-bg" scrollY={true}>
-        <div className="card">
-          <div className="logo-box">
-            <img src={Logo} alt="Logo" className="logo-image" />
-          </div>
+    useEffect(() => {
+        const handleKeyboardShow = () => {
+            setTimeout(() => {
+                contentRef.current?.scrollToPoint(0, 100, 300);
+            }, 100);
+        };
 
-          <h1 className="welcome">AttendMate</h1>
-          <p className="subtext">Scalar TechHub</p>
+        const handleKeyboardHide = () => {
+            contentRef.current?.scrollToTop(300);
+        };
 
-          <label className="field-label">Email Address</label>
-          <div className="field-wrapper">
-            <IonIcon icon={mailOutline} className="field-icon" />
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="field-input"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                emailRef.current = e.target.value;
-              }}
-            />
-          </div>
+        window.addEventListener("keyboardWillShow", handleKeyboardShow);
+        window.addEventListener("keyboardWillHide", handleKeyboardHide);
 
-          <label className="field-label">Password</label>
-          <div className="field-wrapper">
-            <IonIcon icon={lockClosedOutline} className="field-icon" />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              className="field-input"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                passwordRef.current = e.target.value;
-              }}
-              onFocus={scrollUpForPassword}
-            />
-            <IonIcon
-              icon={showPassword ? eyeOffOutline : eyeOutline}
-              onClick={() => setShowPassword(!showPassword)}
-              className="eye-toggle"
-            />
-          </div>
+        return () => {
+            window.removeEventListener("keyboardWillShow", handleKeyboardShow);
+            window.removeEventListener("keyboardWillHide", handleKeyboardHide);
+        };
+    }, []);
 
-          <div className="forgot-container">
-            <span className="forgot-link">Forgot Password?</span>
-          </div>
+    const handleLogin = async () => {
+        const trimmedEmail = emailRef.current.trim();
+        const trimmedPassword = passwordRef.current.trim();
 
-          <IonButton
-            expand="block"
-            onClick={handleLogin}
-            disabled={loading}
-            className="signin-btn"
-          >
-            {loading ? <IonSpinner name="crescent" /> : "Sign In"}
-          </IonButton>
+        if (!trimmedEmail || !trimmedPassword) {
+            setToastMessage("Please enter email and password");
+            setToastColor("danger");
+            setShowToast(true);
+            return;
+        }
 
-          <p className="signup-text">
-            Don't have an account?
-            <span
-              className="signup-link"
-              onClick={() => {
-                window.location.href = "mailto:hr@scalartechhub.com";
-              }}
-            >
-              Contact HR
-            </span>
+        setLoading(true);
 
-          </p>
+        try {
+            // ✅ Call Employee Login API
+            const response = await fetch(`${API_URL}/employees/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: trimmedEmail,
+                    password: trimmedPassword,
+                }),
+            });
 
-          <IonToast
-            isOpen={showToast}
-            message={toastMessage}
-            duration={2000}
-            position="top"
-            color={toastColor}
-            onDidDismiss={() => setShowToast(false)}
-            style={{ "--border-radius": "10px" }}
-          />
-        </div>
-      </IonContent>
-    </IonPage>
-  );
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+                // ✅ Store authentication data
+                localStorage.setItem("employeeToken", data.token);
+                localStorage.setItem("employeeData", JSON.stringify(data.employee));
+                localStorage.setItem("userEmail", data.employee.email);
+                localStorage.setItem("isLoggedIn", "true");
+
+                // Debug logs
+                console.log("=== LOGIN SUCCESS ===");
+                console.log("Token stored:", data.token.substring(0, 20) + "...");
+                console.log("Employee data stored:", data.employee);
+                console.log("User email stored:", data.employee.email);
+                console.log("=== END LOGIN ===");
+
+                setToastMessage("Login successful!");
+                setToastColor("success");
+                setShowToast(true);
+
+                setTimeout(() => {
+                    setLoading(false);
+                    // Call the onLogin callback
+                    onLogin(data.employee.email);
+                    // Navigate to home
+                    window.location.href = "/home";
+                }, 800);
+            } else {
+                // Handle error response
+                setToastMessage(data.message || "Invalid email or password");
+                setToastColor("danger");
+                setShowToast(true);
+                setLoading(false);
+            }
+        } catch (error: any) {
+            console.error("Login error:", error);
+            let errorMessage = "Login failed. Please check your connection.";
+            
+            // More specific error messages
+            if (error instanceof TypeError) {
+                if (error.message.includes("fetch")) {
+                    errorMessage = "Failed to connect to the server. Please check if the backend is running and accessible.";
+                } else if (error.message.includes("NetworkError")) {
+                    errorMessage = "Network error. Please check your internet connection.";
+                }
+            } else if (error.message) {
+                errorMessage = `Login error: ${error.message}`;
+            }
+            
+            setToastMessage(errorMessage);
+            setToastColor("danger");
+            setShowToast(true);
+            setLoading(false);
+        }
+    };
+
+    return (
+        <IonPage>
+            <IonContent ref={contentRef} fullscreen className="page-bg" scrollY={true}>
+                <div className="card">
+                    <div className="logo-box">
+                        <img src={Logo} alt="Logo" className="logo-image" />
+                    </div>
+
+                    <h1 className="welcome">AttendMate</h1>
+                    <p className="subtext">Scalar TechHub</p>
+
+                    <label className="field-label">Email Address</label>
+                    <div className="field-wrapper">
+                        <IonIcon icon={mailOutline} className="field-icon" />
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            className="field-input"
+                            value={email}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                emailRef.current = e.target.value;
+                            }}
+                        />
+                    </div>
+
+                    <label className="field-label">Password</label>
+                    <div className="field-wrapper">
+                        <IonIcon icon={lockClosedOutline} className="field-icon" />
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="field-input"
+                            value={password}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                passwordRef.current = e.target.value;
+                            }}
+                            onFocus={scrollUpForPassword}
+                        />
+                        <IonIcon
+                            icon={showPassword ? eyeOffOutline : eyeOutline}
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="eye-toggle"
+                        />
+                    </div>
+
+                    <div className="forgot-container">
+                        <span className="forgot-link">Forgot Password?</span>
+                    </div>
+
+                    <IonButton
+                        expand="block"
+                        onClick={handleLogin}
+                        disabled={loading}
+                        className="signin-btn"
+                    >
+                        {loading ? <IonSpinner name="crescent" /> : "Sign In"}
+                    </IonButton>
+
+                    <p className="signup-text">
+                        Don't have an account?
+                        <span
+                            className="signup-link"
+                            onClick={() => {
+                                window.location.href = "mailto:hr@scalartechhub.com";
+                            }}
+                        >
+                            Contact HR
+                        </span>
+                    </p>
+
+                    <IonToast
+                        isOpen={showToast}
+                        message={toastMessage}
+                        duration={2000}
+                        position="top"
+                        color={toastColor}
+                        onDidDismiss={() => setShowToast(false)}
+                        style={{ "--border-radius": "10px" }}
+                    />
+                </div>
+            </IonContent>
+        </IonPage>
+    );
 };
 
 export default Login;

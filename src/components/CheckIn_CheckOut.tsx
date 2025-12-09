@@ -23,7 +23,6 @@ import {
 import "../theme/components/CheckIn_CheckOut.css";
 
 type Status = "not-checked" | "checked-in" | "checked-out";
-
 const SKELETON_TRANSITION_MS = 300;
 
 const CheckIn_CheckOut: React.FC = () => {
@@ -105,8 +104,9 @@ const CheckIn_CheckOut: React.FC = () => {
           setStatus(newStatus);
           setTime(newTime);
         }
-      } catch (e) {
-        console.error("loadData error:", e);
+      } catch (e: any) {
+        setMsg(`Error loading attendance data: ${e.message || "Unknown error"}`);
+        setShowAlert(true);
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -116,7 +116,6 @@ const CheckIn_CheckOut: React.FC = () => {
     };
 
     loadData();
-
     return () => {
       cancelled = true;
     };
@@ -124,7 +123,6 @@ const CheckIn_CheckOut: React.FC = () => {
 
   useEffect(() => {
     if (!employeeId) return;
-
     const unsub = listenToAttendance(today, employeeId, (data: any) => {
       setStatusLoading(true);
 
@@ -138,11 +136,7 @@ const CheckIn_CheckOut: React.FC = () => {
         } else if (data.CheckOut) {
           newStatus = "checked-out";
           newTime = data.CheckOut.toDate().toLocaleTimeString();
-        } else {
-          newStatus = "not-checked";
         }
-      } else {
-        newStatus = "not-checked";
       }
 
       setTimeout(() => {
@@ -161,7 +155,6 @@ const CheckIn_CheckOut: React.FC = () => {
     setShowModal(true);
   };
 
-  // ⭐ FINAL FIX FOR WEB — correct location flow
   const executeAction = async () => {
     setShowModal(false);
     setShowLocationChecking(true);
@@ -173,21 +166,18 @@ const CheckIn_CheckOut: React.FC = () => {
       const isWeb = Capacitor.getPlatform() === "web";
 
       if (!success) {
-        // 🚀 Location OFF → Show Turn On Location popup
         setShowLocationAlert(true);
         return;
       }
 
       if (success && !inside && !isWeb) {
-        // 🚫 Location ON but outside geofence
         setMsg("Warning: You are not in the designated location!");
         setShowAlert(true);
         return;
       }
 
       pendingAction?.(inside);
-    } catch (err) {
-      console.error("executeAction error:", err);
+    } catch {
       setShowLocationChecking(false);
       setShowLocationAlert(true);
     }
@@ -210,19 +200,13 @@ const CheckIn_CheckOut: React.FC = () => {
 
       const { success, inside } = await quickGeoCheck();
 
-      if (!success) {
-        // Just close without alert
-        return;
-      }
-
+      if (!success) return;
       pendingAction?.(inside);
-    } catch (err) {
-      console.error("onTurnOnLocation error:", err);
+    } catch {
       setShowLocationChecking(false);
       setShowNoThanksAlert(false);
     }
   };
-
 
   const onNoThanks = () => {
     setShowLocationAlert(false);
@@ -230,11 +214,15 @@ const CheckIn_CheckOut: React.FC = () => {
   };
 
   const handleCheckIn = async (inside: boolean) => {
-    if (!employeeId) return;
-    setIsProcessing(true);
+    if (!employeeId) {
+      setMsg("Error: No employee ID found.");
+      setShowAlert(true);
+      return;
+    }
 
-    // ⭐ Fixed: Web should not show wrong alert when GPS off
+    setIsProcessing(true);
     const isWeb = Capacitor.getPlatform() === "web";
+
     if (!inside && !isWeb) {
       setMsg("Warning: Check-In Failed: You are not in the designated location!");
       setShowAlert(true);
@@ -248,8 +236,8 @@ const CheckIn_CheckOut: React.FC = () => {
       setTime(now.toLocaleTimeString());
       setMsg("Success: Check-In Successful!");
       setShowAlert(true);
-    } catch (err) {
-      setMsg("Warning: Check-In Failed: Something went wrong.");
+    } catch (err: any) {
+      setMsg(`Warning: Check-In Failed: ${err.message}`);
       setShowAlert(true);
     } finally {
       setIsProcessing(false);
@@ -257,10 +245,15 @@ const CheckIn_CheckOut: React.FC = () => {
   };
 
   const handleCheckOut = async (inside: boolean) => {
-    if (!employeeId) return;
-    setIsProcessing(true);
+    if (!employeeId) {
+      setMsg("Error: No employee ID found.");
+      setShowAlert(true);
+      return;
+    }
 
+    setIsProcessing(true);
     const isWeb = Capacitor.getPlatform() === "web";
+
     if (!inside && !isWeb) {
       setMsg("Warning: Check-Out Failed: You are not in the designated location!");
       setShowAlert(true);
@@ -274,8 +267,8 @@ const CheckIn_CheckOut: React.FC = () => {
       setTime(now.toLocaleTimeString());
       setMsg("Success: Check-Out Successful!");
       setShowAlert(true);
-    } catch (err) {
-      setMsg("Warning: Check-Out Failed: Something went wrong.");
+    } catch (err: any) {
+      setMsg(`Warning: Check-Out Failed: ${err.message}`);
       setShowAlert(true);
     } finally {
       setIsProcessing(false);
@@ -284,7 +277,6 @@ const CheckIn_CheckOut: React.FC = () => {
 
   const handleTap = () => {
     if (isProcessing) return;
-
     if (status === "not-checked") confirmAction(handleCheckIn, "Check In");
     else if (status === "checked-in") confirmAction(handleCheckOut, "Check Out");
   };
@@ -497,8 +489,7 @@ const CheckIn_CheckOut: React.FC = () => {
       >
         <div className="alert-modal-content alert-modal-inner">
           {(() => {
-            const isBlocking =
-              msg.includes("requires GPS") || msg.includes("not supported");
+            const isBlocking = msg.includes("requires GPS") || msg.includes("not supported");
             const isWarning = msg.includes("Warning") || msg.includes("Failed");
             const failedClass = isBlocking || isWarning ? "alert-failed" : "alert-success";
             const titleClass = isBlocking || isWarning ? "alert-failed-title" : "alert-success-title";

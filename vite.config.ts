@@ -4,6 +4,17 @@ import react from "@vitejs/plugin-react";
 // ⚙️ Optimized Vite config for low-memory Windows builds
 export default defineConfig({
     plugins: [react()],
+    server: {
+        // Proxy API requests to avoid CORS issues during development
+        proxy: {
+            '/api': {
+                target: 'http://localhost:5000',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/api/, '/api')
+            }
+        }
+    },
     build: {
         outDir: "dist",
         target: "esnext",
