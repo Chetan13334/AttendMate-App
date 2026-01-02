@@ -207,7 +207,6 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
             )}
           </div>
 
-          {/* NEW SEPARATE FILTER COMPONENT */}
           <DateFilterModal
             showModal={showModal}
             startDate={startDate}

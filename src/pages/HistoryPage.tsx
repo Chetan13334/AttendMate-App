@@ -8,7 +8,9 @@ const HistoryPage: React.FC = () => {
     <IonPage>
       <Header/>
       <IonContent>
-        <History />
+        
+          <History />
+        
       </IonContent>
     </IonPage>
   );

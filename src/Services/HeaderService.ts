@@ -1,25 +1,31 @@
-import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export const fetchHeaderUserData = async (email: string) => {
+const getToken = () => localStorage.getItem("employeeToken");
+
+export const fetchHeaderUserData = async (email?: string) => {
   try {
-    const q = query(
-      collection(db, "Employee_Details"),
-      where("Email", "==", email)
-    );
+    const token = getToken();
+    if (!token) return { photo: null, name: null };
 
-    const snapshot = await getDocs(q);
+    const res = await fetch(`${API_URL}/employees/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
 
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      return {
-        photo: data.Photo || null,
-        name: data.Name || null
-      };
-    }
+    if (!res.ok) return { photo: null, name: null };
 
-    return { photo: null, name: null };
+    const data = await res.json();
+    const emp = data.employee || data;
+
+    return {
+      photo: emp.image || emp.Photo || emp.profilePicture || emp.avatar || null,
+      name: emp.name || emp.Name || null
+    };
+
   } catch (err) {
+    console.error("Error fetching header data:", err);
     return { photo: null, name: null };
   }
 };

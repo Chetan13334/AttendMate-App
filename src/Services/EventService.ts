@@ -1,115 +1,100 @@
-import { onSnapshot } from "firebase/firestore";
-import { DB } from "../config/databaseConfig";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+// 🔐 Get token from localStorage
+const getToken = () => localStorage.getItem("employeeToken");
 
+// ============================
+// TYPES
+// ============================
 export interface EventData {
-  id: string;
+  id: string | number;
   event_title: string;
-  event_theme?: string;
-  event_date?: Date;
-  created_at?: Date;
+  event_date: string;
+  event_theme: string;
 }
 
 export interface EmployeeData {
-  id: string;
+  id: string | number;
   Name: string;
-  DateOfBirth?: Date;
-  Photo?: string;
+  Photo: string;
+  dateOfBirth?: string; // Added dateOfBirth
 }
 
+// ============================
+// FETCH EVENTS
+// ============================
+export const fetchEvents = async () => {
+  const token = getToken();
+  
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
 
-export const subscribeToEvents = (
-  onUpdate: (events: EventData[]) => void,
-  onError?: (err: any) => void
-) => {
-  const unsubscribe = onSnapshot(
-    DB.collections.Events,
-    (snapshot) => {
-      const events: EventData[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        const event_date = data.event_date?.toDate
-          ? data.event_date.toDate()
-          : data.event_date;
-        const created_at = data.created_at?.toDate
-          ? data.created_at.toDate()
-          : data.created_at;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
-        return {
-          id: doc.id,
-          event_title: data.event_title || "Untitled Event",
-          event_theme: data.event_theme || "blue",
-          event_date,
-          created_at,
-        };
-      });
-      onUpdate(events);
-    },
-    (err) => onError?.(err)
-  );
-  return unsubscribe;
-};
-
-
-export const subscribeToBirthdays = (
-  onUpdate: (birthdays: EmployeeData[]) => void,
-  onError?: (err: any) => void
-) => {
-  const unsubscribe = onSnapshot(
-    DB.collections.Employee_Details,
-    (snapshot) => {
-      const employees: EmployeeData[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        const dob = data.DateOfBirth?.toDate
-          ? data.DateOfBirth.toDate()
-          : data.DateOfBirth
-          ? new Date(data.DateOfBirth)
-          : null;
-
-        return {
-          id: doc.id,
-          Name: data.Name || "Unknown",
-          DateOfBirth: dob || undefined,
-          Photo: data.Photo || "",
-        };
-      });
-
-      const today = new Date();
-      const todayBirthdays = employees.filter((emp) => {
-        if (!emp.DateOfBirth) return false;
-        const dob = emp.DateOfBirth;
-        return dob.getDate() === today.getDate() && dob.getMonth() === today.getMonth();
-      });
-
-      onUpdate(todayBirthdays);
-    },
-    (err) => onError?.(err)
-  );
-  return unsubscribe;
-};
-
-
-export const getVisibleEvents = (events: EventData[]): EventData[] => {
-  const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  const nextMonth = (currentMonth + 1) % 12;
-  const nextMonthYear = nextMonth === 0 ? currentYear + 1 : currentYear;
-  const includeNextMonth = today.getDate() >= 25;
-
-  const filtered = events.filter((ev) => {
-    if (!ev.event_date) return false;
-    const evDate = new Date(ev.event_date);
-    const month = evDate.getMonth();
-    const year = evDate.getFullYear();
-
-    if (month === currentMonth && year === currentYear) return true;
-    if (includeNextMonth && month === nextMonth && year === nextMonthYear)
-      return true;
-    return false;
+  const res = await fetch(`${API_URL}/events`, {
+    method: "GET",
+    headers: headers,
   });
 
-  return filtered.sort(
-    (a, b) =>
-      new Date(b.event_date!).getTime() - new Date(a.event_date!).getTime()
-  );
+  if (!res.ok) {
+    if (res.status === 401) throw new Error("Unauthorized");
+    throw new Error("Failed to fetch events");
+  }
+
+  const rawData = await res.json();
+
+  // Map backend fields to frontend interface
+  return rawData.map((event: any) => ({
+    id: event._id,
+    event_title: event.title,
+    event_date: event.start, // Map 'start' to 'event_date'
+    event_theme: mapTypeToTheme(event.type), // Helper to map type to color theme
+  }));
 };
+
+// Helper function to map backend 'type' to frontend 'event_theme' colors
+const mapTypeToTheme = (type: string) => {
+  switch (type) {
+    case "Holiday": return "red";
+    case "Meeting": return "yellow";
+    case "Event": return "green"; // or blue
+    default: return "blue";
+  }
+};
+
+
+export const fetchEmployees = async () => {
+  const token = getToken();
+  if (!token) throw new Error("Not authorized");
+
+
+  const res = await fetch(`${API_URL}/employees`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) throw new Error("Unauthorized");
+    throw new Error("Failed to fetch employees");
+  }
+
+  const data = await res.json();
+
+  // Map backend data to EmployeeData interface
+  // Adjust property names based on actual API response
+  return data.map((emp: any) => ({
+    id: emp._id || emp.id,
+    Name: emp.name || emp.Name,
+    Photo: emp.image || emp.Photo || "",
+    dateOfBirth: emp.dob || emp.dateOfBirth || emp.DateOfBirth
+  }));
+};
+
+
+export const fetchBirthdays = fetchEmployees;

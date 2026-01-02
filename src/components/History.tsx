@@ -7,25 +7,17 @@ import {
   fetchEmployeeId,
   fetchPastRecords,
 } from "../Services/HistoryService";
-
-import { db } from "../firebase";
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  getDoc,
-  onSnapshot,
-} from "firebase/firestore";
+  listenToAttendance,
+  fetchTodayRecord
+} from "../Services/AttendanceService";
 
-import { DB } from "../config/databaseConfig";
 
-// ------------------ WEEK FUNCTIONS ------------------
 
 const getWeekStart = () => {
   const today = new Date();
-  const day = today.getDay(); // 0 = Sun, 1 = Mon...
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
   const start = new Date(today.setDate(diff));
   start.setHours(0, 0, 0, 0);
   return start;
@@ -38,51 +30,6 @@ const getWeekEnd = () => {
   const end = new Date(today.setDate(diff));
   end.setHours(23, 59, 59, 999);
   return end;
-};
-
-// ------------------ TODAY RECORD FETCH ------------------
-
-const fetchTodayRecordOnce = async (employeeId: string) => {
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(
-    today.getMonth() + 1
-  ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-
-  const snap = await getDoc(DB.employeeRecord(todayKey, employeeId));
-
-  if (!snap.exists()) {
-    return {
-      date: today,
-      checkIn: "Not marked",
-      checkOut: "Not marked",
-      duration: "N/A",
-      checkInTime: null,
-      checkOutTime: null,
-    };
-  }
-
-  const data = snap.data();
-  const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
-  const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
-
-  return {
-    date: today,
-    checkIn: checkIn
-      ? checkIn.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-      : "Not marked",
-    checkOut: checkOut
-      ? checkOut.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-      : "Not marked",
-    duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
-    checkInTime: checkIn,
-    checkOutTime: checkOut,
-  };
 };
 
 // ------------------ MAIN COMPONENT ------------------
@@ -103,8 +50,8 @@ const History: React.FC = () => {
 
   const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const userEmail = localStorage.getItem("userEmail");
-  const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee";
+  /* const userEmail = localStorage.getItem("userEmail"); */
+  /* const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee"; */
   const initials = getInitials(employeeName);
 
   // ------------------ DEFAULT WEEK (FIXED) ------------------
@@ -116,19 +63,16 @@ const History: React.FC = () => {
 
   useEffect(() => {
     const fetchUserPhotoAndName = async () => {
-      if (!userEmail) return;
+      // Use LocalStorage for basic details to avoid extra calls if possible,
+      // or implement a ProfileService call if needed. 
+      // For now, attempting to read from stored EmployeeData
       try {
         setPhotoLoading(true);
-        const q = query(
-          collection(db, "Employee_Details"),
-          where("Email", "==", userEmail)
-        );
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-          const employeeData = snap.docs[0].data();
-          if (employeeData.Photo) setUserPhoto(employeeData.Photo);
-          if (employeeData.Name) setEmployeeName(employeeData.Name);
+        const data = localStorage.getItem("employeeData");
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (parsed.image || parsed.Photo) setUserPhoto(parsed.image || parsed.Photo);
+          if (parsed.name || parsed.Name) setEmployeeName(parsed.name || parsed.Name);
         }
       } catch {
         setPhotoError(true);
@@ -138,20 +82,16 @@ const History: React.FC = () => {
     };
 
     fetchUserPhotoAndName();
-  }, [userEmail]);
-
-
+  }, []);
 
   useEffect(() => {
     const loadEmployeeId = async () => {
-      if (!userEmail) return;
-      const id = await fetchEmployeeId(userEmail);
+      // Fetch ID from LocalStorage via Service
+      const id = await fetchEmployeeId();
       if (id) setEmployeeId(id);
     };
     loadEmployeeId();
-  }, [userEmail]);
-
-
+  }, []);
 
   useEffect(() => {
     if (liveTimerRef.current) clearInterval(liveTimerRef.current);
@@ -181,31 +121,67 @@ const History: React.FC = () => {
     };
   }, [todayRecord]);
 
-
-
   const loadAllRecords = async () => {
     if (!employeeId) return;
     setLoading(true);
 
     try {
-      const todayData = await fetchTodayRecordOnce(employeeId);
-      setTodayRecord(todayData);
+      // 1. Fetch Today's Record (API)
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const todayRaw = await fetchTodayRecord(todayStr, employeeId);
 
+      let todayFormatted: any = null;
+      if (todayRaw) {
+        const checkIn = todayRaw.CheckIn ? todayRaw.CheckIn.toDate() : null;
+        const checkOut = todayRaw.CheckOut ? todayRaw.CheckOut.toDate() : null;
+
+        todayFormatted = {
+          date: today,
+          checkIn: checkIn ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+          checkOut: checkOut ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+          checkInTime: checkIn,
+          checkOutTime: checkOut,
+        };
+        setTodayRecord(todayFormatted);
+      } else {
+        // Default empty record
+        const empty = {
+          date: today,
+          checkIn: "Not marked",
+          checkOut: "Not marked",
+          duration: "N/A",
+          checkInTime: null,
+          checkOutTime: null,
+        };
+        setTodayRecord(empty);
+        todayFormatted = empty;
+      }
+
+      // 2. Fetch History (API)
       const pastRecords = await fetchPastRecords(
         employeeId,
         startDate,
         endDate
       );
 
+      // Filter out today and empty records
       const filtered = pastRecords.filter((rec) => {
+        // Filter out today
         const d1 = new Date(rec.date);
-        const d2 = new Date(todayData.date);
+        const d2 = new Date(today);
         d1.setHours(0, 0, 0, 0);
         d2.setHours(0, 0, 0, 0);
-        return d1.getTime() !== d2.getTime();
+        if (d1.getTime() === d2.getTime()) return false;
+
+        // Filter out records without check-in
+        if (!rec.checkIn || rec.checkIn === "Not marked") return false;
+
+        return true;
       });
 
-      const merged = [todayData, ...filtered].sort(
+      const merged = [todayFormatted, ...filtered].sort(
         (a, b) => b.date.getTime() - a.date.getTime()
       );
 
@@ -228,39 +204,31 @@ const History: React.FC = () => {
     }
   }, [showModal]);
 
-
-
+  // Real-time listener for TODAY
   useEffect(() => {
     if (!employeeId) return;
 
     const today = new Date();
-    const key = `${today.getFullYear()}-${String(
-      today.getMonth() + 1
-    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const todayStr = today.toISOString().split('T')[0];
 
-    const unsub = onSnapshot(DB.employeeRecord(key, employeeId), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
+    // Use AttendanceService socket listener
+    const unsubscribe = listenToAttendance(todayStr, employeeId, (data: any) => {
+      if (data) {
         const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
         const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
 
         setTodayRecord({
           date: today,
-          checkIn: checkIn
-            ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "Not marked",
-          checkOut: checkOut
-            ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "Not marked",
-          duration:
-            checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+          checkIn: checkIn ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+          checkOut: checkOut ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
           checkInTime: checkIn,
           checkOutTime: checkOut,
         });
       }
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, [employeeId]);
 
 

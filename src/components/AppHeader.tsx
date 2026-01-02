@@ -78,9 +78,7 @@ const AppHeader: React.FC<{ title?: string }> = ({ title = "AttendMate" }) => {
       >
         {loadingPhoto ? (
           <IonSpinner name="dots" color="medium" className="avatar-size" />
-        ) : photoUrl &&
-          !photoError &&
-          !photoUrl.includes("placehold.co") ? (
+        ) : photoUrl && !photoError ? (
           <img
             src={photoUrl}
             alt="Profile"

@@ -9,25 +9,12 @@ import {
   IonCol,
 } from "@ionic/react";
 import { giftOutline, calendarOutline } from "ionicons/icons";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
 import Skeleton from "./Skeleton";
+import { fetchEvents, fetchBirthdays } from "../Services/EventService";
+import type { EventData, EmployeeData } from "../Services/EventService";
 import "../theme/components/EventSection.css";
 
-interface EventData {
-  id: string;
-  event_title: string;
-  event_theme?: string;
-  event_date?: Date;
-  created_at?: Date;
-}
 
-interface EmployeeData {
-  id: string;
-  Name: string;
-  DateOfBirth?: Date;
-  Photo?: string;
-}
 
 const EventsSection: React.FC = () => {
   const [events, setEvents] = useState<EventData[]>([]);
@@ -36,61 +23,29 @@ const EventsSection: React.FC = () => {
   const [birthdayLoading, setBirthdayLoading] = useState(true);
 
   useEffect(() => {
-    const colRef = collection(db, "Events");
-    const unsubscribe = onSnapshot(
-      colRef,
-      (snapshot) => {
-        const list: EventData[] = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          const event_date = data.event_date?.toDate
-            ? data.event_date.toDate()
-            : data.event_date;
-          const created_at = data.created_at?.toDate
-            ? data.created_at.toDate()
-            : data.created_at;
-          return {
-            id: doc.id,
-            event_title: data.event_title || "Untitled Event",
-            event_theme: data.event_theme || "blue",
-            event_date,
-            created_at,
-          };
-        });
+    const loadEvents = async () => {
+      try {
+        const list = await fetchEvents();
         setEvents(list);
-        setLoading(false);
-      },
-      (error) => {
+      } catch (error) {
         console.error("Error fetching events:", error);
+      } finally {
         setLoading(false);
       }
-    );
-    return () => unsubscribe();
+    };
+    loadEvents();
   }, []);
 
   useEffect(() => {
-    const colRef = collection(db, "Employee_Details");
-    const unsubscribe = onSnapshot(
-      colRef,
-      (snapshot) => {
-        const list: EmployeeData[] = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          const dob = data.DateOfBirth?.toDate
-            ? data.DateOfBirth.toDate()
-            : data.DateOfBirth
-            ? new Date(data.DateOfBirth)
-            : null;
-          return {
-            id: doc.id,
-            Name: data.Name || "Unknown",
-            DateOfBirth: dob || undefined,
-            Photo: data.Photo || "",
-          };
-        });
+    const loadBirthdays = async () => {
+      try {
+        // fetchBirthdays is now alias for fetchEmployees, returning all employees
+        const list = await fetchBirthdays();
 
         const today = new Date();
-        const todayBirthdays = list.filter((emp) => {
-          if (!emp.DateOfBirth) return false;
-          const dob = emp.DateOfBirth;
+        const todayBirthdays = list.filter((emp: EmployeeData) => {
+          if (!emp.dateOfBirth) return false;
+          const dob = new Date(emp.dateOfBirth);
           return (
             dob.getDate() === today.getDate() &&
             dob.getMonth() === today.getMonth()
@@ -98,14 +53,13 @@ const EventsSection: React.FC = () => {
         });
 
         setBirthdays(todayBirthdays);
-        setBirthdayLoading(false);
-      },
-      (error) => {
+      } catch (error) {
         console.error("Error fetching birthdays:", error);
+      } finally {
         setBirthdayLoading(false);
       }
-    );
-    return () => unsubscribe();
+    };
+    loadBirthdays();
   }, []);
 
   const today = new Date();
@@ -122,22 +76,10 @@ const EventsSection: React.FC = () => {
     const evDate = new Date(ev.event_date);
     evDate.setHours(0, 0, 0, 0);
 
-    if (evDate < today) return false;
+ 
 
-    if (
-      evDate.getMonth() === currentMonth &&
-      evDate.getFullYear() === currentYear
-    )
-      return true;
-
-    if (
-      includeNextMonth &&
-      evDate.getMonth() === nextMonth &&
-      evDate.getFullYear() === nextMonthYear
-    )
-      return true;
-
-    return false;
+    // Show only future events (including today)
+    return evDate >= today;
   });
 
   const sortedEvents = [...visibleEvents].sort(
@@ -160,12 +102,12 @@ const EventsSection: React.FC = () => {
         <div>
           {[...Array(1)].map((_, index) => (
             <div key={index} className="birthday-new-card">
-             
+
               <div style={{ minWidth: "72px", minHeight: "72px" }}>
                 <Skeleton width="72px" height="72px" variant="circle" />
               </div>
 
-              
+
               <div style={{ marginLeft: "14px", width: "100%" }}>
                 <div style={{ marginBottom: "8px" }}>
                   <Skeleton width="150px" height="20px" />
@@ -232,12 +174,12 @@ const EventsSection: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              
+
               <div style={{ minWidth: "40px", minHeight: "40px" }}>
                 <Skeleton width="40px" height="40px" borderRadius="8px" />
               </div>
 
-              
+
               <div style={{ marginLeft: "14px", width: "100%" }}>
                 <div style={{ marginBottom: "6px" }}>
                   <Skeleton width="150px" height="16px" />
@@ -271,10 +213,10 @@ const EventsSection: React.FC = () => {
                   ev.event_theme === "yellow"
                     ? "#FFF8E1"
                     : ev.event_theme === "green"
-                    ? "#E8F5E9"
-                    : ev.event_theme === "red"
-                    ? "#FFEBEE"
-                    : "#E3F2FD",
+                      ? "#E8F5E9"
+                      : ev.event_theme === "red"
+                        ? "#FFEBEE"
+                        : "#E3F2FD",
                 borderRadius: "18px",
                 minHeight: "54px",
                 marginBottom: "4px",
@@ -292,10 +234,10 @@ const EventsSection: React.FC = () => {
                           ev.event_theme === "yellow"
                             ? "#FFCA28"
                             : ev.event_theme === "green"
-                            ? "#4CAF50"
-                            : ev.event_theme === "red"
-                            ? "#E53935"
-                            : "#2196F3",
+                              ? "#4CAF50"
+                              : ev.event_theme === "red"
+                                ? "#E53935"
+                                : "#2196F3",
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "center",

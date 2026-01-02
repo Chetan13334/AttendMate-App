@@ -33,8 +33,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const passwordRef = useRef(password);
     const contentRef = useRef<HTMLIonContentElement>(null);
 
-    // 🔧 Backend API URL - Updated to use proxy path to avoid CORS issues
-    const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 
     const scrollUpForPassword = () => {
         setTimeout(() => {
@@ -63,6 +64,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }, []);
 
     const handleLogin = async () => {
+
         const trimmedEmail = emailRef.current.trim();
         const trimmedPassword = passwordRef.current.trim();
 
@@ -76,7 +78,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setLoading(true);
 
         try {
-            // ✅ Call Employee Login API
+
             const response = await fetch(`${API_URL}/employees/login`, {
                 method: "POST",
                 headers: {
@@ -91,18 +93,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             const data = await response.json();
 
             if (response.ok && data.token) {
-                // ✅ Store authentication data
                 localStorage.setItem("employeeToken", data.token);
                 localStorage.setItem("employeeData", JSON.stringify(data.employee));
                 localStorage.setItem("userEmail", data.employee.email);
                 localStorage.setItem("isLoggedIn", "true");
 
-                // Debug logs
-                console.log("=== LOGIN SUCCESS ===");
-                console.log("Token stored:", data.token.substring(0, 20) + "...");
-                console.log("Employee data stored:", data.employee);
-                console.log("User email stored:", data.employee.email);
-                console.log("=== END LOGIN ===");
 
                 setToastMessage("Login successful!");
                 setToastColor("success");
@@ -110,13 +105,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
                 setTimeout(() => {
                     setLoading(false);
-                    // Call the onLogin callback
                     onLogin(data.employee.email);
-                    // Navigate to home
                     window.location.href = "/home";
                 }, 800);
             } else {
-                // Handle error response
                 setToastMessage(data.message || "Invalid email or password");
                 setToastColor("danger");
                 setShowToast(true);
@@ -125,8 +117,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         } catch (error: any) {
             console.error("Login error:", error);
             let errorMessage = "Login failed. Please check your connection.";
-            
-            // More specific error messages
+
             if (error instanceof TypeError) {
                 if (error.message.includes("fetch")) {
                     errorMessage = "Failed to connect to the server. Please check if the backend is running and accessible.";
@@ -136,7 +127,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             } else if (error.message) {
                 errorMessage = `Login error: ${error.message}`;
             }
-            
+
             setToastMessage(errorMessage);
             setToastColor("danger");
             setShowToast(true);

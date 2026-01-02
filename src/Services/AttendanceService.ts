@@ -1,11 +1,18 @@
+import { io } from "socket.io-client";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const SOCKET_URL = API_URL.replace("/api", "");
+
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"],
+  withCredentials: true,
+});
 
 const getToken = (): string | null => localStorage.getItem("employeeToken");
 
 const getEmployeeData = () => {
   const data = localStorage.getItem("employeeData");
   if (!data) return null;
-
   try {
     return JSON.parse(data);
   } catch {
@@ -13,10 +20,9 @@ const getEmployeeData = () => {
   }
 };
 
-export const fetchEmployeeId = async (email: string): Promise<string | null> => {
+export const fetchEmployeeId = async (): Promise<string | null> => {
   const employeeData = getEmployeeData();
   if (!employeeData) return null;
-
   return (
     employeeData.employeeId ||
     employeeData.EmployeeID ||
@@ -30,122 +36,78 @@ export const fetchTodayRecord = async (today: string, empId: string) => {
   const token = getToken();
   if (!token) throw new Error("Not authorized");
 
-  const url = `${API_URL}/attendance/${empId}?from=${today}&to=${today}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+  const res = await fetch(`${API_URL}/attendance?date=${today}`, {
+    headers: { Authorization: `Bearer ${token}` }
   });
 
-  if (!response.ok) {
-    if (response.status === 401) throw new Error("Not authorized");
-    throw new Error("Failed to fetch record");
-  }
+  if (!res.ok) throw new Error("Failed to fetch");
 
-  const responseData = await response.json();
-  const records = Array.isArray(responseData) ? responseData : [];
+  const data = await res.json();
+  if (!Array.isArray(data) || !data.length) return null;
 
-  const todayRecord = records.find((r: any) => r.date === today);
-  if (!todayRecord) return null;
+  const emp = data[0].employees?.find((e: any) => e.employeeId === empId);
+  if (!emp) return null;
 
   return {
-    CheckIn: todayRecord.checkInTime
-      ? { toDate: () => new Date(todayRecord.checkInTime) }
-      : null,
-    CheckOut: todayRecord.checkOutTime
-      ? { toDate: () => new Date(todayRecord.checkOutTime) }
-      : null,
-    LocationValid: true,
+    CheckIn: emp.checkInTime ? { toDate: () => new Date(emp.checkInTime) } : null,
+    CheckOut: emp.checkOutTime ? { toDate: () => new Date(emp.checkOutTime) } : null
   };
 };
 
-export const saveCheckIn = async (
-  today: string,
-  empId: string,
-  inside: boolean
-): Promise<Date> => {
+
+export const saveCheckIn = async (_today: string, empId: string): Promise<Date> => {
   const token = getToken();
   if (!token) throw new Error("Not authorized");
 
-  const now = new Date();
-  const time = now.toTimeString().split(" ")[0];
-
-  const response = await fetch(`${API_URL}/attendance/check-in`, {
+  const res = await fetch(`${API_URL}/attendance/check-in`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      employeeId: empId,
-      date: today,
-      time,
-    }),
+    body: JSON.stringify({ employeeId: empId })
   });
 
-  if (!response.ok) {
-    if (response.status === 401) throw new Error("Not authorized");
-    throw new Error("Check-in failed");
-  }
-
-  return now;
+  if (!res.ok) throw new Error("Check-in failed");
+  return new Date();
 };
 
-export const saveCheckOut = async (
-  today: string,
-  empId: string,
-  inside: boolean
-): Promise<Date> => {
+export const saveCheckOut = async (_today: string, empId: string): Promise<Date> => {
   const token = getToken();
   if (!token) throw new Error("Not authorized");
 
-  const now = new Date();
-  const time = now.toTimeString().split(" ")[0];
-
-  const response = await fetch(`${API_URL}/attendance/check-out`, {
+  const res = await fetch(`${API_URL}/attendance/check-out`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      employeeId: empId,
-      date: today,
-      time,
-    }),
+    body: JSON.stringify({ employeeId: empId })
   });
 
-  if (!response.ok) {
-    if (response.status === 401) throw new Error("Not authorized");
-    throw new Error("Check-out failed");
-  }
-
-  return now;
+  if (!res.ok) throw new Error("Check-out failed");
+  return new Date();
 };
 
-export const listenToAttendance = (
-  today: string,
-  empId: string,
-  callback: Function
-) => {
-  let isCancelled = false;
 
-  const fetchAndUpdate = async () => {
-    if (isCancelled) return;
-    try {
-      const data = await fetchTodayRecord(today, empId);
-      callback(data);
-    } catch {}
+export const listenToAttendance = (today: string, empId: string, callback: Function) => {
+
+  socket.emit("subscribeToAttendance", today);
+
+  const handler = async ({ date, employeeId }: any) => {
+    if (date === today && employeeId === empId) {
+      try {
+        const data = await fetchTodayRecord(today, empId);
+        callback(data);
+      } catch (err) {
+        console.error("Error handling socket update:", err);
+      }
+    }
   };
 
-  fetchAndUpdate();
-  const intervalId = setInterval(fetchAndUpdate, 30000);
+  socket.on("attendanceUpdated", handler);
 
   return () => {
-    isCancelled = true;
-    clearInterval(intervalId);
+    socket.off("attendanceUpdated", handler);
   };
 };

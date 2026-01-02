@@ -72,7 +72,7 @@ const CheckIn_CheckOut: React.FC = () => {
 
     const loadData = async () => {
       try {
-        const empId = await fetchEmployeeId(loggedInUserEmail);
+        const empId = await fetchEmployeeId();
         if (!empId) {
           if (!cancelled) {
             setEmployeeId("");
@@ -123,31 +123,32 @@ const CheckIn_CheckOut: React.FC = () => {
 
   useEffect(() => {
     if (!employeeId) return;
-    const unsub = listenToAttendance(today, employeeId, (data: any) => {
-      setStatusLoading(true);
+
+    const unsubscribe = listenToAttendance(today, employeeId, (data: any) => {
 
       let newStatus: Status = "not-checked";
       let newTime = "";
 
-      if (data) {
-        if (data.CheckIn && !data.CheckOut) {
-          newStatus = "checked-in";
-          newTime = data.CheckIn.toDate().toLocaleTimeString();
-        } else if (data.CheckOut) {
-          newStatus = "checked-out";
-          newTime = data.CheckOut.toDate().toLocaleTimeString();
-        }
+      if (!data) {
+        newStatus = "not-checked";
+        newTime = "";
+      } else if (data.CheckIn && !data.CheckOut) {
+        newStatus = "checked-in";
+        newTime = data.CheckIn.toDate().toLocaleTimeString();
+      } else if (data.CheckOut) {
+        newStatus = "checked-out";
+        newTime = data.CheckOut.toDate().toLocaleTimeString();
       }
 
-      setTimeout(() => {
-        setStatus(newStatus);
-        setTime(newTime);
-        setStatusLoading(false);
-      }, SKELETON_TRANSITION_MS);
+      setStatus(newStatus);
+      setTime(newTime);
+      setStatusLoading(false);
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, [employeeId, today]);
+
+
 
   const confirmAction = (action: (inside: boolean) => void, title: string) => {
     setPendingAction(() => action);
@@ -170,7 +171,7 @@ const CheckIn_CheckOut: React.FC = () => {
         return;
       }
 
-      if (success && !inside && !isWeb) {
+      if (!inside && !isWeb) {
         setMsg("Warning: You are not in the designated location!");
         setShowAlert(true);
         return;
@@ -231,7 +232,7 @@ const CheckIn_CheckOut: React.FC = () => {
     }
 
     try {
-      const now = await saveCheckIn(today, employeeId, inside);
+      const now = await saveCheckIn(today, employeeId);
       setStatus("checked-in");
       setTime(now.toLocaleTimeString());
       setMsg("Success: Check-In Successful!");
@@ -262,7 +263,7 @@ const CheckIn_CheckOut: React.FC = () => {
     }
 
     try {
-      const now = await saveCheckOut(today, employeeId, inside);
+      const now = await saveCheckOut(today, employeeId);
       setStatus("checked-out");
       setTime(now.toLocaleTimeString());
       setMsg("Success: Check-Out Successful!");

@@ -1,6 +1,6 @@
-import { DB } from "../config/databaseConfig";
-import { query, where, onSnapshot, getDocs, getDoc } from "firebase/firestore";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+const getToken = () => localStorage.getItem("employeeToken");
 
 export const getInitials = (name: string) =>
   name
@@ -17,126 +17,68 @@ export const getDuration = (checkIn: Date, checkOut: Date) => {
   return `${hrs}h ${mins}m`;
 };
 
-
-export const fetchEmployeeId = async (email: string): Promise<string | null> => {
-  try {
-    const q = query(DB.collections.Employee_Details, where("Email", "==", email));
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const emp = snapshot.docs[0].data();
-      return emp.EmployeeID || null;
+// Fetch EmployeeID from LocalStorage (API approach)
+export const fetchEmployeeId = async (email?: string): Promise<string | null> => {
+  const data = localStorage.getItem("employeeData");
+  if (data) {
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.employeeId || parsed.id || null;
+    } catch {
+      return null;
     }
-    return null;
-  } catch (err) {
-
-    return null;
   }
+  return null;
 };
 
-
-export const subscribeToTodayRecord = (
-  employeeId: string,
-  onUpdate: (data: { checkIn: Date | null; checkOut: Date | null }) => void,
-  onDelete: () => void
-) => {
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(today.getDate()).padStart(2, "0")}`;
-
-  const todayRef = DB.employeeRecord(todayKey, employeeId);
-
-  const unsubscribe = onSnapshot(todayRef, (snap) => {
-    if (!snap.exists()) return onDelete();
-    const data = snap.data();
-    onUpdate({
-      checkIn: data.CheckIn ? data.CheckIn.toDate() : null,
-      checkOut: data.CheckOut ? data.CheckOut.toDate() : null,
-    });
-  });
-
-  return unsubscribe;
-};
-
-
+// Fetch History Range from API
 export const fetchPastRecords = async (
   employeeId: string,
   startDate: Date,
   endDate: Date
 ): Promise<any[]> => {
-  const allRecords: any[] = [];
+  const token = getToken();
+  if (!token) throw new Error("Not authorized");
+
   try {
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
 
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
-
-
-
-    const current = new Date(start.getTime());
-
-
-
-
-    let iteration = 0;
-    while (current <= end) {
-      iteration++;
-      const dateKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}-${String(current.getDate()).padStart(2, "0")}`;
-
-
-
-
-      const currentDateOnly = new Date(current.getFullYear(), current.getMonth(), current.getDate());
-      const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-
-      const recordRef = DB.employeeRecord(dateKey, employeeId);
-      const snap = await getDoc(recordRef);
-
-      if (snap.exists()) {
-        const data = snap.data();
-        const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
-        const checkOut = data.CheckOut ? data.CheckOut.toDate() : null;
-
-        const recordDate = new Date(current.getTime());
-
-
-        allRecords.push({
-          date: recordDate,
-          checkIn: checkIn
-            ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "Not marked",
-          checkOut: checkOut
-            ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "Not marked",
-          duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
-          checkInTime: checkIn,
-          checkOutTime: checkOut,
-        });
-      } else {
-
+    // Assuming backend accepts these query params
+    const res = await fetch(`${API_URL}/attendance?startDate=${startStr}&endDate=${endStr}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
       }
-
-
-      current.setDate(current.getDate() + 1);
-      current.setHours(0, 0, 0, 0);
-
-    }
-
-
-    allRecords.forEach((record, index) => {
-
     });
 
+    if (!res.ok) {
+      console.error("Failed to fetch history");
+      return [];
+    }
 
-    return allRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
+    const data = await res.json(); // Expecting array of objects
+
+    // Map Backend Response to UI Structure
+    // Backend likely returns: { date, checkInTime, checkOutTime, ... } 
+    // We need to parse dates
+
+    return data.map((record: any) => {
+      const checkIn = record.checkInTime ? new Date(record.checkInTime) : null;
+      const checkOut = record.checkOutTime ? new Date(record.checkOutTime) : null;
+      const dateVal = record.date ? new Date(record.date) : new Date();
+
+      return {
+        date: dateVal,
+        checkIn: checkIn ? checkIn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+        checkOut: checkOut ? checkOut.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Not marked",
+        duration: checkIn && checkOut ? getDuration(checkIn, checkOut) : "N/A",
+        checkInTime: checkIn,
+        checkOutTime: checkOut
+      };
+    }).sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
+
   } catch (err) {
-
+    console.error("Error fetching history:", err);
     return [];
   }
 };

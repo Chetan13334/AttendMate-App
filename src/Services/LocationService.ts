@@ -52,23 +52,55 @@ export const quickGeoCheck = async (): Promise<{
   success: boolean;
   inside: boolean;
   distance: number;
+  status?: string;
 }> => {
   try {
-    const pos = await Geolocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 10000,
-    });
+    // 1. Check & Request Permissions
+    let perm = await Geolocation.checkPermissions();
 
-    const distance = getDistance(
-      officeLat,
-      officeLng,
-      pos.coords.latitude, 
-      pos.coords.longitude
-    );
+    if (perm.location === "prompt" || perm.location === "prompt-with-rationale") {
+      perm = await Geolocation.requestPermissions();
+    }
 
-    return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
-  } catch (err) {
+    if (perm.location === "denied") {
+      return { success: false, inside: false, distance: 0, status: "denied" };
+    }
 
-    return { success: false, inside: false, distance: 0 };
+    // 2. Try High Accuracy
+    try {
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 15000,
+      });
+
+      const distance = getDistance(
+        officeLat,
+        officeLng,
+        pos.coords.latitude,
+        pos.coords.longitude
+      );
+
+      return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
+    } catch (highAccuracyError) {
+      console.warn("High accuracy location failed, trying low accuracy...", highAccuracyError);
+
+      // 3. Fallback to Low Accuracy
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false,
+        timeout: 10000,
+      });
+
+      const distance = getDistance(
+        officeLat,
+        officeLng,
+        pos.coords.latitude,
+        pos.coords.longitude
+      );
+
+      return { success: true, inside: distance <= GEOFENCE_RADIUS, distance };
+    }
+  } catch (err: any) {
+    console.error("Location check failed:", err);
+    return { success: false, inside: false, distance: 0, status: err.message };
   }
 };

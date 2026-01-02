@@ -1,5 +1,6 @@
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 
 const getToken = (): string | null => {
@@ -9,9 +10,9 @@ const getToken = (): string | null => {
 export const fetchUserProfile = async (email: string) => {
   try {
     const token = getToken();
-    
+
     if (!token) {
-      
+
       return null;
     }
 
@@ -24,12 +25,12 @@ export const fetchUserProfile = async (email: string) => {
     });
 
     if (!response.ok) {
-      
+
       return null;
     }
 
     const data = await response.json();
-    
+
     if (data.employee) {
       return {
         Name: data.employee.name,
@@ -37,7 +38,7 @@ export const fetchUserProfile = async (email: string) => {
         Phone: data.employee.phone,
         Department: data.employee.department,
         Designation: data.employee.designation,
-        DateOfJoining: data.employee.joiningDate 
+        DateOfJoining: data.employee.joiningDate
           ? new Date(data.employee.joiningDate).toLocaleDateString()
           : "Not Available",
         Photo: data.employee.image || "",
@@ -48,7 +49,7 @@ export const fetchUserProfile = async (email: string) => {
 
     return null;
   } catch (error) {
-    
+
     return null;
   }
 };

@@ -28,6 +28,7 @@ const Home: React.FC = () => {
             backgroundColor: "#ffffff",
             minHeight: "100%",
             display: "flex",
+           
             flexDirection: "column",
             justifyContent: "flex-start",
             padding: "var(--ion-safe-area-top, 3px) 0 10px",
