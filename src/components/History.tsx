@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { IonPage } from "@ionic/react";
 import HistoryLayout from "./HistoryLayout";
 import {
-  getInitials,
   getDuration,
   fetchEmployeeId,
   fetchPastRecords,
@@ -32,7 +31,6 @@ const getWeekEnd = () => {
   return end;
 };
 
-// ------------------ MAIN COMPONENT ------------------
 
 const History: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
@@ -43,41 +41,23 @@ const History: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [liveDuration, setLiveDuration] = useState<string>("00h 00m");
 
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [employeeName, setEmployeeName] = useState<string>("Employee");
-  const [photoLoading, setPhotoLoading] = useState(true);
-  const [photoError, setPhotoError] = useState(false);
 
   const liveTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  /* const userEmail = localStorage.getItem("userEmail"); */
-  /* const userName = userEmail?.split("@")[0]?.replace(".", " ") || "Employee"; */
-  const initials = getInitials(employeeName);
-
-  // ------------------ DEFAULT WEEK (FIXED) ------------------
 
   const [startDate, setStartDate] = useState<Date>(getWeekStart);
   const [endDate, setEndDate] = useState<Date>(getWeekEnd);
 
-  // ------------------ FETCH USER DETAILS ------------------
-
   useEffect(() => {
     const fetchUserPhotoAndName = async () => {
-      // Use LocalStorage for basic details to avoid extra calls if possible,
-      // or implement a ProfileService call if needed. 
-      // For now, attempting to read from stored EmployeeData
       try {
-        setPhotoLoading(true);
         const data = localStorage.getItem("employeeData");
         if (data) {
           const parsed = JSON.parse(data);
-          if (parsed.image || parsed.Photo) setUserPhoto(parsed.image || parsed.Photo);
           if (parsed.name || parsed.Name) setEmployeeName(parsed.name || parsed.Name);
         }
       } catch {
-        setPhotoError(true);
-      } finally {
-        setPhotoLoading(false);
+        console.error("Failed to load user name");
       }
     };
 
@@ -86,7 +66,6 @@ const History: React.FC = () => {
 
   useEffect(() => {
     const loadEmployeeId = async () => {
-      // Fetch ID from LocalStorage via Service
       const id = await fetchEmployeeId();
       if (id) setEmployeeId(id);
     };
@@ -126,7 +105,6 @@ const History: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Fetch Today's Record (API)
       const today = new Date();
       const todayStr = today.toISOString().split('T')[0];
       const todayRaw = await fetchTodayRecord(todayStr, employeeId);
@@ -146,7 +124,6 @@ const History: React.FC = () => {
         };
         setTodayRecord(todayFormatted);
       } else {
-        // Default empty record
         const empty = {
           date: today,
           checkIn: "Not marked",
@@ -159,23 +136,19 @@ const History: React.FC = () => {
         todayFormatted = empty;
       }
 
-      // 2. Fetch History (API)
       const pastRecords = await fetchPastRecords(
         employeeId,
         startDate,
         endDate
       );
 
-      // Filter out today and empty records
       const filtered = pastRecords.filter((rec) => {
-        // Filter out today
         const d1 = new Date(rec.date);
         const d2 = new Date(today);
         d1.setHours(0, 0, 0, 0);
         d2.setHours(0, 0, 0, 0);
         if (d1.getTime() === d2.getTime()) return false;
 
-        // Filter out records without check-in
         if (!rec.checkIn || rec.checkIn === "Not marked") return false;
 
         return true;
@@ -204,14 +177,12 @@ const History: React.FC = () => {
     }
   }, [showModal]);
 
-  // Real-time listener for TODAY
   useEffect(() => {
     if (!employeeId) return;
 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
-    // Use AttendanceService socket listener
     const unsubscribe = listenToAttendance(todayStr, employeeId, (data: any) => {
       if (data) {
         const checkIn = data.CheckIn ? data.CheckIn.toDate() : null;
@@ -245,7 +216,6 @@ const History: React.FC = () => {
   return (
     <IonPage>
       <HistoryLayout
-        initials={initials}
         userName={employeeName}
         todayRecord={todayRecord}
         rangeLabel={rangeLabel}
@@ -257,9 +227,6 @@ const History: React.FC = () => {
         setShowModal={setShowModal}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
-        userPhoto={userPhoto}
-        photoLoading={photoLoading}
-        photoError={photoError}
         liveDuration={liveDuration}
       />
     </IonPage>

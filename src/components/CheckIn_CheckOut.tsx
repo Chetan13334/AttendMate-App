@@ -142,7 +142,7 @@ const CheckIn_CheckOut: React.FC = () => {
 
       setStatus(newStatus);
       setTime(newTime);
-      setStatusLoading(false);
+      setStatusLoading(false); 
     });
 
     return () => unsubscribe();

@@ -3,14 +3,12 @@ import { IonPage, IonContent } from "@ionic/react";
 import Header from "../components/AppHeader";
 import History from "../components/History";
 
+
 const HistoryPage: React.FC = () => {
   return (
     <IonPage>
-      <Header/>
       <IonContent>
-        
-          <History />
-        
+        <History />
       </IonContent>
     </IonPage>
   );

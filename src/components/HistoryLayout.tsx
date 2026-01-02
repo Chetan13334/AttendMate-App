@@ -19,9 +19,8 @@ import Skeleton from "./Skeleton";
 import Header from "../components/AppHeader";
 import DateFilterModal from "../components/DateFilterModal";
 import "../theme/components/HistoryLayout.css";
-
+import AppRefresher from "../components/Models/AppRefresher";
 interface HistoryLayoutProps {
-  initials: string;
   userName: string;
   todayRecord: any;
   rangeLabel: string;
@@ -33,14 +32,10 @@ interface HistoryLayoutProps {
   setShowModal: (v: boolean) => void;
   setStartDate: (v: Date) => void;
   setEndDate: (v: Date) => void;
-  userPhoto?: string | null;
-  photoLoading?: boolean;
-  photoError?: boolean;
   liveDuration?: string;
 }
 
 const HistoryLayout: React.FC<HistoryLayoutProps> = ({
-  initials,
   userName,
   todayRecord,
   rangeLabel,
@@ -54,11 +49,15 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
   setEndDate,
   liveDuration = "00h 00m",
 }) => {
+  const refreshHistoryData = async () => {
+    window.location.reload();
+  };
   return (
     <>
       <Header />
 
       <IonContent color="white" className="history-content">
+        <AppRefresher onRefresh={refreshHistoryData} />
         <div className="content-wrapper">
 
           <div className="history-header">
@@ -111,14 +110,14 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({
               </div>
             </div>
           </div>
-           <button className="date-range-btn" onClick={() => setShowModal(true)}>
-              <IonIcon icon={calendarOutline} className="range-btn-icon" />
-              <span>{rangeLabel}</span>
-              <IonIcon icon={chevronForwardOutline} className="range-btn-icon" />
-            </button>
+          <button className="date-range-btn" onClick={() => setShowModal(true)}>
+            <IonIcon icon={calendarOutline} className="range-btn-icon" />
+            <span>{rangeLabel}</span>
+            <IonIcon icon={chevronForwardOutline} className="range-btn-icon" />
+          </button>
 
           <div className="records-container">
-           
+
 
             {loading ? (
               <>

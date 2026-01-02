@@ -6,6 +6,7 @@ import {
     IonSpinner,
     IonIcon,
     IonButton,
+    IonAlert,
 } from "@ionic/react";
 import {
     eyeOutline,
@@ -29,12 +30,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [toastColor, setToastColor] = useState<"danger" | "success">("danger");
     const [showToast, setShowToast] = useState(false);
 
+    const [showDiagAlert, setShowDiagAlert] = useState(false);
+    const [diagHeader, setDiagHeader] = useState("");
+    const [diagMessage, setDiagMessage] = useState("");
+
     const emailRef = useRef(email);
     const passwordRef = useRef(password);
     const contentRef = useRef<HTMLIonContentElement>(null);
 
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const API_URL = import.meta.env.VITE_API_URL || "https://attendmate-backend.onrender.com/api";
 
 
     const scrollUpForPassword = () => {
@@ -62,6 +67,50 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             window.removeEventListener("keyboardWillHide", handleKeyboardHide);
         };
     }, []);
+
+    const runDiagnostics = async () => {
+        setLoading(true);
+        setDiagHeader("Running Diagnostics...");
+        setDiagMessage("Testing connections, please wait...");
+        setShowDiagAlert(true);
+
+        const results = [];
+
+        // 1. Test Public API
+        try {
+            const start = Date.now();
+            const res = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+            const duration = Date.now() - start;
+            results.push(`✅ Public API (JsonPlaceholder): OK (${duration}ms)`);
+        } catch (err: any) {
+            results.push(`❌ Public API: FAILED (${err.message})`);
+        }
+
+        // 2. Test Backend Health (Root)
+        try {
+            const baseUrl = API_URL.replace("/api", "");
+            const start = Date.now();
+            const res = await fetch(baseUrl);
+            const duration = Date.now() - start;
+            results.push(`✅ Backend Root: OK (${duration}ms) - Status: ${res.status}`);
+        } catch (err: any) {
+            results.push(`❌ Backend Root: FAILED (${err.message})`);
+        }
+
+        // 3. Test Backend API Endpoint
+        try {
+            const start = Date.now();
+            const res = await fetch(`${API_URL}/employees/login`, { method: "GET" });
+            const duration = Date.now() - start;
+            results.push(`✅ Backend /api/employees/login: OK (${duration}ms) - Status: ${res.status}`);
+        } catch (err: any) {
+            results.push(`❌ Backend API: FAILED (${err.message}). This usually means CORS is blocking the request from the app.`);
+        }
+
+        setLoading(false);
+        setDiagHeader("Diagnostic Results");
+        setDiagMessage(results.join("\n\n"));
+    };
 
     const handleLogin = async () => {
 
@@ -215,6 +264,27 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         color={toastColor}
                         onDidDismiss={() => setShowToast(false)}
                         style={{ "--border-radius": "10px" }}
+                    />
+
+                    <div style={{ marginTop: "20px", textAlign: "center" }}>
+                        <IonButton
+                            fill="clear"
+                            size="small"
+                            color="medium"
+                            onClick={runDiagnostics}
+                            style={{ "--opacity": "0.6", fontSize: "12px" }}
+                        >
+                            Run Connection Diagnostics
+                        </IonButton>
+                    </div>
+
+                    <IonAlert
+                        isOpen={showDiagAlert}
+                        onDidDismiss={() => setShowDiagAlert(false)}
+                        header={diagHeader}
+                        message={diagMessage}
+                        buttons={["OK"]}
+                        cssClass="diag-alert"
                     />
                 </div>
             </IonContent>

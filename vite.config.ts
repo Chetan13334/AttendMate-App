@@ -8,7 +8,7 @@ export default defineConfig({
         // Proxy API requests to avoid CORS issues during development
         proxy: {
             '/api': {
-                target: 'http://localhost:5000',
+                target: 'https://attendmate-backend.onrender.com',
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/api/, '/api')

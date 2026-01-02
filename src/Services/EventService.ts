@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://attendmate-backend.onrender.com/api";
 
 // 🔐 Get token from localStorage
 const getToken = () => localStorage.getItem("employeeToken");
@@ -25,7 +25,7 @@ export interface EmployeeData {
 // ============================
 export const fetchEvents = async () => {
   const token = getToken();
-  
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
