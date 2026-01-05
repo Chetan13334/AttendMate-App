@@ -106,7 +106,7 @@ const History: React.FC = () => {
 
     try {
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = today.toLocaleDateString("en-CA"); // YYYY-MM-DD
       const todayRaw = await fetchTodayRecord(todayStr, employeeId);
 
       let todayFormatted: any = null;
@@ -143,20 +143,34 @@ const History: React.FC = () => {
       );
 
       const filtered = pastRecords.filter((rec) => {
-        const d1 = new Date(rec.date);
-        const d2 = new Date(today);
-        d1.setHours(0, 0, 0, 0);
-        d2.setHours(0, 0, 0, 0);
-        if (d1.getTime() === d2.getTime()) return false;
+        const dDate = new Date(rec.date);
+        dDate.setHours(0, 0, 0, 0);
 
+        const dToday = new Date(today);
+        dToday.setHours(0, 0, 0, 0);
+
+        // 1. Skip if it's today (we handle today's record separately via todayFormatted)
+        if (dDate.getTime() === dToday.getTime()) return false;
+
+        // 2. Skip if not marked
         if (!rec.checkIn || rec.checkIn === "Not marked") return false;
+
+        // 3. STRICT RANGE CHECK (Ensures records outside Jan 5 - Jan 11 are hidden in default view)
+        const dStart = new Date(startDate);
+        dStart.setHours(0, 0, 0, 0);
+        const dEnd = new Date(endDate);
+        dEnd.setHours(23, 59, 59, 999);
+
+        if (dDate.getTime() < dStart.getTime() || dDate.getTime() > dEnd.getTime()) return false;
 
         return true;
       });
 
-      const merged = [todayFormatted, ...filtered].sort(
-        (a, b) => b.date.getTime() - a.date.getTime()
-      );
+      const isTodayInRange = today.getTime() >= startDate.getTime() && today.getTime() <= endDate.getTime();
+
+      const merged = isTodayInRange
+        ? [todayFormatted, ...filtered].sort((a, b) => b.date.getTime() - a.date.getTime())
+        : filtered.sort((a, b) => b.date.getTime() - a.date.getTime());
 
       setRecords(merged);
     } catch (err) {
@@ -168,14 +182,10 @@ const History: React.FC = () => {
 
 
   useEffect(() => {
-    loadAllRecords();
-  }, [employeeId, startDate.getTime(), endDate.getTime()]);
-
-  useEffect(() => {
     if (!showModal) {
-      setTimeout(() => loadAllRecords(), 150);
+      loadAllRecords();
     }
-  }, [showModal]);
+  }, [employeeId, startDate.getTime(), endDate.getTime(), showModal]);
 
   useEffect(() => {
     if (!employeeId) return;
@@ -203,13 +213,25 @@ const History: React.FC = () => {
   }, [employeeId]);
 
 
-  const rangeLabel = `This Week: ${startDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  })} - ${endDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  })}`;
+  const isThisWeek =
+    startDate.getTime() === getWeekStart().getTime() &&
+    endDate.getTime() === getWeekEnd().getTime();
+
+  const rangeLabel = isThisWeek
+    ? `This Week: ${startDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })} - ${endDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })}`
+    : `Custom Range: ${startDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })} - ${endDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })}`;
 
 
 

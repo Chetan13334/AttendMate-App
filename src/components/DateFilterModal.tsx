@@ -78,7 +78,6 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
 
         <div className="popup-body">
 
-          {/* START DATE */}
           <div className="popup-field">
             <label>Start Date</label>
 
@@ -97,7 +96,7 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
               <div className="calendar-wrapper">
                 <IonDatetime
                   presentation="date"
-                  value={tempStart.toISOString()}
+                  value={tempStart.toLocaleDateString("en-CA")}
                   onIonChange={(e) => {
                     if (e.detail.value) {
                       const d = new Date(e.detail.value as string);
@@ -111,7 +110,7 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
             </IonPopover>
           </div>
 
-          {/* END DATE */}
+          
           <div className="popup-field">
             <label>End Date</label>
 
@@ -130,7 +129,7 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
               <div className="calendar-wrapper">
                 <IonDatetime
                   presentation="date"
-                  value={tempEnd.toISOString()}
+                  value={tempEnd.toLocaleDateString("en-CA")}
                   onIonChange={(e) => {
                     if (e.detail.value) {
                       const d = new Date(e.detail.value as string);
@@ -144,7 +143,7 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
             </IonPopover>
           </div>
 
-          {/* CLEAR FILTER */}
+          
           <button
             className="clear-filter-text-btn"
             onClick={handleReset}
@@ -152,7 +151,7 @@ const DateFilterModal: React.FC<DateFilterModalProps> = ({
             Clear Filter
           </button>
 
-          {/* DONE BUTTON */}
+          
           <IonButton
             expand="block"
             className="popup-done-btn"

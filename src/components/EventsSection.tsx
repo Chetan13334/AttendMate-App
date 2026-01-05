@@ -157,7 +157,7 @@ const EventsSection: React.FC = () => {
             color: "#000",
           }}
         >
-          EVENTS {includeNextMonth ? "(This & Next Month)" : "(This Month)"}
+        Upcoming Events
         </h2>
       </IonText>
 

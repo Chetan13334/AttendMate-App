@@ -41,8 +41,8 @@ export const fetchPastRecords = async (
   if (!token) throw new Error("Not authorized");
 
   try {
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
+    const startStr = startDate.toLocaleDateString("en-CA"); // YYYY-MM-DD
+    const endStr = endDate.toLocaleDateString("en-CA");
 
     // Assuming backend accepts these query params
     const res = await fetch(`${API_URL}/attendance?startDate=${startStr}&endDate=${endStr}`, {
@@ -60,12 +60,34 @@ export const fetchPastRecords = async (
 
     // Map Backend Response to UI Structure
     // Backend likely returns: { date, checkInTime, checkOutTime, ... } 
-    // We need to parse dates
+    // Or if nested: { employees: [{ employeeId, checkInTime, ... }] }
 
-    return data.map((record: any) => {
-      const checkIn = record.checkInTime ? new Date(record.checkInTime) : null;
-      const checkOut = record.checkOutTime ? new Date(record.checkOutTime) : null;
-      const dateVal = record.date ? new Date(record.date) : new Date();
+    const records = Array.isArray(data) ? data : [];
+
+    return records.map((record: any) => {
+      // Find employee data if nested
+      let empData = record;
+      if (record.employees && Array.isArray(record.employees)) {
+        empData = record.employees.find((e: any) => e.employeeId === employeeId) || record;
+      }
+
+      const checkIn = empData.checkInTime ? new Date(empData.checkInTime) : null;
+      const checkOut = empData.checkOutTime ? new Date(empData.checkOutTime) : null;
+
+      let dateVal: Date;
+      if (record.date) {
+        // If it's a YYYY-MM-DD string, parse as local date to avoid one-day shift
+        const dateStr = String(record.date).split('T')[0];
+        const [y, m, d] = dateStr.split('-').map(Number);
+        if (y && m && d) {
+          dateVal = new Date(y, m - 1, d);
+        } else {
+          dateVal = new Date(record.date);
+        }
+      } else {
+        dateVal = checkIn ? new Date(checkIn) : new Date();
+      }
+      dateVal.setHours(0, 0, 0, 0);
 
       return {
         date: dateVal,
